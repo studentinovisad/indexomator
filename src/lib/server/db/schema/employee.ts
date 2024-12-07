@@ -3,8 +3,7 @@ import { pgTable, serial, integer, text, timestamp, primaryKey } from 'drizzle-o
 export const employee = pgTable('employee', {
 	id: serial('id').primaryKey(),
 	fname: text('fname').notNull(),
-	lname: text('lname').notNull(),
-	personalId: text('personal_id').notNull().unique()
+	lname: text('lname').notNull()
 });
 
 export const employeeEntry = pgTable(
