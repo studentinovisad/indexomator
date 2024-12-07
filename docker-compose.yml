@@ -8,3 +8,5 @@ services:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_DB: local
+    volumes:
+      - ./init-extensions.sql:/docker-entrypoint-initdb.d/init-extensions.sql
