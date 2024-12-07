@@ -5,6 +5,8 @@ import studentSeedData from './student';
 import employeeSeedData from './employee';
 import { student, studentEntry, studentExit } from '../schema/student';
 import { employee, employeeEntry, employeeExit } from '../schema/employee';
+import { userTable } from '../schema/user';
+import { hashPassword } from '$lib/server/password';
 
 // Load environment variables
 dotenv.config();
@@ -16,6 +18,12 @@ const db = drizzle(client);
 
 async function seedDatabase() {
 	try {
+		// Insert into the user table
+		await db.insert(userTable).values({
+			username: 'admin',
+			passwordHash: await hashPassword('admin')
+		});
+
 		// Insert into the student table
 		await db.insert(student).values(studentSeedData.student);
 
