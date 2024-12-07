@@ -2,7 +2,10 @@
 	import OpenBook from 'lucide-svelte/icons/book-open-text';
 	import Briefcase from 'lucide-svelte/icons/briefcase-business';
 	import Clipboard from 'lucide-svelte/icons/clipboard-list';
+	import Github from 'lucide-svelte/icons/github';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import SidebarFooter from '$lib/components/ui/sidebar/sidebar-footer.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
 
 	// Menu items.
 	const items = [
@@ -27,7 +30,7 @@
 <Sidebar.Root>
 	<Sidebar.Content>
 		<Sidebar.Group>
-			<Sidebar.GroupLabel><a href='/dashboard'>Indexomator</a></Sidebar.GroupLabel>
+			<Sidebar.GroupLabel><a href='/dashboard' class="font-bold">Indexomator</a></Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
 					{#each items as item (item.title)}
@@ -46,4 +49,9 @@
 			</Sidebar.GroupContent>
 		</Sidebar.Group>
 	</Sidebar.Content>
+	<SidebarFooter>
+		<Button variant="link" href="https://github.com/aleksasiriski/indexomator">
+			<Github/> <span>Contribute</span>
+		</Button>
+	</SidebarFooter>
 </Sidebar.Root>
