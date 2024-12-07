@@ -1,29 +1,29 @@
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { db } from '.';
-import { employee, employeeEntry, employeeExit } from './schema';
+import { employee, employeeEntry, employeeExit } from './schema/employee';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 
 export async function getEmployees(
 	fname: string | undefined = undefined,
 	lname: string | undefined = undefined,
-	personal_id: string | undefined = undefined
+	personalId: string | undefined = undefined
 ): Promise<
 	{
 		id: number;
 		fname: string;
 		lname: string;
-		personal_id: string;
+		personalId: string;
 		state: State;
 	}[]
 > {
-	// Assert fname, lname and personal_id are not null nor empty, undefined is allowed
+	// Assert fname, lname and personalId are not null nor empty, undefined is allowed
 	if (
 		fname === null ||
 		fname === '' ||
 		lname === null ||
 		lname === '' ||
-		personal_id === null ||
-		personal_id === ''
+		personalId === null ||
+		personalId === ''
 	) {
 		throw new Error('Invalid employee data');
 	}
@@ -33,7 +33,7 @@ export async function getEmployees(
 			id: employee.id,
 			fname: employee.fname,
 			lname: employee.lname,
-			personal_id: employee.personal_id,
+			personalId: employee.personalId,
 			entryTimestamp: sql<Date>`MAX(${employeeEntry.timestamp})`.as('entryTimestamp'),
 			exitTimestamp: sql<Date>`MAX(${employeeExit.timestamp})`.as('exitTimestamp')
 		})
@@ -44,10 +44,10 @@ export async function getEmployees(
 			and(
 				fname ? eq(employee.fname, fname) : undefined,
 				lname ? eq(employee.lname, lname) : undefined,
-				personal_id ? eq(employee.personal_id, personal_id) : undefined
+				personalId ? eq(employee.personalId, personalId) : undefined
 			)
 		)
-		.groupBy(employee.id, employee.fname, employee.lname, employee.personal_id);
+		.groupBy(employee.id, employee.fname, employee.lname, employee.personalId);
 
 	return employees.map((s) => {
 		const isInside = s.entryTimestamp > s.exitTimestamp;
@@ -55,7 +55,7 @@ export async function getEmployees(
 			id: s.id,
 			fname: s.fname,
 			lname: s.lname,
-			personal_id: s.personal_id,
+			personalId: s.personalId,
 			state: isInside ? StateInside : StateOutside
 		};
 	});
@@ -64,15 +64,15 @@ export async function getEmployees(
 export async function createEmployee(
 	fname: string,
 	lname: string,
-	personal_id: string
+	personalId: string
 ): Promise<{
 	id: number;
 	fname: string;
 	lname: string;
-	personal_id: string;
+	personalId: string;
 	state: State;
 }> {
-	// Assert fname, lname and personal_id are not null nor undefined nor empty
+	// Assert fname, lname and personalId are not null nor undefined nor empty
 	if (
 		fname === null ||
 		fname === undefined ||
@@ -80,9 +80,9 @@ export async function createEmployee(
 		lname === null ||
 		lname === undefined ||
 		lname === '' ||
-		personal_id === null ||
-		personal_id === undefined ||
-		personal_id === ''
+		personalId === null ||
+		personalId === undefined ||
+		personalId === ''
 	) {
 		throw new Error('Invalid employee data');
 	}
@@ -91,7 +91,7 @@ export async function createEmployee(
 		// Create the employee
 		const [{ id }] = await tx
 			.insert(employee)
-			.values({ fname, lname, personal_id })
+			.values({ fname, lname, personalId })
 			.returning({ id: employee.id })
 			.execute();
 
@@ -102,7 +102,7 @@ export async function createEmployee(
 			id,
 			fname,
 			lname,
-			personal_id,
+			personalId,
 			state: StateInside // Because the employee was just created, he is inside
 		};
 	});

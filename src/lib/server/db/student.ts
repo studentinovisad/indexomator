@@ -1,6 +1,6 @@
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { db } from '.';
-import { student, studentEntry, studentExit } from './schema';
+import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 
 export async function getStudents(
