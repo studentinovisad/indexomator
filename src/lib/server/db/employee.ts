@@ -16,6 +16,18 @@ export async function getEmployees(
 		state: State;
 	}[]
 > {
+	// Assert fname, lname and personal_id are not null nor empty, undefined is allowed
+	if (
+		fname === null ||
+		fname === '' ||
+		lname === null ||
+		lname === '' ||
+		personal_id === null ||
+		personal_id === ''
+	) {
+		throw new Error('Invalid employee data');
+	}
+
 	const employees = await db
 		.select({
 			id: employee.id,

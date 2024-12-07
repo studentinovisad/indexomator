@@ -16,6 +16,18 @@ export async function getStudents(
 		state: State;
 	}[]
 > {
+	// Assert fname, lname and index are not null nor empty, undefined is allowed
+	if (
+		fname === null ||
+		fname === '' ||
+		lname === null ||
+		lname === '' ||
+		index === null ||
+		index === ''
+	) {
+		throw new Error('Invalid student data');
+	}
+
 	const students = await db
 		.select({
 			id: student.id,
