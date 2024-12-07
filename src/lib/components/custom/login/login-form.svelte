@@ -14,7 +14,7 @@
 		<div class="grid gap-4">
 			<div class="grid gap-2">
 				<Label for="user">Username</Label>
-				<Input id="user" type="text" required />
+				<Input id="user" type="text" name="username" required />
 			</div>
 			<div class="grid gap-2">
 				<div class="flex items-center">
@@ -25,7 +25,7 @@
 					</a>
 					-->
 				</div>
-				<Input id="pass" type="password" required />
+				<Input id="pass" type="password" name="password" required />
 			</div>
 			<Button type="submit" class="w-full">Login</Button>
 			<!--
