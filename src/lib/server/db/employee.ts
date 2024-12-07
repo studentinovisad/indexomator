@@ -1,7 +1,8 @@
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { or, desc, eq, sql } from 'drizzle-orm';
 import { db } from '.';
 import { employee, employeeEntry, employeeExit } from './schema/employee';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
+import { fuzzySearchFilters } from './fuzzySearch';
 
 // Gets all employees using optional filters
 export async function getEmployees({
@@ -35,9 +36,9 @@ export async function getEmployees({
 		.leftJoin(employeeEntry, eq(employee.id, employeeEntry.employeeId))
 		.leftJoin(employeeExit, eq(employee.id, employeeExit.employeeId))
 		.where(
-			and(
-				fname ? eq(employee.fname, fname) : undefined,
-				lname ? eq(employee.lname, lname) : undefined
+			or(
+				...(fname ? fuzzySearchFilters(employee.fname, fname) : []),
+				...(lname ? fuzzySearchFilters(employee.lname, lname) : []),
 			)
 		)
 		.groupBy(employee.id, employee.fname, employee.lname);
