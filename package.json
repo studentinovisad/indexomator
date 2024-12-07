@@ -23,6 +23,7 @@
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"@types/node": "^22.10.1",
 		"autoprefixer": "^10.4.20",
+		"bits-ui": "1.0.0-next.67",
 		"clsx": "^2.1.1",
 		"dotenv": "^16.4.7",
 		"drizzle-kit": "^0.22.0",
@@ -30,6 +31,8 @@
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-svelte": "^2.36.0",
 		"globals": "^15.0.0",
+		"lucide-svelte": "^0.468.0",
+		"mode-watcher": "^0.5.0",
 		"prettier": "^3.3.2",
 		"prettier-plugin-svelte": "^3.2.6",
 		"prettier-plugin-tailwindcss": "^0.6.5",
@@ -41,6 +44,7 @@
 		"tsx": "^4.19.2",
 		"typescript": "^5.0.0",
 		"typescript-eslint": "^8.0.0",
+		"vaul-svelte": "1.0.0-next.3",
 		"vite": "^6.0.0"
 	},
 	"dependencies": {
