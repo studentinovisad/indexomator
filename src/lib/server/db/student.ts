@@ -1,7 +1,16 @@
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, or, desc, eq, ilike, sql, Column } from 'drizzle-orm';
 import { db } from '.';
 import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
+
+const EDIT_DISTANCE = 2; // Distance for Levenshteins fuzzy search alghoritm
+
+function fuzzySearchFilters(dbField: Column, searchQuery: string) {
+	return [
+		sql`LEVENSHTEIN(${dbField}, ${searchQuery}) < ${EDIT_DISTANCE}`,
+		ilike(dbField, `${searchQuery}%`)
+	];
+}
 
 // Gets all students using optional filters
 export async function getStudents({
@@ -46,10 +55,10 @@ export async function getStudents({
 		.leftJoin(studentEntry, eq(student.id, studentEntry.studentId))
 		.leftJoin(studentExit, eq(student.id, studentExit.studentId))
 		.where(
-			and(
-				fname ? eq(student.fname, fname) : undefined,
-				lname ? eq(student.lname, lname) : undefined,
-				index ? eq(student.index, index) : undefined
+			or(
+				...(fname ? fuzzySearchFilters(student.fname, fname) : []),
+				...(lname ? fuzzySearchFilters(student.lname, lname) : []),
+				...(index ? fuzzySearchFilters(student.index, index) : []),
 			)
 		)
 		.groupBy(student.id, student.fname, student.lname, student.index);
