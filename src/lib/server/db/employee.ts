@@ -6,30 +6,20 @@ import { StateInside, StateOutside, type State } from '$lib/types/state';
 // Gets all employees using optional filters
 export async function getEmployees({
 	fname,
-	lname,
-	personalId
+	lname
 }: {
 	fname?: string;
 	lname?: string;
-	personalId?: string;
 } = {}): Promise<
 	{
 		id: number;
 		fname: string;
 		lname: string;
-		personalId: string;
 		state: State;
 	}[]
 > {
 	// Assert fname, lname and personalId are not null nor empty, undefined is allowed
-	if (
-		fname === null ||
-		fname === '' ||
-		lname === null ||
-		lname === '' ||
-		personalId === null ||
-		personalId === ''
-	) {
+	if (fname === null || fname === '' || lname === null || lname === '') {
 		throw new Error('Invalid employee data');
 	}
 
@@ -38,7 +28,6 @@ export async function getEmployees({
 			id: employee.id,
 			fname: employee.fname,
 			lname: employee.lname,
-			personalId: employee.personalId,
 			entryTimestamp: sql<Date>`MAX(${employeeEntry.timestamp})`.as('entryTimestamp'),
 			exitTimestamp: sql<Date>`MAX(${employeeExit.timestamp})`.as('exitTimestamp')
 		})
@@ -48,11 +37,10 @@ export async function getEmployees({
 		.where(
 			and(
 				fname ? eq(employee.fname, fname) : undefined,
-				lname ? eq(employee.lname, lname) : undefined,
-				personalId ? eq(employee.personalId, personalId) : undefined
+				lname ? eq(employee.lname, lname) : undefined
 			)
 		)
-		.groupBy(employee.id, employee.fname, employee.lname, employee.personalId);
+		.groupBy(employee.id, employee.fname, employee.lname);
 
 	return employees.map((s) => {
 		const isInside = s.entryTimestamp > s.exitTimestamp;
@@ -60,7 +48,6 @@ export async function getEmployees({
 			id: s.id,
 			fname: s.fname,
 			lname: s.lname,
-			personalId: s.personalId,
 			state: isInside ? StateInside : StateOutside
 		};
 	});
@@ -69,13 +56,11 @@ export async function getEmployees({
 // Creates an employee and the entry timestamp
 export async function createEmployee(
 	fname: string,
-	lname: string,
-	personalId: string
+	lname: string
 ): Promise<{
 	id: number;
 	fname: string;
 	lname: string;
-	personalId: string;
 	state: State;
 }> {
 	// Assert fname, lname and personalId are not null nor undefined nor empty
@@ -85,10 +70,7 @@ export async function createEmployee(
 		fname === '' ||
 		lname === null ||
 		lname === undefined ||
-		lname === '' ||
-		personalId === null ||
-		personalId === undefined ||
-		personalId === ''
+		lname === ''
 	) {
 		throw new Error('Invalid employee data');
 	}
@@ -97,7 +79,7 @@ export async function createEmployee(
 		// Create the employee
 		const [{ id }] = await tx
 			.insert(employee)
-			.values({ fname, lname, personalId })
+			.values({ fname, lname })
 			.returning({ id: employee.id })
 			.execute();
 
@@ -108,7 +90,6 @@ export async function createEmployee(
 			id,
 			fname,
 			lname,
-			personalId,
 			state: StateInside // Because the employee was just created, he is inside
 		};
 	});
