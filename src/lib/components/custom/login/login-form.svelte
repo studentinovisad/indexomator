@@ -14,7 +14,7 @@
 		<div class="grid gap-4">
 			<div class="grid gap-2">
 				<Label for="user">Username</Label>
-				<Input id="user" type="text" placeholder="Faculty" required />
+				<Input id="user" type="text" required />
 			</div>
 			<div class="grid gap-2">
 				<div class="flex items-center">

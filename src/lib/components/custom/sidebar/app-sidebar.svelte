@@ -11,17 +11,17 @@
 	const items = [
 		{
 			title: 'Insert Student',
-			url: '/dashboard/insert_student',
+			url: '/insert_student',
 			icon: OpenBook
 		},
 		{
 			title: 'Insert Employee',
-			url: '/dashboard/insert_employee',
+			url: '/insert_employee',
 			icon: Briefcase
 		},
 		{
 			title: 'Database Search',
-			url: '/dashboard/database_search',
+			url: '/database_search',
 			icon: Clipboard
 		}
 	];
@@ -30,7 +30,7 @@
 <Sidebar.Root>
 	<Sidebar.Content>
 		<Sidebar.Group>
-			<Sidebar.GroupLabel><a href='/dashboard' class="font-bold">Indexomator</a></Sidebar.GroupLabel>
+			<Sidebar.GroupLabel><a href='/' class="font-bold">Indexomator</a></Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
 					{#each items as item (item.title)}

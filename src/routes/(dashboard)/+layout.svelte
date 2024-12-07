@@ -11,15 +11,15 @@
 <Sidebar.Provider>
 	<AppSidebar />
 	<main class="w-full">
-		<header class="flex h-16 w-full shrink-0 items-center gap-2 border-b px-4">
-			<div class="m-5"><Sidebar.Trigger /></div>
+		<header class="flex h-16 w-full shrink-0 items-center gap-2 border-b">
+			<div class="ml-2"><Sidebar.Trigger /></div>
 			<Separator orientation="vertical" class="mr-10 h-4" />
 			<h1 class="text-lg">
-				{#if $page.url.pathname === '/dashboard/insert_student'}
+				{#if $page.url.pathname === '/insert_student'}
 					Insert Student
-				{:else if $page.url.pathname === '/dashboard/insert_employee'}
+				{:else if $page.url.pathname === '/insert_employee'}
 					Insert Employee
-				{:else if $page.url.pathname === '/dashboard/database_search'}
+				{:else if $page.url.pathname === '/database_search'}
 					Database Search
 				{:else}
 					Homepage
