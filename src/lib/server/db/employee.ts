@@ -3,11 +3,16 @@ import { db } from '.';
 import { employee, employeeEntry, employeeExit } from './schema/employee';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 
-export async function getEmployees(
-	fname: string | undefined = undefined,
-	lname: string | undefined = undefined,
-	personalId: string | undefined = undefined
-): Promise<
+// Gets all employees using optional filters
+export async function getEmployees({
+	fname,
+	lname,
+	personalId
+}: {
+	fname?: string;
+	lname?: string;
+	personalId?: string;
+} = {}): Promise<
 	{
 		id: number;
 		fname: string;
@@ -61,6 +66,7 @@ export async function getEmployees(
 	});
 }
 
+// Creates an employee and the entry timestamp
 export async function createEmployee(
 	fname: string,
 	lname: string,
@@ -108,6 +114,7 @@ export async function createEmployee(
 	});
 }
 
+// Gets the state of an employee (either inside or outside)
 export async function getEmployeeState(id: number): Promise<State> {
 	// Assert id is not null or undefined
 	if (id === null || id === undefined) {
@@ -142,6 +149,7 @@ export async function getEmployeeState(id: number): Promise<State> {
 	});
 }
 
+// Toggles the state of an employee (inside to outside and vice versa)
 export async function toggleEmployeeState(id: number): Promise<State> {
 	// Assert id is not null or undefined
 	if (id === null || id === undefined) {
