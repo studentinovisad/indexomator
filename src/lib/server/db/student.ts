@@ -3,11 +3,16 @@ import { db } from '.';
 import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 
-export async function getStudents(
-	fname: string | undefined = undefined,
-	lname: string | undefined = undefined,
-	index: string | undefined = undefined
-): Promise<
+// Gets all students using optional filters
+export async function getStudents({
+	fname,
+	lname,
+	index
+}: {
+	fname?: string;
+	lname?: string;
+	index?: string;
+} = {}): Promise<
 	{
 		id: number;
 		fname: string;
@@ -61,6 +66,7 @@ export async function getStudents(
 	});
 }
 
+// Creates a student and the entry timestamp
 export async function createStudent(
 	fname: string,
 	lname: string,
@@ -108,6 +114,7 @@ export async function createStudent(
 	});
 }
 
+// Gets the state of a student (either inside or outside)
 export async function getStudentState(id: number): Promise<State> {
 	// Assert id is not null or undefined
 	if (id === null || id === undefined) {
@@ -142,6 +149,7 @@ export async function getStudentState(id: number): Promise<State> {
 	});
 }
 
+// Toggles the state of a student (inside to outside and vice versa)
 export async function toggleStudentState(id: number): Promise<State> {
 	// Assert id is not null or undefined
 	if (id === null || id === undefined) {
