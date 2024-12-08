@@ -15,12 +15,12 @@
 			<div class="ml-2"><Sidebar.Trigger /></div>
 			<Separator orientation="vertical" class="mr-10 h-4" />
 			<h1 class="text-lg">
-				{#if $page.url.pathname === '/insert_student'}
-					Insert Student
-				{:else if $page.url.pathname === '/insert_employee'}
-					Insert Employee
-				{:else if $page.url.pathname === '/database_search'}
-					Database Search
+				{#if $page.url.pathname === '/create/student'}
+					Create Student
+				{:else if $page.url.pathname === '/create/employee'}
+					Create Employee
+				{:else if $page.url.pathname === '/search'}
+					Search
 				{:else}
 					Homepage
 				{/if}

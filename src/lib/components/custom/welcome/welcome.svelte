@@ -13,7 +13,9 @@
 			<li>Click the top-left button to open up the menu.</li>
 			<li>You'll see three options.</li>
 			<li>You can insert students / employees.</li>
-			<li>You can see info about anyone who came through the building and filter it to your needs.</li>
+			<li>
+				You can see info about anyone who came through the building and filter it to your needs.
+			</li>
 		</ul>
 	</Card.Content>
 </Card.Root>
