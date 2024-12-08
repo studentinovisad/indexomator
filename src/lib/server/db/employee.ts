@@ -6,13 +6,7 @@ import { fuzzySearchFilters } from './fuzzySearch';
 import { isInside } from '../isInside';
 
 // Gets all employees using optional filters
-export async function getEmployees({
-	fname,
-	lname
-}: {
-	fname?: string;
-	lname?: string;
-} = {}): Promise<
+export async function getEmployees(searchQuery?: string): Promise<
 	{
 		id: number;
 		fname: string;
@@ -20,9 +14,9 @@ export async function getEmployees({
 		state: State;
 	}[]
 > {
-	// Assert fname, lname and personalId are not null nor empty, undefined is allowed
-	if (fname === null || fname === '' || lname === null || lname === '') {
-		throw new Error('Invalid employee data');
+	// Assert searchQuery is not null nor empty, if it is provided
+	if (searchQuery !== undefined && (searchQuery === null || searchQuery === '')) {
+		throw new Error('Invalid search query');
 	}
 
 	const employees = await db
@@ -38,8 +32,12 @@ export async function getEmployees({
 		.leftJoin(employeeExit, eq(employee.id, employeeExit.employeeId))
 		.where(
 			or(
-				...(fname ? fuzzySearchFilters(employee.fname, fname) : []),
-				...(lname ? fuzzySearchFilters(employee.lname, lname) : []),
+				...(searchQuery
+					? [
+							...fuzzySearchFilters(employee.fname, searchQuery),
+							...fuzzySearchFilters(employee.lname, searchQuery)
+						]
+					: [])
 			)
 		)
 		.groupBy(employee.id, employee.fname, employee.lname);

@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres
-    restart: always
+    restart: never
     ports:
       - 5432:5432
     environment:

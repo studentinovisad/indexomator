@@ -4,9 +4,10 @@ import type { PageServerLoad } from './$types';
 import { getEmployees, toggleEmployeeState } from '$lib/server/db/employee';
 import { Employee, Student, type Person } from '$lib/types/person';
 
-export const load: PageServerLoad = async () => {
-	const studentsP = getStudents();
-	const employeesP = getEmployees();
+export const load: PageServerLoad = async ({ url }) => {
+	const searchQuery = url.searchParams.get('q') ?? undefined;
+	const studentsP = getStudents(searchQuery);
+	const employeesP = getEmployees(searchQuery);
 	const students = await studentsP;
 	const employees = await employeesP;
 	const persons: Person[] = [
@@ -15,6 +16,7 @@ export const load: PageServerLoad = async () => {
 	];
 
 	return {
+		searchQuery,
 		persons
 	};
 };

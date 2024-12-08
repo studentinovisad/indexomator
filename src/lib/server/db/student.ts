@@ -6,15 +6,7 @@ import { fuzzySearchFilters } from './fuzzySearch';
 import { isInside } from '../isInside';
 
 // Gets all students using optional filters
-export async function getStudents({
-	fname,
-	lname,
-	index
-}: {
-	fname?: string;
-	lname?: string;
-	index?: string;
-} = {}): Promise<
+export async function getStudents(searchQuery?: string): Promise<
 	{
 		id: number;
 		fname: string;
@@ -23,16 +15,9 @@ export async function getStudents({
 		state: State;
 	}[]
 > {
-	// Assert fname, lname and index are not null nor empty, undefined is allowed
-	if (
-		fname === null ||
-		fname === '' ||
-		lname === null ||
-		lname === '' ||
-		index === null ||
-		index === ''
-	) {
-		throw new Error('Invalid student data');
+	// Assert searchQuery is not null nor empty, if it is provided
+	if (searchQuery !== undefined && (searchQuery === null || searchQuery === '')) {
+		throw new Error('Invalid search query');
 	}
 
 	const students = await db
@@ -49,9 +34,13 @@ export async function getStudents({
 		.leftJoin(studentExit, eq(student.id, studentExit.studentId))
 		.where(
 			or(
-				...(fname ? fuzzySearchFilters(student.fname, fname) : []),
-				...(lname ? fuzzySearchFilters(student.lname, lname) : []),
-				...(index ? fuzzySearchFilters(student.index, index) : []),
+				...(searchQuery
+					? [
+							...fuzzySearchFilters(student.fname, searchQuery),
+							...fuzzySearchFilters(student.lname, searchQuery),
+							...fuzzySearchFilters(student.index, searchQuery)
+						]
+					: [])
 			)
 		)
 		.groupBy(student.id, student.fname, student.lname, student.index);

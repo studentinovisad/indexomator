@@ -7,17 +7,19 @@
 	import Search from 'lucide-svelte/icons/search';
 	import DataTable from './data-table.svelte';
 	import { columns } from './columns';
+	import { enhance } from '$app/forms';
 
 	let { data } = $props();
+	const searchQuery = data.searchQuery;
 </script>
 
 <div>
-	<div>
+	<form action="/search" use:enhance>
 		<div class="hidden gap-2 px-4 py-2 sm:flex">
-			<Input id="first_name" placeholder="First Name" class="max-w-xs" />
-			<Input id="last_name" placeholder="Last Name" class="max-w-xs" />
-			<Input id="id" placeholder="ID" class="max-w-xs" />
-			<Button type="submit" variant="outline" size="icon" class="flex-shrink-0"><Search /></Button>
+			<Input id="search" class="max-w-xs" placeholder="Search..." name="q" value={searchQuery} />
+			<Button type="submit" variant="outline" size="icon" class="flex-shrink-0">
+				<Search />
+			</Button>
 		</div>
 		<div class="flex gap-2 px-4 py-2 sm:hidden">
 			<Drawer.Root>
@@ -27,26 +29,20 @@
 				<Drawer.Content>
 					<div class="grid gap-4 p-10">
 						<div class="grid gap-2">
-							<Label for="first_name">First Name</Label>
-							<Input id="first_name" placeholder="First Name" />
-						</div>
-						<div class="grid gap-2">
-							<Label for="last_name">Last Name</Label>
-							<Input id="last_name" placeholder="Last Name" />
-						</div>
-						<div class="grid gap-2">
-							<Label for="last_name">1/24</Label>
-							<Input id="id" placeholder="Index" />
+							<Label for="search">Search</Label>
+							<Input id="search" placeholder="Search..." name="q" value={searchQuery} />
 						</div>
 					</div>
 					<Drawer.Footer>
 						<Button>Search</Button>
-						<Drawer.Close><Button variant="destructive" class="w-full">Reset</Button></Drawer.Close>
+						<Drawer.Close>
+							<Button variant="destructive" class="w-full">Reset</Button>
+						</Drawer.Close>
 					</Drawer.Footer>
 				</Drawer.Content>
 			</Drawer.Root>
 		</div>
-	</div>
+	</form>
 	<Separator />
 	<DataTable data={data.persons} {columns} />
 </div>
