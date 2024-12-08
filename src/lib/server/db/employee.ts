@@ -2,6 +2,7 @@ import { and, desc, eq, sql } from 'drizzle-orm';
 import { db } from '.';
 import { employee, employeeEntry, employeeExit } from './schema/employee';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
+import { isInside } from '../isInside';
 
 // Gets all employees using optional filters
 export async function getEmployees({
@@ -29,7 +30,7 @@ export async function getEmployees({
 			fname: employee.fname,
 			lname: employee.lname,
 			entryTimestamp: sql<Date>`MAX(${employeeEntry.timestamp})`.as('entryTimestamp'),
-			exitTimestamp: sql<Date>`MAX(${employeeExit.timestamp})`.as('exitTimestamp')
+			exitTimestamp: sql<Date | null>`MAX(${employeeExit.timestamp})`.as('exitTimestamp')
 		})
 		.from(employee)
 		.leftJoin(employeeEntry, eq(employee.id, employeeEntry.employeeId))
@@ -43,12 +44,11 @@ export async function getEmployees({
 		.groupBy(employee.id, employee.fname, employee.lname);
 
 	return employees.map((s) => {
-		const isInside = s.entryTimestamp > s.exitTimestamp;
 		return {
 			id: s.id,
 			fname: s.fname,
 			lname: s.lname,
-			state: isInside ? StateInside : StateOutside
+			state: isInside(s.entryTimestamp, s.exitTimestamp) ? StateInside : StateOutside
 		};
 	});
 }
@@ -80,11 +80,10 @@ export async function createEmployee(
 		const [{ id }] = await tx
 			.insert(employee)
 			.values({ fname, lname })
-			.returning({ id: employee.id })
-			.execute();
+			.returning({ id: employee.id });
 
 		// Create the employee entry
-		await tx.insert(employeeEntry).values({ employeeId: id }).execute();
+		await tx.insert(employeeEntry).values({ employeeId: id });
 
 		return {
 			id,
@@ -114,7 +113,7 @@ export async function getEmployeeState(id: number): Promise<State> {
 			.limit(1);
 
 		// Get the employee exit
-		const [{ timestamp: exitTimestamp }] = await tx
+		const exits = await tx
 			.select({
 				timestamp: employeeExit.timestamp
 			})
@@ -122,11 +121,12 @@ export async function getEmployeeState(id: number): Promise<State> {
 			.where(eq(employeeExit.employeeId, id))
 			.orderBy(desc(employeeExit.timestamp))
 			.limit(1);
+		let exitTimestamp: Date | null = null;
+		if (exits.length > 0) {
+			exitTimestamp = exits[0].timestamp;
+		}
 
-		// Determine if the employee is inside or outside
-		const isInside = entryTimestamp > exitTimestamp;
-
-		return isInside ? StateInside : StateOutside;
+		return isInside(entryTimestamp, exitTimestamp) ? StateInside : StateOutside;
 	});
 }
 
@@ -149,7 +149,7 @@ export async function toggleEmployeeState(id: number): Promise<State> {
 			.limit(1);
 
 		// Get the employee exit
-		const [{ timestamp: exitTimestamp }] = await tx
+		const exits = await tx
 			.select({
 				timestamp: employeeExit.timestamp
 			})
@@ -157,22 +157,20 @@ export async function toggleEmployeeState(id: number): Promise<State> {
 			.where(eq(employeeExit.employeeId, id))
 			.orderBy(desc(employeeExit.timestamp))
 			.limit(1);
-
-		// Determine if the employee is inside or outside
-		const isInside = entryTimestamp > exitTimestamp;
-
-		// Toggle the employee state
-		if (isInside) {
-			// Exit the employee
-			await tx.insert(employeeExit).values({ employeeId: id }).execute();
-		} else {
-			// Enter the employee
-			await tx.insert(employeeEntry).values({ employeeId: id }).execute();
+		let exitTimestamp: Date | null = null;
+		if (exits.length > 0) {
+			exitTimestamp = exits[0].timestamp;
 		}
 
-		// Determine the new state
-		const newIsInside = !isInside;
-
-		return newIsInside ? StateInside : StateOutside;
+		// Toggle the employee state
+		if (isInside(entryTimestamp, exitTimestamp)) {
+			// Exit the employee
+			await tx.insert(employeeExit).values({ employeeId: id });
+			return StateOutside;
+		} else {
+			// Enter the employee
+			await tx.insert(employeeEntry).values({ employeeId: id });
+			return StateInside;
+		}
 	});
 }

@@ -1,5 +1,5 @@
 {
-  "id": "ea0afdad-798f-4cb4-a259-b591dc323888",
+  "id": "7edb222c-45d1-4821-bdd3-9dd7628c892a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -25,26 +25,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "personal_id": {
-          "name": "personal_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "employee_personal_id_unique": {
-          "name": "employee_personal_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "personal_id"
-          ]
-        }
-      }
+      "uniqueConstraints": {}
     },
     "public.employee_entry": {
       "name": "employee_entry",

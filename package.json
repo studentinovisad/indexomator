@@ -51,6 +51,7 @@
 		"@node-rs/argon2": "^2.0.2",
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
+		"@tanstack/table-core": "^8.20.5",
 		"drizzle-orm": "^0.33.0",
 		"postgres": "^3.4.4"
 	}

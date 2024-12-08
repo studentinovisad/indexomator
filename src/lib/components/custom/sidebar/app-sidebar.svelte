@@ -10,18 +10,18 @@
 	// Menu items.
 	const items = [
 		{
-			title: 'Insert Student',
-			url: '/insert_student',
+			title: 'Create Student',
+			url: '/create/student',
 			icon: OpenBook
 		},
 		{
-			title: 'Insert Employee',
-			url: '/insert_employee',
+			title: 'Create Employee',
+			url: '/create/employee',
 			icon: Briefcase
 		},
 		{
-			title: 'Database Search',
-			url: '/database_search',
+			title: 'Search',
+			url: '/search',
 			icon: Clipboard
 		}
 	];
@@ -30,7 +30,7 @@
 <Sidebar.Root>
 	<Sidebar.Content>
 		<Sidebar.Group>
-			<Sidebar.GroupLabel><a href='/' class="font-bold">Indexomator</a></Sidebar.GroupLabel>
+			<Sidebar.GroupLabel><a href="/" class="font-bold">Indexomator</a></Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
 					{#each items as item (item.title)}
@@ -51,7 +51,7 @@
 	</Sidebar.Content>
 	<SidebarFooter>
 		<Button variant="link" href="https://github.com/aleksasiriski/indexomator">
-			<Github/> <span>Contribute</span>
+			<Github /> <span>Contribute</span>
 		</Button>
 	</SidebarFooter>
 </Sidebar.Root>
