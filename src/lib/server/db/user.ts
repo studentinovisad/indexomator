@@ -1,6 +1,15 @@
 import { eq } from 'drizzle-orm';
 import { db } from '.';
 import { userTable } from './schema/user';
+import { hashPassword } from '../password';
+
+export async function createUser(username: string, password: string): Promise<void> {
+	const passwordHash = await hashPassword(password);
+	await db.insert(userTable).values({
+		username,
+		passwordHash
+	});
+}
 
 export async function getUserIdAndPasswordHash(
 	username: string

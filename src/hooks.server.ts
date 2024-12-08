@@ -11,7 +11,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		event.locals.user = null;
 		event.locals.session = null;
 		// Redirect to the login page (or whatever page makes sense for unauthenticated users)
-		if (event.url.pathname !== '/login') {
+		if (event.url.pathname !== '/login' && event.url.pathname !== '/register') {
 			return redirect(302, '/login');
 		}
 		return resolve(event);

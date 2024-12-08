@@ -18,12 +18,6 @@ const db = drizzle(client);
 
 async function seedDatabase() {
 	try {
-		// Insert into the user table
-		await db.insert(userTable).values({
-			username: 'admin',
-			passwordHash: await hashPassword('admin')
-		});
-
 		// Insert into the student table
 		await db.insert(student).values(studentSeedData.student);
 
