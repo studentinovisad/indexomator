@@ -1,22 +1,21 @@
 import dotenv from 'dotenv';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
 import studentSeedData from './student';
 import employeeSeedData from './employee';
 import { student, studentEntry, studentExit } from '../schema/student';
 import { employee, employeeEntry, employeeExit } from '../schema/employee';
-import { userTable } from '../schema/user';
-import { hashPassword } from '$lib/server/password';
+import { connectDatabaseWithURL } from '../connect';
 
 // Load environment variables
 dotenv.config();
 
-// Configure your database connection
-if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
-const client = postgres(process.env.DATABASE_URL);
-const db = drizzle(client);
-
 async function seedDatabase() {
+	// Connect to the database
+	const dbUrl = process.env.DATABASE_URL;
+	// Assert that the DATABASE_URL environment variable is set
+	if (!dbUrl) throw new Error('DATABASE_URL is not set');
+
+	const { db, client } = await connectDatabaseWithURL(dbUrl);
+
 	try {
 		// Insert into the student table
 		await db.insert(student).values(studentSeedData.student);

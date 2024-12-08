@@ -9,6 +9,8 @@ export const actions: Actions = {
 };
 
 async function action(event: RequestEvent) {
+	const { database } = event.locals;
+
 	const formData = await event.request.formData();
 	const username = formData.get('username');
 	const password = formData.get('password');
@@ -28,7 +30,7 @@ async function action(event: RequestEvent) {
 	}
 
 	// Check if the username and password are valid
-	const { id, passwordHash } = await getUserIdAndPasswordHash(username);
+	const { id, passwordHash } = await getUserIdAndPasswordHash(database, username);
 	const validPassword = await verifyPasswordHash(passwordHash, password);
 	if (!validPassword) {
 		return fail(401, {
@@ -37,8 +39,8 @@ async function action(event: RequestEvent) {
 	}
 
 	// Create a new session token
-	const sessionToken = generateSessionToken();
-	const session = await createSession(sessionToken, id);
+	const sessionToken = generateSessionToken(database);
+	const session = await createSession(database, sessionToken, id);
 	setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
 	// Redirect to the home page

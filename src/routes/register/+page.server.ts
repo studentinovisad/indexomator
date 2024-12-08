@@ -7,6 +7,8 @@ export const actions: Actions = {
 };
 
 async function action(event: RequestEvent) {
+	const { database } = event.locals;
+
 	const formData = await event.request.formData();
 	const secret = formData.get('secret');
 	const username = formData.get('username');
@@ -37,5 +39,5 @@ async function action(event: RequestEvent) {
 	}
 
 	// Create the new user
-	await createUser(username, password);
+	await createUser(database, username, password);
 }

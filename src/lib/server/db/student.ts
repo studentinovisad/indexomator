@@ -1,19 +1,22 @@
 import { and, desc, eq, sql } from 'drizzle-orm';
-import { db } from '.';
 import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { isInside } from '../isInside';
+import type { Database } from './connect';
 
 // Gets all students using optional filters
-export async function getStudents({
-	fname,
-	lname,
-	index
-}: {
-	fname?: string;
-	lname?: string;
-	index?: string;
-} = {}): Promise<
+export async function getStudents(
+	db: Database,
+	{
+		fname,
+		lname,
+		index
+	}: {
+		fname?: string;
+		lname?: string;
+		index?: string;
+	} = {}
+): Promise<
 	{
 		id: number;
 		fname: string;
@@ -68,6 +71,7 @@ export async function getStudents({
 
 // Creates a student and the entry timestamp
 export async function createStudent(
+	db: Database,
 	fname: string,
 	lname: string,
 	index: string
@@ -114,7 +118,7 @@ export async function createStudent(
 }
 
 // Gets the state of a student (either inside or outside)
-export async function getStudentState(id: number): Promise<State> {
+export async function getStudentState(db: Database, id: number): Promise<State> {
 	// Assert id is not null or undefined
 	if (id === null || id === undefined) {
 		throw new Error('Invalid student id');
@@ -150,7 +154,7 @@ export async function getStudentState(id: number): Promise<State> {
 }
 
 // Toggles the state of a student (inside to outside and vice versa)
-export async function toggleStudentState(id: number): Promise<State> {
+export async function toggleStudentState(db: Database, id: number): Promise<State> {
 	// Assert id is not null or undefined
 	if (id === null || id === undefined) {
 		throw new Error('Invalid student id');

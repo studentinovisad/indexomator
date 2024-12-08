@@ -1,4 +1,4 @@
-FROM node:lts AS base
+FROM node:lts-slim AS base
 WORKDIR /app
 COPY package.json ./
 COPY pnpm-lock.yaml ./
@@ -18,5 +18,7 @@ COPY --from=base /app/package.json .
 COPY --from=base /app/pnpm-lock.yaml .
 COPY --from=build /app/build .
 COPY --from=deps /app/node_modules ./node_modules
+COPY drizzle ./drizzle
+ENV MIGRATIONS_PATH ./drizzle
 EXPOSE 3000
 CMD ["./index.js"]

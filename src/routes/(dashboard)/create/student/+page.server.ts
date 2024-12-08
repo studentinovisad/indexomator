@@ -6,6 +6,8 @@ export const actions: Actions = {
 };
 
 async function action(event: RequestEvent) {
+	const { database } = event.locals;
+
 	const formData = await event.request.formData();
 	const fname = formData.get('fname');
 	const lname = formData.get('lname');
@@ -28,5 +30,5 @@ async function action(event: RequestEvent) {
 		});
 	}
 
-	await createStudent(fname, lname, index);
+	await createStudent(database, fname, lname, index);
 }

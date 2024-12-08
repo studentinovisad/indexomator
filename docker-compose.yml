@@ -1,7 +1,17 @@
 services:
-  db:
-    image: postgres
-    restart: always
+  #   app:
+  #     build:
+  #       context: .
+  #       dockerfile: docker/node.Dockerfile
+  #     ports:
+  #       - 3000:3000
+  #     environment:
+  #       DATABASE_URL: postgres://root:mysecretpassword@postgres:5432/local
+  #       SECRET: changemepls
+  #     depends_on:
+  #       - postgres
+  postgres:
+    image: postgres:15
     ports:
       - 5432:5432
     environment:
