@@ -3,6 +3,7 @@ import { db } from '.';
 import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzySearch';
+import { isInside } from '../isInside';
 
 // Gets all students using optional filters
 export async function getStudents({
@@ -41,7 +42,7 @@ export async function getStudents({
 			lname: student.lname,
 			index: student.index,
 			entryTimestamp: sql<Date>`MAX(${studentEntry.timestamp})`.as('entryTimestamp'),
-			exitTimestamp: sql<Date>`MAX(${studentExit.timestamp})`.as('exitTimestamp')
+			exitTimestamp: sql<Date | null>`MAX(${studentExit.timestamp})`.as('exitTimestamp')
 		})
 		.from(student)
 		.leftJoin(studentEntry, eq(student.id, studentEntry.studentId))
@@ -56,13 +57,12 @@ export async function getStudents({
 		.groupBy(student.id, student.fname, student.lname, student.index);
 
 	return students.map((s) => {
-		const isInside = s.entryTimestamp > s.exitTimestamp;
 		return {
 			id: s.id,
 			fname: s.fname,
 			lname: s.lname,
 			index: s.index,
-			state: isInside ? StateInside : StateOutside
+			state: isInside(s.entryTimestamp, s.exitTimestamp) ? StateInside : StateOutside
 		};
 	});
 }
@@ -99,11 +99,10 @@ export async function createStudent(
 		const [{ id }] = await tx
 			.insert(student)
 			.values({ fname, lname, index })
-			.returning({ id: student.id })
-			.execute();
+			.returning({ id: student.id });
 
 		// Create the student entry
-		await tx.insert(studentEntry).values({ studentId: id }).execute();
+		await tx.insert(studentEntry).values({ studentId: id });
 
 		return {
 			id,
@@ -134,7 +133,7 @@ export async function getStudentState(id: number): Promise<State> {
 			.limit(1);
 
 		// Get the student exit
-		const [{ timestamp: exitTimestamp }] = await tx
+		const exits = await tx
 			.select({
 				timestamp: studentExit.timestamp
 			})
@@ -142,11 +141,12 @@ export async function getStudentState(id: number): Promise<State> {
 			.where(eq(studentExit.studentId, id))
 			.orderBy(desc(studentExit.timestamp))
 			.limit(1);
+		let exitTimestamp: Date | null = null;
+		if (exits.length > 0) {
+			exitTimestamp = exits[0].timestamp;
+		}
 
-		// Determine if the student is inside or outside
-		const isInside = entryTimestamp > exitTimestamp;
-
-		return isInside ? StateInside : StateOutside;
+		return isInside(entryTimestamp, exitTimestamp) ? StateInside : StateOutside;
 	});
 }
 
@@ -169,7 +169,7 @@ export async function toggleStudentState(id: number): Promise<State> {
 			.limit(1);
 
 		// Get the student exit
-		const [{ timestamp: exitTimestamp }] = await tx
+		const exits = await tx
 			.select({
 				timestamp: studentExit.timestamp
 			})
@@ -177,22 +177,20 @@ export async function toggleStudentState(id: number): Promise<State> {
 			.where(eq(studentExit.studentId, id))
 			.orderBy(desc(studentExit.timestamp))
 			.limit(1);
-
-		// Determine if the student is inside or outside
-		const isInside = entryTimestamp > exitTimestamp;
-
-		// Toggle the student state
-		if (isInside) {
-			// Exit the student
-			await tx.insert(studentExit).values({ studentId: id }).execute();
-		} else {
-			// Enter the student
-			await tx.insert(studentEntry).values({ studentId: id }).execute();
+		let exitTimestamp: Date | null = null;
+		if (exits.length > 0) {
+			exitTimestamp = exits[0].timestamp;
 		}
 
-		// Determine the new state
-		const newIsInside = !isInside;
-
-		return newIsInside ? StateInside : StateOutside;
+		// Toggle the student state
+		if (isInside(entryTimestamp, exitTimestamp)) {
+			// Exit the student
+			await tx.insert(studentExit).values({ studentId: id });
+			return StateOutside;
+		} else {
+			// Enter the student
+			await tx.insert(studentEntry).values({ studentId: id });
+			return StateInside;
+		}
 	});
 }

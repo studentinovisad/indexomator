@@ -22,8 +22,6 @@ async function action(event: RequestEvent) {
 		username === '' ||
 		password === ''
 	) {
-		console.log('Username: ', username);
-		console.log('Password: ', password);
 		return fail(400, {
 			message: 'Invalid or missing fields'
 		});

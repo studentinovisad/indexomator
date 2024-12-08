@@ -1,9 +1,7 @@
 CREATE TABLE IF NOT EXISTS "employee" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"fname" text NOT NULL,
-	"lname" text NOT NULL,
-	"personal_id" text NOT NULL,
-	CONSTRAINT "employee_personal_id_unique" UNIQUE("personal_id")
+	"lname" text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "employee_entry" (
