@@ -1,6 +1,8 @@
 # indexomator
 
-## Prerequisites
+Simple webapp to mark students and employees entry and exit times. Made by students, for students. Built in SvelteKit + Postgres (with fuzzystrmatch extention).
+
+## Development
 
 Install dependencies:
 
@@ -20,12 +22,24 @@ or:
 podman-compose up -d
 ```
 
-## Development
-
-To run migrations on the database and seed it with test data:
+To start the app (with database migrations):
 
 ```bash
 pnpm run dev
 ```
 
-This will start the server on: `http://localhost:5173`. You can use `admin` for both username and password to login.
+This will start the server on: `http://localhost:5173`.
+
+## Production
+
+Just use the `docker-compose.prod.yaml`:
+
+```bash
+docker compose -f docker-compose.prod.yaml up -d
+```
+
+or:
+
+```bash
+podman-compose -f docker-compose.prod.yaml up -d
+```

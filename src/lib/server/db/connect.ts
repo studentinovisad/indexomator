@@ -2,6 +2,7 @@ import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
 import { env } from '$env/dynamic/private';
+import { sleep } from '$lib/utils/sleep';
 
 export type Database = PostgresJsDatabase<Record<string, never>>;
 export type Client = postgres.Sql<{}>;
@@ -31,19 +32,37 @@ export async function connectDatabaseWithURL(
 	console.log('Connecting to database:', dbUrl);
 	console.log('Running migrations from:', migrationsPath);
 
-	// Connect to the database
-	const client = postgres(dbUrl);
-	const database = drizzle(client);
+	const maxAttempts = 10; // Maximum retry attempts (1 attempt per second)
+	const delayMs = 1000; // Delay between attempts (1 second)
 
-	// Run migrations
-	await migrate(database, {
-		migrationsFolder: migrationsPath
-	});
+	let attempts = 0;
 
-	return {
-		database,
-		client
+	// Helper function to attempt the database connection
+	const tryConnect = async (): Promise<{ database: Database; client: Client }> => {
+		attempts++;
+		try {
+			// Connect to the database
+			const client = postgres(dbUrl);
+			const database = drizzle(client);
+
+			// Run migrations
+			await migrate(database, { migrationsFolder: migrationsPath });
+
+			return { database, client };
+		} catch (error) {
+			if (attempts >= maxAttempts) {
+				throw new Error('Database connection failed after 10 seconds');
+			}
+			console.log(
+				`Connection attempt ${attempts} failed. Retrying in ${delayMs / 1000} second(s)...`
+			);
+			sleep(delayMs); // Wait before retrying
+			return tryConnect(); // Recursively retry the connection
+		}
 	};
+
+	// Start the connection attempt
+	return tryConnect();
 }
 
 export const DB = (await connectDatabase()).database;
