@@ -1,7 +1,7 @@
 import { and, or, desc, eq, ilike, sql, Column } from 'drizzle-orm';
 import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
-import { fuzzySearchFilters } from './fuzzySearch';
+import { fuzzySearchFilters } from './fuzzysearch';
 import { isInside } from '../isInside';
 import { DB as db } from './connect';
 
