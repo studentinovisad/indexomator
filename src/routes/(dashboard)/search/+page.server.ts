@@ -30,8 +30,17 @@ async function action(event: RequestEvent) {
 	const idS = formData.get('id');
 	const type = formData.get('type');
 
-	// Check if the id is not null is string and not empty
-	if (idS === null || typeof idS !== 'string' || type === null || typeof type !== 'string') {
+	// Check if the id and type are valid
+	if (
+		idS === null ||
+		type === null ||
+		idS === undefined ||
+		type === undefined ||
+		typeof idS !== 'string' ||
+		typeof type !== 'string' ||
+		idS === '' ||
+		type === ''
+	) {
 		return fail(400, {
 			message: 'Invalid or missing fields'
 		});

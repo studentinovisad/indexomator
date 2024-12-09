@@ -1,9 +1,9 @@
 import { and, or, desc, eq, ilike, sql, Column } from 'drizzle-orm';
-import { db } from '.';
 import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzySearch';
 import { isInside } from '../isInside';
+import { DB as db } from './connect';
 
 // Gets all students using optional filters
 export async function getStudents(searchQuery?: string): Promise<
@@ -68,7 +68,7 @@ export async function createStudent(
 	index: string;
 	state: State;
 }> {
-	// Assert fname, lname and index are not null nor undefined nor empty
+	// Assert fname, lname and index are valid
 	if (
 		fname === null ||
 		fname === undefined ||
@@ -105,7 +105,7 @@ export async function createStudent(
 
 // Gets the state of a student (either inside or outside)
 export async function getStudentState(id: number): Promise<State> {
-	// Assert id is not null or undefined
+	// Assert id is valid
 	if (id === null || id === undefined) {
 		throw new Error('Invalid student id');
 	}
@@ -141,7 +141,7 @@ export async function getStudentState(id: number): Promise<State> {
 
 // Toggles the state of a student (inside to outside and vice versa)
 export async function toggleStudentState(id: number): Promise<State> {
-	// Assert id is not null or undefined
+	// Assert id is valid
 	if (id === null || id === undefined) {
 		throw new Error('Invalid student id');
 	}

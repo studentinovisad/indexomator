@@ -11,11 +11,14 @@ async function action(event: RequestEvent) {
 	const lname = formData.get('lname');
 	const index = formData.get('index');
 
-	// Check if the fname, lname and index are not null are strings and not empty
+	// Check if the fname, lname and index are valid
 	if (
 		fname === null ||
 		lname === null ||
 		index === null ||
+		fname === undefined ||
+		lname === undefined ||
+		index === undefined ||
 		typeof fname !== 'string' ||
 		typeof lname !== 'string' ||
 		typeof index !== 'string' ||
