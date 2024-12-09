@@ -1,19 +1,12 @@
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, or, desc, eq, ilike, sql, Column } from 'drizzle-orm';
 import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
+import { fuzzySearchFilters } from './fuzzySearch';
 import { isInside } from '../isInside';
 import { DB as db } from './connect';
 
 // Gets all students using optional filters
-export async function getStudents({
-	fname,
-	lname,
-	index
-}: {
-	fname?: string;
-	lname?: string;
-	index?: string;
-} = {}): Promise<
+export async function getStudents(searchQuery?: string): Promise<
 	{
 		id: number;
 		fname: string;
@@ -22,17 +15,15 @@ export async function getStudents({
 		state: State;
 	}[]
 > {
-	// Assert fname, lname and index are not null nor empty, undefined is allowed
-	if (
-		fname === null ||
-		fname === '' ||
-		lname === null ||
-		lname === '' ||
-		index === null ||
-		index === ''
-	) {
-		throw new Error('Invalid student data');
+	// Assert searchQuery is not null nor empty, if it is provided
+	if (searchQuery === null) {
+		throw new Error('Invalid search query');
 	}
+	const nonEmptySearchQuery = searchQuery
+		? searchQuery.trim() !== ''
+			? searchQuery
+			: undefined
+		: undefined;
 
 	const students = await db
 		.select({
@@ -47,10 +38,14 @@ export async function getStudents({
 		.leftJoin(studentEntry, eq(student.id, studentEntry.studentId))
 		.leftJoin(studentExit, eq(student.id, studentExit.studentId))
 		.where(
-			and(
-				fname ? eq(student.fname, fname) : undefined,
-				lname ? eq(student.lname, lname) : undefined,
-				index ? eq(student.index, index) : undefined
+			or(
+				...(nonEmptySearchQuery
+					? [
+							...fuzzySearchFilters(student.fname, nonEmptySearchQuery),
+							...fuzzySearchFilters(student.lname, nonEmptySearchQuery),
+							...fuzzySearchFilters(student.index, nonEmptySearchQuery)
+						]
+					: [])
 			)
 		)
 		.groupBy(student.id, student.fname, student.lname, student.index);

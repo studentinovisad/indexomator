@@ -1,17 +1,12 @@
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { or, desc, eq, sql } from 'drizzle-orm';
 import { employee, employeeEntry, employeeExit } from './schema/employee';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
+import { fuzzySearchFilters } from './fuzzySearch';
 import { isInside } from '../isInside';
 import { DB as db } from './connect';
 
 // Gets all employees using optional filters
-export async function getEmployees({
-	fname,
-	lname
-}: {
-	fname?: string;
-	lname?: string;
-} = {}): Promise<
+export async function getEmployees(searchQuery?: string): Promise<
 	{
 		id: number;
 		fname: string;
@@ -19,9 +14,9 @@ export async function getEmployees({
 		state: State;
 	}[]
 > {
-	// Assert fname, lname and personalId are not null nor empty, undefined is allowed
-	if (fname === null || fname === '' || lname === null || lname === '') {
-		throw new Error('Invalid employee data');
+	// Assert searchQuery is not null nor empty, if it is provided
+	if (searchQuery !== undefined && (searchQuery === null || searchQuery === '')) {
+		throw new Error('Invalid search query');
 	}
 
 	const employees = await db
@@ -36,9 +31,13 @@ export async function getEmployees({
 		.leftJoin(employeeEntry, eq(employee.id, employeeEntry.employeeId))
 		.leftJoin(employeeExit, eq(employee.id, employeeExit.employeeId))
 		.where(
-			and(
-				fname ? eq(employee.fname, fname) : undefined,
-				lname ? eq(employee.lname, lname) : undefined
+			or(
+				...(searchQuery
+					? [
+							...fuzzySearchFilters(employee.fname, searchQuery),
+							...fuzzySearchFilters(employee.lname, searchQuery)
+						]
+					: [])
 			)
 		)
 		.groupBy(employee.id, employee.fname, employee.lname);

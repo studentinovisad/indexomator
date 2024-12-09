@@ -13,7 +13,9 @@ services:
   #   depends_on:
   #     - postgres
   postgres:
-    image: postgres:15
+    build:
+      context: .
+      dockerfile: docker/postgres.Dockerfile
     ports:
       - 5432:5432
     environment:
