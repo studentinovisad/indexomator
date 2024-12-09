@@ -6,16 +6,16 @@ export const actions: Actions = {
 };
 
 async function action(event: RequestEvent) {
-	const { database } = event.locals;
-
 	const formData = await event.request.formData();
 	const fname = formData.get('fname');
 	const lname = formData.get('lname');
 
-	// Check if the fname, lname and index are not null are strings and not empty
+	// Check if the fname, lname and index are valid
 	if (
 		fname === null ||
 		lname === null ||
+		fname === undefined ||
+		lname === undefined ||
 		typeof fname !== 'string' ||
 		typeof lname !== 'string' ||
 		fname === '' ||
@@ -26,5 +26,5 @@ async function action(event: RequestEvent) {
 		});
 	}
 
-	await createEmployee(database, fname, lname);
+	await createEmployee(fname, lname);
 }

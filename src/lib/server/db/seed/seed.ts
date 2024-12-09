@@ -9,12 +9,16 @@ import { connectDatabaseWithURL } from '../connect';
 dotenv.config();
 
 async function seedDatabase() {
-	// Connect to the database
 	const dbUrl = process.env.DATABASE_URL;
 	// Assert that the DATABASE_URL environment variable is set
 	if (!dbUrl) throw new Error('DATABASE_URL is not set');
 
-	const { db, client } = await connectDatabaseWithURL(dbUrl);
+	const migrationsPath = process.env.MIGRATIONS_PATH;
+	// Assert that the MIGRATIONS_PATH environment variable is set
+	if (!migrationsPath) throw new Error('MIGRATIONS_PATH is not set');
+
+	// Connect to the database
+	const { database: db, client } = await connectDatabaseWithURL(dbUrl, migrationsPath);
 
 	try {
 		// Insert into the student table

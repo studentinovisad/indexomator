@@ -1,15 +1,17 @@
 services:
-  #   app:
-  #     build:
-  #       context: .
-  #       dockerfile: docker/node.Dockerfile
-  #     ports:
-  #       - 3000:3000
-  #     environment:
-  #       DATABASE_URL: postgres://root:mysecretpassword@postgres:5432/local
-  #       SECRET: changemepls
-  #     depends_on:
-  #       - postgres
+  # Problems with order startup, use pnpm run dev instead
+  # app:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/node.Dockerfile
+  #   ports:
+  #     - 3000:3000
+  #   environment:
+  #     ORIGIN: http://localhost:3000
+  #     DATABASE_URL: postgres://root:mysecretpassword@postgres:5432/local
+  #     SECRET: changemepls
+  #   depends_on:
+  #     - postgres
   postgres:
     image: postgres:15
     ports:
@@ -18,3 +20,10 @@ services:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_DB: local
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'root', '-d', 'local', '-h', 'localhost']
+      interval: 10s
+      retries: 5
+      timeout: 5s
+      start_period: 10s
+      healthy: 60s

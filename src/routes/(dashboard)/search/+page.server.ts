@@ -4,11 +4,9 @@ import type { PageServerLoad } from './$types';
 import { getEmployees, toggleEmployeeState } from '$lib/server/db/employee';
 import { Employee, Student, type Person } from '$lib/types/person';
 
-export const load: PageServerLoad = async (event) => {
-	const { database } = event.locals;
-
-	const studentsP = getStudents(database);
-	const employeesP = getEmployees(database);
+export const load: PageServerLoad = async () => {
+	const studentsP = getStudents();
+	const employeesP = getEmployees();
 	const students = await studentsP;
 	const employees = await employeesP;
 	const persons: Person[] = [
@@ -26,14 +24,21 @@ export const actions: Actions = {
 };
 
 async function action(event: RequestEvent) {
-	const { database } = event.locals;
-
 	const formData = await event.request.formData();
 	const idS = formData.get('id');
 	const type = formData.get('type');
 
-	// Check if the id is not null is string and not empty
-	if (idS === null || typeof idS !== 'string' || type === null || typeof type !== 'string') {
+	// Check if the id and type are valid
+	if (
+		idS === null ||
+		type === null ||
+		idS === undefined ||
+		type === undefined ||
+		typeof idS !== 'string' ||
+		typeof type !== 'string' ||
+		idS === '' ||
+		type === ''
+	) {
 		return fail(400, {
 			message: 'Invalid or missing fields'
 		});
@@ -41,9 +46,9 @@ async function action(event: RequestEvent) {
 
 	const id = Number.parseInt(idS);
 	if (type === Student) {
-		await toggleStudentState(database, id);
+		await toggleStudentState(id);
 	} else if (type === Employee) {
-		await toggleEmployeeState(database, id);
+		await toggleEmployeeState(id);
 	} else {
 		return fail(400, {
 			message: 'Invalid type'

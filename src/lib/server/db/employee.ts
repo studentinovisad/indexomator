@@ -2,19 +2,16 @@ import { and, desc, eq, sql } from 'drizzle-orm';
 import { employee, employeeEntry, employeeExit } from './schema/employee';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { isInside } from '../isInside';
-import type { Database } from './connect';
+import { DB as db } from './connect';
 
 // Gets all employees using optional filters
-export async function getEmployees(
-	db: Database,
-	{
-		fname,
-		lname
-	}: {
-		fname?: string;
-		lname?: string;
-	} = {}
-): Promise<
+export async function getEmployees({
+	fname,
+	lname
+}: {
+	fname?: string;
+	lname?: string;
+} = {}): Promise<
 	{
 		id: number;
 		fname: string;
@@ -58,7 +55,6 @@ export async function getEmployees(
 
 // Creates an employee and the entry timestamp
 export async function createEmployee(
-	db: Database,
 	fname: string,
 	lname: string
 ): Promise<{
@@ -67,7 +63,7 @@ export async function createEmployee(
 	lname: string;
 	state: State;
 }> {
-	// Assert fname, lname and personalId are not null nor undefined nor empty
+	// Assert fname, lname and personalId are valid
 	if (
 		fname === null ||
 		fname === undefined ||
@@ -99,8 +95,8 @@ export async function createEmployee(
 }
 
 // Gets the state of an employee (either inside or outside)
-export async function getEmployeeState(db: Database, id: number): Promise<State> {
-	// Assert id is not null or undefined
+export async function getEmployeeState(id: number): Promise<State> {
+	// Assert id is valid
 	if (id === null || id === undefined) {
 		throw new Error('Invalid employee id');
 	}
@@ -135,8 +131,8 @@ export async function getEmployeeState(db: Database, id: number): Promise<State>
 }
 
 // Toggles the state of an employee (inside to outside and vice versa)
-export async function toggleEmployeeState(db: Database, id: number): Promise<State> {
-	// Assert id is not null or undefined
+export async function toggleEmployeeState(id: number): Promise<State> {
+	// Assert id is valid
 	if (id === null || id === undefined) {
 		throw new Error('Invalid employee id');
 	}
