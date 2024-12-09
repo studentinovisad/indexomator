@@ -13,10 +13,12 @@ async function action(event: RequestEvent) {
 	const username = formData.get('username');
 	const password = formData.get('password');
 
-	// Check if the username and password are not null are strings and not empty
+	// Check if the username and password are valid
 	if (
 		username === null ||
 		password === null ||
+		username === undefined ||
+		password === undefined ||
 		typeof username !== 'string' ||
 		typeof password !== 'string' ||
 		username === '' ||
