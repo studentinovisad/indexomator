@@ -1,26 +1,45 @@
+version: '3.8'
 services:
+  traefik:
+    image: traefik:v3
+    command:
+      - '--providers.docker=true'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
+      - '--certificatesresolvers.letsencrypt.acme.email=cert@evidencija.app' # Change to your domain
+      - '--certificatesresolvers.letsencrypt.acme.storage=acme.json'
+      - '--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web'
+    ports:
+      - '80:80'
+      - '443:443'
+    networks:
+      - web
   app:
+    depends_on:
+      - postgres
     build:
       context: .
       dockerfile: docker/node.Dockerfile
-    ports:
-      - 3000:3000
     environment:
-      ORIGIN: http://localhost:3000
-      DATABASE_URL: postgres://root:mysecretpassword@postgres:5432/local
-      SECRET: changemepls
-    depends_on:
-      - postgres
+      ORIGIN: ${ORIGIN}
+      DATABASE_URL: ${DATABASE_URL}
+      SECRET: ${SECRET}
+    networks:
+      - internal
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.app.rule=Host(`evidencija.app`)' # Replace with your domain
+      - 'traefik.http.routers.app.tls=true'
+      - 'traefik.http.routers.app.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.app.loadbalancer.server.port=3000'
   postgres:
     build:
       context: .
       dockerfile: docker/postgres.Dockerfile
-    ports:
-      - 5432:5432
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_DB: local
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     healthcheck:
       test: ['CMD', 'pg_isready', '-U', 'root', '-d', 'local', '-h', 'localhost']
       interval: 10s
@@ -28,3 +47,7 @@ services:
       timeout: 5s
       start_period: 10s
       healthy: 60s
+    networks:
+      - internal
+networks:
+  internal:
