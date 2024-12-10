@@ -9,10 +9,3 @@ services:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_DB: local
-    healthcheck:
-      test: ['CMD', 'pg_isready', '-U', 'root', '-d', 'local', '-h', 'localhost']
-      interval: 10s
-      retries: 5
-      timeout: 5s
-      start_period: 10s
-      healthy: 60s
