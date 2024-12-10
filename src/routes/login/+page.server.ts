@@ -46,9 +46,9 @@ async function action(event: RequestEvent) {
 
 		// Redirect to the home page
 		return redirect(302, '/');
-	} catch (err) {
+	} catch (err: any) {
 		return fail(400, {
-			message: `Failed to login: ${err}`
+			message: `Failed to login: ${err.message}`
 		});
 	}
 }

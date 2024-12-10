@@ -33,9 +33,9 @@ async function action(event: RequestEvent) {
 		}
 
 		await createStudent(index, fname, lname);
-	} catch (err) {
+	} catch (err: any) {
 		return fail(400, {
-			message: `Failed to create student: ${err}`
+			message: `Failed to create student: ${err.message}`
 		});
 	}
 }

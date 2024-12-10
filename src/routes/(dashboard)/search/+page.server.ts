@@ -22,9 +22,9 @@ export const load: PageServerLoad = async ({ url }) => {
 			searchQuery,
 			persons
 		};
-	} catch (err) {
+	} catch (err: any) {
 		return fail(400, {
-			message: `Failed to get students or employees: ${err}`
+			message: `Failed to get students or employees: ${err.message}`
 		});
 	}
 };
@@ -65,9 +65,9 @@ async function action(event: RequestEvent) {
 				message: 'Invalid type'
 			});
 		}
-	} catch (err) {
+	} catch (err: any) {
 		return fail(400, {
-			message: `Failed to toggle state: ${err}`
+			message: `Failed to toggle state: ${err.message}`
 		});
 	}
 }

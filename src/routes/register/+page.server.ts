@@ -42,9 +42,9 @@ async function action(event: RequestEvent) {
 
 		// Create the new user
 		await createUser(username, password);
-	} catch (err) {
+	} catch (err: any) {
 		return fail(400, {
-			message: `Failed to register user: ${err}`
+			message: `Failed to register user: ${err.message}`
 		});
 	}
 }
