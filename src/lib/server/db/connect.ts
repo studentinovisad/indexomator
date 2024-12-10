@@ -58,6 +58,8 @@ export async function connectDatabaseWithURL(
 			// Run migrations
 			await migrate(database, { migrationsFolder: migrationsPath });
 
+			console.log('Database connection successful after', attempts, 'attempts');
+
 			return { database, client };
 		} catch (error) {
 			if (attempts >= maxAttempts) {

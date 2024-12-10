@@ -47,7 +47,7 @@ async function action(event: RequestEvent) {
 		// Redirect to the home page
 		return redirect(302, '/');
 	} catch (err: any) {
-		const msg = `Failed to login: ${err.message}`;
+		const msg = `Failed to login: ${JSON.stringify(err)}`;
 		console.log(msg);
 		return fail(400, {
 			message: msg
