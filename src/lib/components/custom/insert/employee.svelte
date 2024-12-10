@@ -14,11 +14,21 @@
 		<div class="grid gap-4">
 			<div class="grid gap-2">
 				<Label for="first_name">First Name</Label>
-				<Input id="first_name" type="text" placeholder="Stephen" name="fname" required />
+				<Input id="first_name" type="text" placeholder="Ime" name="fname" required />
 			</div>
 			<div class="grid gap-2">
 				<Label for="last_name">Last Name</Label>
-				<Input id="last_name" type="text" placeholder="Anderson" name="lname" required />
+				<Input id="last_name" type="text" placeholder="Prezime" name="lname" required />
+			</div>
+			<div class="grid gap-2">
+				<Label for="email">Email</Label>
+				<Input
+					id="email"
+					type="text"
+					placeholder="ime.prezime@dmi.uns.ac.rs"
+					name="email"
+					required
+				/>
 			</div>
 			<Button type="submit" class="w-full">Insert</Button>
 		</div>

@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		const employees = await employeesP;
 
 		const persons: Person[] = [
-			...students.map((s) => ({ ...s, type: Student })),
+			...students.map((s) => ({ ...s, type: Student, email: null })),
 			...employees.map((e) => ({ ...e, type: Employee, index: null }))
 		];
 
@@ -42,12 +42,12 @@ async function action(event: RequestEvent) {
 		// Check if the id and type are valid
 		if (
 			idS === null ||
-			type === null ||
 			idS === undefined ||
-			type === undefined ||
 			typeof idS !== 'string' ||
-			typeof type !== 'string' ||
 			idS === '' ||
+			type === null ||
+			type === undefined ||
+			typeof type !== 'string' ||
 			type === ''
 		) {
 			return fail(400, {

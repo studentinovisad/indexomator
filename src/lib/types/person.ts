@@ -7,8 +7,9 @@ export const Employee: PersonType = 'employee';
 export type Person = {
 	type: PersonType;
 	id: number;
+	index: string | null;
+	email: string | null;
 	fname: string;
 	lname: string;
-	index: string | null;
 	state: State;
 };

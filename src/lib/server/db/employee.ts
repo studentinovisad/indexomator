@@ -9,6 +9,7 @@ import { DB as db } from './connect';
 export async function getEmployees(searchQuery?: string): Promise<
 	{
 		id: number;
+		email: string;
 		fname: string;
 		lname: string;
 		state: State;
@@ -24,6 +25,7 @@ export async function getEmployees(searchQuery?: string): Promise<
 	const employees = await db
 		.select({
 			id: employee.id,
+			email: employee.email,
 			fname: employee.fname,
 			lname: employee.lname,
 			entryTimestamp: sql<Date>`MAX(${employeeEntry.timestamp})`.as('entryTimestamp'),
@@ -36,6 +38,7 @@ export async function getEmployees(searchQuery?: string): Promise<
 			or(
 				...(nonEmptySearchQuery
 					? [
+							...fuzzySearchFilters(employee.email, nonEmptySearchQuery),
 							...fuzzySearchFilters(employee.fname, nonEmptySearchQuery),
 							...fuzzySearchFilters(employee.lname, nonEmptySearchQuery)
 						]
@@ -47,6 +50,7 @@ export async function getEmployees(searchQuery?: string): Promise<
 	return employees.map((s) => {
 		return {
 			id: s.id,
+			email: s.email,
 			fname: s.fname,
 			lname: s.lname,
 			state: isInside(s.entryTimestamp, s.exitTimestamp) ? StateInside : StateOutside
@@ -56,16 +60,21 @@ export async function getEmployees(searchQuery?: string): Promise<
 
 // Creates an employee and the entry timestamp
 export async function createEmployee(
+	email: string,
 	fname: string,
 	lname: string
 ): Promise<{
 	id: number;
+	email: string;
 	fname: string;
 	lname: string;
 	state: State;
 }> {
-	// Assert fname, lname and personalId are valid
+	// Assert email, fname and lname are valid
 	if (
+		email === null ||
+		email === undefined ||
+		email === '' ||
 		fname === null ||
 		fname === undefined ||
 		fname === '' ||
@@ -80,7 +89,7 @@ export async function createEmployee(
 		// Create the employee
 		const [{ id }] = await tx
 			.insert(employee)
-			.values({ fname, lname })
+			.values({ email, fname, lname })
 			.returning({ id: employee.id });
 
 		// Create the employee entry
@@ -88,46 +97,11 @@ export async function createEmployee(
 
 		return {
 			id,
+			email,
 			fname,
 			lname,
-			state: StateInside // Because the employee was just created, he is inside
+			state: StateInside // Because the employee was just created, they are inside
 		};
-	});
-}
-
-// Gets the state of an employee (either inside or outside)
-export async function getEmployeeState(id: number): Promise<State> {
-	// Assert id is valid
-	if (id === null || id === undefined) {
-		throw new Error('Invalid employee id');
-	}
-
-	return await db.transaction(async (tx) => {
-		// Get the employee entry
-		const [{ timestamp: entryTimestamp }] = await tx
-			.select({
-				timestamp: employeeEntry.timestamp
-			})
-			.from(employeeEntry)
-			.where(eq(employeeEntry.employeeId, id))
-			.orderBy(desc(employeeEntry.timestamp))
-			.limit(1);
-
-		// Get the employee exit
-		const exits = await tx
-			.select({
-				timestamp: employeeExit.timestamp
-			})
-			.from(employeeExit)
-			.where(eq(employeeExit.employeeId, id))
-			.orderBy(desc(employeeExit.timestamp))
-			.limit(1);
-		let exitTimestamp: Date | null = null;
-		if (exits.length > 0) {
-			exitTimestamp = exits[0].timestamp;
-		}
-
-		return isInside(entryTimestamp, exitTimestamp) ? StateInside : StateOutside;
 	});
 }
 
@@ -158,10 +132,7 @@ export async function toggleEmployeeState(id: number): Promise<State> {
 			.where(eq(employeeExit.employeeId, id))
 			.orderBy(desc(employeeExit.timestamp))
 			.limit(1);
-		let exitTimestamp: Date | null = null;
-		if (exits.length > 0) {
-			exitTimestamp = exits[0].timestamp;
-		}
+		const exitTimestamp = exits.length > 0 ? exits[0].timestamp : null;
 
 		// Toggle the employee state
 		if (isInside(entryTimestamp, exitTimestamp)) {

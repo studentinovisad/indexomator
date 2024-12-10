@@ -10,16 +10,21 @@ async function action(event: RequestEvent) {
 		const formData = await event.request.formData();
 		const fname = formData.get('fname');
 		const lname = formData.get('lname');
+		const email = formData.get('email');
 
 		// Check if the fname, lname and index are valid
 		if (
+			email === null ||
+			email === undefined ||
+			typeof email !== 'string' ||
+			email === '' ||
 			fname === null ||
-			lname === null ||
 			fname === undefined ||
-			lname === undefined ||
 			typeof fname !== 'string' ||
-			typeof lname !== 'string' ||
 			fname === '' ||
+			lname === null ||
+			lname === undefined ||
+			typeof lname !== 'string' ||
 			lname === ''
 		) {
 			return fail(400, {
@@ -27,10 +32,10 @@ async function action(event: RequestEvent) {
 			});
 		}
 
-		await createEmployee(fname, lname);
-	} catch (err) {
+		await createEmployee(email, fname, lname);
+	} catch (err: any) {
 		return fail(400, {
-			message: `Failed to create employee: ${err}`
+			message: `Failed to create employee: ${err.message}`
 		});
 	}
 }

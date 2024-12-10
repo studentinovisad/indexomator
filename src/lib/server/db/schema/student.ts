@@ -2,9 +2,9 @@ import { pgTable, serial, integer, text, timestamp, primaryKey } from 'drizzle-o
 
 export const student = pgTable('student', {
 	id: serial('id').primaryKey(),
+	index: text('index').notNull().unique(),
 	fname: text('fname').notNull(),
-	lname: text('lname').notNull(),
-	index: text('index').notNull().unique()
+	lname: text('lname').notNull()
 });
 
 export const studentEntry = pgTable(

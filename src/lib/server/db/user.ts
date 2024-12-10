@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { userTable } from './schema/user';
-import { hashPassword } from '../password';
+import { hashPassword, verifyPasswordStrength } from '../password';
 import { DB as db } from './connect';
 
 export async function createUser(username: string, password: string): Promise<void> {
@@ -12,6 +12,12 @@ export async function createUser(username: string, password: string): Promise<vo
 	// Assert that password is valid
 	if (password === undefined || password === null || password === '') {
 		throw new Error('Invalid password');
+	}
+
+	// Check the strength of the password
+	const strong = await verifyPasswordStrength(password);
+	if (!strong) {
+		throw new Error('Password is too weak');
 	}
 
 	const passwordHash = await hashPassword(password);

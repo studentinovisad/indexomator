@@ -19,7 +19,7 @@ export async function createSession(token: string, userId: number): Promise<Sess
 	}
 
 	// Assert that userId is valid
-	if (userId === null || userId === undefined || userId === 0) {
+	if (userId === null || userId === undefined) {
 		throw new Error('Invalid userId');
 	}
 

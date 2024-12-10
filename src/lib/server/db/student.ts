@@ -9,9 +9,9 @@ import { DB as db } from './connect';
 export async function getStudents(searchQuery?: string): Promise<
 	{
 		id: number;
+		index: string;
 		fname: string;
 		lname: string;
-		index: string;
 		state: State;
 	}[]
 > {
@@ -25,9 +25,9 @@ export async function getStudents(searchQuery?: string): Promise<
 	const students = await db
 		.select({
 			id: student.id,
+			index: student.index,
 			fname: student.fname,
 			lname: student.lname,
-			index: student.index,
 			entryTimestamp: sql<Date>`MAX(${studentEntry.timestamp})`.as('entryTimestamp'),
 			exitTimestamp: sql<Date | null>`MAX(${studentExit.timestamp})`.as('exitTimestamp')
 		})
@@ -38,21 +38,21 @@ export async function getStudents(searchQuery?: string): Promise<
 			or(
 				...(nonEmptySearchQuery
 					? [
+							...fuzzySearchFilters(student.index, nonEmptySearchQuery),
 							...fuzzySearchFilters(student.fname, nonEmptySearchQuery),
-							...fuzzySearchFilters(student.lname, nonEmptySearchQuery),
-							...fuzzySearchFilters(student.index, nonEmptySearchQuery)
+							...fuzzySearchFilters(student.lname, nonEmptySearchQuery)
 						]
 					: [])
 			)
 		)
-		.groupBy(student.id, student.fname, student.lname, student.index);
+		.groupBy(student.id, student.index, student.fname, student.lname);
 
 	return students.map((s) => {
 		return {
 			id: s.id,
+			index: s.index,
 			fname: s.fname,
 			lname: s.lname,
-			index: s.index,
 			state: isInside(s.entryTimestamp, s.exitTimestamp) ? StateInside : StateOutside
 		};
 	});
@@ -60,27 +60,27 @@ export async function getStudents(searchQuery?: string): Promise<
 
 // Creates a student and the entry timestamp
 export async function createStudent(
+	index: string,
 	fname: string,
-	lname: string,
-	index: string
+	lname: string
 ): Promise<{
 	id: number;
+	index: string;
 	fname: string;
 	lname: string;
-	index: string;
 	state: State;
 }> {
 	// Assert fname, lname and index are valid
 	if (
+		index === null ||
+		index === undefined ||
+		index === '' ||
 		fname === null ||
 		fname === undefined ||
 		fname === '' ||
 		lname === null ||
 		lname === undefined ||
-		lname === '' ||
-		index === null ||
-		index === undefined ||
-		index === ''
+		lname === ''
 	) {
 		throw new Error('Invalid student data');
 	}
@@ -97,47 +97,11 @@ export async function createStudent(
 
 		return {
 			id,
+			index,
 			fname,
 			lname,
-			index,
 			state: StateInside // Because the student was just created, he is inside
 		};
-	});
-}
-
-// Gets the state of a student (either inside or outside)
-export async function getStudentState(id: number): Promise<State> {
-	// Assert id is valid
-	if (id === null || id === undefined) {
-		throw new Error('Invalid student id');
-	}
-
-	return await db.transaction(async (tx) => {
-		// Get the student entry
-		const [{ timestamp: entryTimestamp }] = await tx
-			.select({
-				timestamp: studentEntry.timestamp
-			})
-			.from(studentEntry)
-			.where(eq(studentEntry.studentId, id))
-			.orderBy(desc(studentEntry.timestamp))
-			.limit(1);
-
-		// Get the student exit
-		const exits = await tx
-			.select({
-				timestamp: studentExit.timestamp
-			})
-			.from(studentExit)
-			.where(eq(studentExit.studentId, id))
-			.orderBy(desc(studentExit.timestamp))
-			.limit(1);
-		let exitTimestamp: Date | null = null;
-		if (exits.length > 0) {
-			exitTimestamp = exits[0].timestamp;
-		}
-
-		return isInside(entryTimestamp, exitTimestamp) ? StateInside : StateOutside;
 	});
 }
 
@@ -168,10 +132,7 @@ export async function toggleStudentState(id: number): Promise<State> {
 			.where(eq(studentExit.studentId, id))
 			.orderBy(desc(studentExit.timestamp))
 			.limit(1);
-		let exitTimestamp: Date | null = null;
-		if (exits.length > 0) {
-			exitTimestamp = exits[0].timestamp;
-		}
+		const exitTimestamp = exits.length > 0 ? exits[0].timestamp : null;
 
 		// Toggle the student state
 		if (isInside(entryTimestamp, exitTimestamp)) {
