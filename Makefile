@@ -1,6 +1,6 @@
 prod-start:
-	docker compose -f docker-compose.prod.yaml up -d
+	docker compose -f docker-compose.prod.yml up -d
 prod-stop:
-	docker compose -f docker-compose.prod.yaml down
+	docker compose -f docker-compose.prod.yml down
 prod-logs:
-	docker compose -f docker-compose.prod.yaml logs
+	docker compose -f docker-compose.prod.yml logs
