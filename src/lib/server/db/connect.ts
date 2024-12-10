@@ -65,7 +65,7 @@ export async function connectDatabaseWithURL(
 			console.log(
 				`Connection attempt ${attempts} failed. Retrying in ${delayMs / 1000} second(s)...`
 			);
-			sleep(delayMs); // Wait before retrying
+			await sleep(delayMs); // Wait before retrying
 			return tryConnect(); // Recursively retry the connection
 		}
 	};
