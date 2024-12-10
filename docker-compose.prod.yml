@@ -6,14 +6,14 @@ services:
       - '--entrypoints.web.address=:80'
       - '--entrypoints.websecure.address=:443'
       - '--certificatesresolvers.letsencrypt.acme.email=cert@evidencija.app' # Change to your domain
-      - '--certificatesresolvers.letsencrypt.acme.storage=acme.json'
+      - '--certificatesresolvers.letsencrypt.acme.storage=acme/acme.json'
       - '--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web'
     ports:
       - '80:80'
       - '443:443'
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock:ro,z'
-      - 'traefik-acme-vol:/acme.json:Z'
+      - 'traefik-acme-vol:/acme:Z'
     networks:
       - internal
   app:
