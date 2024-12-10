@@ -47,8 +47,10 @@ async function action(event: RequestEvent) {
 		// Redirect to the home page
 		return redirect(302, '/');
 	} catch (err: any) {
+		const msg = `Failed to login: ${err.message}`;
+		console.log(msg);
 		return fail(400, {
-			message: `Failed to login: ${err.message}`
+			message: msg
 		});
 	}
 }

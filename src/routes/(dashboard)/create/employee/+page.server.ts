@@ -34,8 +34,10 @@ async function action(event: RequestEvent) {
 
 		await createEmployee(email, fname, lname);
 	} catch (err: any) {
+		const msg = `Failed to create employee: ${err.message}`;
+		console.log(msg);
 		return fail(400, {
-			message: `Failed to create employee: ${err.message}`
+			message: msg
 		});
 	}
 }

@@ -43,8 +43,10 @@ async function action(event: RequestEvent) {
 		// Create the new user
 		await createUser(username, password);
 	} catch (err: any) {
+		const msg = `Failed to register user: ${err.message}`;
+		console.log(msg);
 		return fail(400, {
-			message: `Failed to register user: ${err.message}`
+			message: msg
 		});
 	}
 }

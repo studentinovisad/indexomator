@@ -66,8 +66,10 @@ async function action(event: RequestEvent) {
 			});
 		}
 	} catch (err: any) {
+		const msg = `Failed to toggle state: ${err.message}`;
+		console.log(msg);
 		return fail(400, {
-			message: `Failed to toggle state: ${err.message}`
+			message: msg
 		});
 	}
 }
