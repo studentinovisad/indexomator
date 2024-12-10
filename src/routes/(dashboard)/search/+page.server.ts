@@ -5,20 +5,28 @@ import { getEmployees, toggleEmployeeState } from '$lib/server/db/employee';
 import { Employee, Student, type Person } from '$lib/types/person';
 
 export const load: PageServerLoad = async ({ url }) => {
-	const searchQuery = url.searchParams.get('q') ?? undefined;
-	const studentsP = getStudents(searchQuery);
-	const employeesP = getEmployees(searchQuery);
-	const students = await studentsP;
-	const employees = await employeesP;
-	const persons: Person[] = [
-		...students.map((s) => ({ ...s, type: Student })),
-		...employees.map((e) => ({ ...e, type: Employee, index: null }))
-	];
+	try {
+		const searchQuery = url.searchParams.get('q') ?? undefined;
 
-	return {
-		searchQuery,
-		persons
-	};
+		const studentsP = getStudents(searchQuery);
+		const employeesP = getEmployees(searchQuery);
+		const students = await studentsP;
+		const employees = await employeesP;
+
+		const persons: Person[] = [
+			...students.map((s) => ({ ...s, type: Student })),
+			...employees.map((e) => ({ ...e, type: Employee, index: null }))
+		];
+
+		return {
+			searchQuery,
+			persons
+		};
+	} catch (err) {
+		return fail(400, {
+			message: `Failed to get students or employees: ${err}`
+		});
+	}
 };
 
 export const actions: Actions = {
@@ -26,34 +34,40 @@ export const actions: Actions = {
 };
 
 async function action(event: RequestEvent) {
-	const formData = await event.request.formData();
-	const idS = formData.get('id');
-	const type = formData.get('type');
+	try {
+		const formData = await event.request.formData();
+		const idS = formData.get('id');
+		const type = formData.get('type');
 
-	// Check if the id and type are valid
-	if (
-		idS === null ||
-		type === null ||
-		idS === undefined ||
-		type === undefined ||
-		typeof idS !== 'string' ||
-		typeof type !== 'string' ||
-		idS === '' ||
-		type === ''
-	) {
-		return fail(400, {
-			message: 'Invalid or missing fields'
-		});
-	}
+		// Check if the id and type are valid
+		if (
+			idS === null ||
+			type === null ||
+			idS === undefined ||
+			type === undefined ||
+			typeof idS !== 'string' ||
+			typeof type !== 'string' ||
+			idS === '' ||
+			type === ''
+		) {
+			return fail(400, {
+				message: 'Invalid or missing fields'
+			});
+		}
 
-	const id = Number.parseInt(idS);
-	if (type === Student) {
-		await toggleStudentState(id);
-	} else if (type === Employee) {
-		await toggleEmployeeState(id);
-	} else {
+		const id = Number.parseInt(idS);
+		if (type === Student) {
+			await toggleStudentState(id);
+		} else if (type === Employee) {
+			await toggleEmployeeState(id);
+		} else {
+			return fail(400, {
+				message: 'Invalid type'
+			});
+		}
+	} catch (err) {
 		return fail(400, {
-			message: 'Invalid type'
+			message: `Failed to toggle state: ${err}`
 		});
 	}
 }

@@ -7,38 +7,44 @@ export const actions: Actions = {
 };
 
 async function action(event: RequestEvent) {
-	const formData = await event.request.formData();
-	const secret = formData.get('secret');
-	const username = formData.get('username');
-	const password = formData.get('password');
+	try {
+		const formData = await event.request.formData();
+		const secret = formData.get('secret');
+		const username = formData.get('username');
+		const password = formData.get('password');
 
-	// Check if the secret, username and password are valid
-	if (
-		secret === null ||
-		username === null ||
-		password === null ||
-		secret === undefined ||
-		username === undefined ||
-		password === undefined ||
-		typeof secret !== 'string' ||
-		typeof username !== 'string' ||
-		typeof password !== 'string' ||
-		secret === '' ||
-		username === '' ||
-		password === ''
-	) {
+		// Check if the secret, username and password are valid
+		if (
+			secret === null ||
+			username === null ||
+			password === null ||
+			secret === undefined ||
+			username === undefined ||
+			password === undefined ||
+			typeof secret !== 'string' ||
+			typeof username !== 'string' ||
+			typeof password !== 'string' ||
+			secret === '' ||
+			username === '' ||
+			password === ''
+		) {
+			return fail(400, {
+				message: 'Invalid or missing fields'
+			});
+		}
+
+		// Check if the secret is correct
+		if (!validateSecret(secret)) {
+			return fail(401, {
+				message: 'Invalid secret'
+			});
+		}
+
+		// Create the new user
+		await createUser(username, password);
+	} catch (err) {
 		return fail(400, {
-			message: 'Invalid or missing fields'
+			message: `Failed to register user: ${err}`
 		});
 	}
-
-	// Check if the secret is correct
-	if (!validateSecret(secret)) {
-		return fail(401, {
-			message: 'Invalid secret'
-		});
-	}
-
-	// Create the new user
-	await createUser(username, password);
 }

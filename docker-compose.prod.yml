@@ -42,9 +42,12 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - 'postgres-data-vol:/var/lib/postgresql/data:Z'
     networks:
       - internal
 networks:
   internal:
 volumes:
   traefik-acme-vol:
+  postgres-data-vol:

@@ -15,10 +15,7 @@ export async function getStudents(searchQuery?: string): Promise<
 		state: State;
 	}[]
 > {
-	// Assert searchQuery is not null nor empty, if it is provided
-	if (searchQuery === null) {
-		throw new Error('Invalid search query');
-	}
+	// Assert searchQuery is valid, if it is provided
 	const nonEmptySearchQuery = searchQuery
 		? searchQuery.trim() !== ''
 			? searchQuery

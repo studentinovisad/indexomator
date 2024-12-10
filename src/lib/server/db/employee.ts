@@ -14,10 +14,12 @@ export async function getEmployees(searchQuery?: string): Promise<
 		state: State;
 	}[]
 > {
-	// Assert searchQuery is not null nor empty, if it is provided
-	if (searchQuery !== undefined && (searchQuery === null || searchQuery === '')) {
-		throw new Error('Invalid search query');
-	}
+	// Assert searchQuery is valid, if it is provided
+	const nonEmptySearchQuery = searchQuery
+		? searchQuery.trim() !== ''
+			? searchQuery
+			: undefined
+		: undefined;
 
 	const employees = await db
 		.select({
@@ -32,10 +34,10 @@ export async function getEmployees(searchQuery?: string): Promise<
 		.leftJoin(employeeExit, eq(employee.id, employeeExit.employeeId))
 		.where(
 			or(
-				...(searchQuery
+				...(nonEmptySearchQuery
 					? [
-							...fuzzySearchFilters(employee.fname, searchQuery),
-							...fuzzySearchFilters(employee.lname, searchQuery)
+							...fuzzySearchFilters(employee.fname, nonEmptySearchQuery),
+							...fuzzySearchFilters(employee.lname, nonEmptySearchQuery)
 						]
 					: [])
 			)
