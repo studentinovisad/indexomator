@@ -1,4 +1,4 @@
 // Sleeps for a given amount of time
-export function sleep(ms: number) {
-	new Promise((resolve) => setTimeout(resolve, ms));
+export async function sleep(ms: number) {
+	await new Promise((resolve) => setTimeout(resolve, ms));
 }

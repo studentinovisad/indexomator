@@ -1,4 +1,4 @@
-import { Column, sql, ilike, SQL } from 'drizzle-orm';
+import { sql, ilike, type Column, type SQL } from 'drizzle-orm';
 
 const EDIT_DISTANCE = 3;
 

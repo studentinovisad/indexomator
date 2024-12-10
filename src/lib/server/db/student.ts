@@ -1,4 +1,4 @@
-import { and, or, desc, eq, ilike, sql, Column } from 'drizzle-orm';
+import { or, desc, eq, sql } from 'drizzle-orm';
 import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
