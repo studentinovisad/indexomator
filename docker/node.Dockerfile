@@ -7,6 +7,7 @@ RUN corepack enable
 FROM base AS build
 RUN pnpm i --frozen-lockfile
 COPY . .
+ENV STAGE build
 RUN pnpm run build
 
 FROM base AS deps
