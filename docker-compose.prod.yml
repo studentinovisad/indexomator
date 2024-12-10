@@ -12,8 +12,8 @@ services:
       - '80:80'
       - '443:443'
     volumes:
-      - '/var/run/docker.sock:/var/run/docker.sock:ro'
-      - 'traefik-acme-vol:/acme.json'
+      - '/var/run/docker.sock:/var/run/docker.sock:ro,z'
+      - 'traefik-acme-vol:/acme.json:Z'
     networks:
       - internal
   app:
