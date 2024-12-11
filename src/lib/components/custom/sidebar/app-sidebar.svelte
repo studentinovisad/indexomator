@@ -6,6 +6,7 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import SidebarFooter from '$lib/components/ui/sidebar/sidebar-footer.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
+	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
 
 	// Menu items.
 	const items = [
@@ -25,12 +26,23 @@
 			icon: Clipboard
 		}
 	];
+
+	const sidebar = useSidebar();
+	$effect(() => sidebar.setOpen(true));
 </script>
 
 <Sidebar.Root>
 	<Sidebar.Content>
 		<Sidebar.Group>
-			<Sidebar.GroupLabel><a href="/" class="font-bold">Indexomator</a></Sidebar.GroupLabel>
+			<Sidebar.GroupLabel>
+				<button
+					onclick={() => {
+						sidebar.toggle();
+					}}
+				>
+					<a href="/" class="font-bold">Indexomator</a>
+				</button>
+			</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
 					{#each items as item (item.title)}
@@ -38,8 +50,15 @@
 							<Sidebar.MenuButton>
 								{#snippet child({ props })}
 									<a href={item.url} {...props}>
-										<item.icon />
-										<span>{item.title}</span>
+										<button
+											{...props}
+											onclick={() => {
+												sidebar.toggle();
+											}}
+										>
+											<item.icon />
+											<span>{item.title}</span>
+										</button>
 									</a>
 								{/snippet}
 							</Sidebar.MenuButton>
