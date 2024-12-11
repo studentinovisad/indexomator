@@ -14,8 +14,22 @@ export const load: PageServerLoad = async ({ url }) => {
 		const employees = await employeesP;
 
 		const persons: Person[] = [
-			...students.map((s) => ({ ...s, type: Student, email: null })),
-			...employees.map((e) => ({ ...e, type: Employee, index: null }))
+			...students.map((s) => ({
+				id: s.id,
+				type: Student,
+				identifier: s.index,
+				fname: s.fname,
+				lname: s.lname,
+				state: s.state
+			})),
+			...employees.map((e) => ({
+				id: e.id,
+				type: Employee,
+				identifier: e.email,
+				fname: e.fname,
+				lname: e.lname,
+				state: e.state
+			}))
 		];
 
 		return {

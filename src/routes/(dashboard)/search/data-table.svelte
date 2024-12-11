@@ -43,8 +43,8 @@
 		</Table.Header>
 		<Table.Body>
 			{#each table.getRowModel().rows as row (row.id)}
-				{@const type = row.getVisibleCells()[0].getValue() as PersonType}
-				{@const id = row.getVisibleCells()[1].getValue() as number}
+				{@const id = row.getVisibleCells()[0].getValue() as number}
+				{@const type = row.getVisibleCells()[1].getValue() as PersonType}
 				<Table.Row data-state={row.getIsSelected() && 'selected'}>
 					{#each row.getVisibleCells() as cell, idx (cell.id)}
 						<Table.Cell>
