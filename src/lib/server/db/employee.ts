@@ -4,6 +4,7 @@ import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
 import { isInside } from '../isInside';
 import { DB as db } from './connect';
+import { sanitizeString } from '$lib/utils/sanitize';
 
 // Gets all employees using optional filters
 export async function getEmployees(searchQuery?: string): Promise<
@@ -64,9 +65,9 @@ export async function getEmployees(searchQuery?: string): Promise<
 
 // Creates an employee and the entry timestamp
 export async function createEmployee(
-	email: string,
-	fname: string,
-	lname: string
+	emailD: string,
+	fnameD: string,
+	lnameD: string
 ): Promise<{
 	id: number;
 	email: string;
@@ -76,18 +77,22 @@ export async function createEmployee(
 }> {
 	// Assert email, fname and lname are valid
 	if (
-		email === null ||
-		email === undefined ||
-		email === '' ||
-		fname === null ||
-		fname === undefined ||
-		fname === '' ||
-		lname === null ||
-		lname === undefined ||
-		lname === ''
+		emailD === null ||
+		emailD === undefined ||
+		emailD === '' ||
+		fnameD === null ||
+		fnameD === undefined ||
+		fnameD === '' ||
+		lnameD === null ||
+		lnameD === undefined ||
+		lnameD === ''
 	) {
 		throw new Error('Invalid employee data');
 	}
+
+	const email = sanitizeString(emailD);
+	const fname = sanitizeString(fnameD);
+	const lname = sanitizeString(lnameD);
 
 	try {
 		return await db.transaction(async (tx) => {

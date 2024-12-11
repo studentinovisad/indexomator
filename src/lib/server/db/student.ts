@@ -4,6 +4,7 @@ import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
 import { isInside } from '../isInside';
 import { DB as db } from './connect';
+import { sanitizeString } from '$lib/utils/sanitize';
 
 // Gets all students using optional filters
 export async function getStudents(searchQuery?: string): Promise<
@@ -64,9 +65,9 @@ export async function getStudents(searchQuery?: string): Promise<
 
 // Creates a student and the entry timestamp
 export async function createStudent(
-	index: string,
-	fname: string,
-	lname: string
+	indexD: string,
+	fnameD: string,
+	lnameD: string
 ): Promise<{
 	id: number;
 	index: string;
@@ -76,18 +77,22 @@ export async function createStudent(
 }> {
 	// Assert fname, lname and index are valid
 	if (
-		index === null ||
-		index === undefined ||
-		index === '' ||
-		fname === null ||
-		fname === undefined ||
-		fname === '' ||
-		lname === null ||
-		lname === undefined ||
-		lname === ''
+		indexD === null ||
+		indexD === undefined ||
+		indexD === '' ||
+		fnameD === null ||
+		fnameD === undefined ||
+		fnameD === '' ||
+		lnameD === null ||
+		lnameD === undefined ||
+		lnameD === ''
 	) {
 		throw new Error('Invalid student data');
 	}
+
+	const index = sanitizeString(indexD);
+	const fname = sanitizeString(fnameD);
+	const lname = sanitizeString(lnameD);
 
 	try {
 		return await db.transaction(async (tx) => {
