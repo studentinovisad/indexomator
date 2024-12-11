@@ -33,15 +33,17 @@ export async function connectDatabase(): Promise<{
 	// Bootstrap the first student if the student table is empty
 	const students = await database.select({ id: student.id }).from(student);
 	if (students.length === 0) {
-		const firstStudentIndex = process.env.FIRST_STUDENT_INDEX;
+		console.log('Bootstrapping the first student');
+
+		const firstStudentIndex = env.FIRST_STUDENT_INDEX;
 		// Assert that the FIRST_STUDENT_INDEX environment variable is set
 		if (!firstStudentIndex) throw new Error('FIRST_STUDENT_INDEX is not set');
 
-		const firstStudentFirstName = process.env.FIRST_STUDENT_FIRST_NAME;
+		const firstStudentFirstName = env.FIRST_STUDENT_FIRST_NAME;
 		// Assert that the FIRST_STUDENT_FIRST_NAME environment variable is set
 		if (!firstStudentFirstName) throw new Error('FIRST_STUDENT_FIRST_NAME is not set');
 
-		const firstStudentLastName = process.env.FIRST_STUDENT_LAST_NAME;
+		const firstStudentLastName = env.FIRST_STUDENT_LAST_NAME;
 		// Assert that the FIRST_STUDENT_LAST_NAME environment variable is set
 		if (!firstStudentLastName) throw new Error('FIRST_STUDENT_LAST_NAME is not set');
 
@@ -82,6 +84,10 @@ export async function connectDatabase(): Promise<{
 				state: StateInside // Because the student was just created, they are inside
 			};
 		});
+
+		console.log('Bootstrapped the first student');
+	} else {
+		console.log('Not bootstrapping the first student');
 	}
 
 	return { database, client };
