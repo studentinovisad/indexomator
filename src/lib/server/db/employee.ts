@@ -7,7 +7,10 @@ import { DB as db } from './connect';
 import { sanitizeString } from '$lib/utils/sanitize';
 
 // Gets all employees using optional filters
-export async function getEmployees(searchQuery?: string): Promise<
+export async function getEmployees(
+	searchQuery?: string,
+	limit: number = 10
+): Promise<
 	{
 		id: number;
 		email: string;
@@ -16,6 +19,11 @@ export async function getEmployees(searchQuery?: string): Promise<
 		state: State;
 	}[]
 > {
+	// Assert limit is valid
+	if (limit === null || limit === undefined || limit <= 0) {
+		throw new Error('Invalid limit');
+	}
+
 	// Don't search if the search query is empty when trimmed
 	const nonEmptySearchQuery = searchQuery
 		? searchQuery.trim() !== ''
@@ -47,7 +55,8 @@ export async function getEmployees(searchQuery?: string): Promise<
 						: [])
 				)
 			)
-			.groupBy(employee.id, employee.fname, employee.lname);
+			.groupBy(employee.id, employee.fname, employee.lname)
+			.limit(limit);
 
 		return employees.map((s) => {
 			return {

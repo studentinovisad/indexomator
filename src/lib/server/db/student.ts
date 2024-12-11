@@ -7,7 +7,10 @@ import { DB as db } from './connect';
 import { sanitizeString } from '$lib/utils/sanitize';
 
 // Gets all students using optional filters
-export async function getStudents(searchQuery?: string): Promise<
+export async function getStudents(
+	searchQuery?: string,
+	limit: number = 10
+): Promise<
 	{
 		id: number;
 		index: string;
@@ -16,6 +19,11 @@ export async function getStudents(searchQuery?: string): Promise<
 		state: State;
 	}[]
 > {
+	// Assert limit is valid
+	if (limit === null || limit === undefined || limit <= 0) {
+		throw new Error('Invalid limit');
+	}
+
 	// Don't search if the search query is empty when trimmed
 	const nonEmptySearchQuery = searchQuery
 		? searchQuery.trim() !== ''
@@ -47,7 +55,8 @@ export async function getStudents(searchQuery?: string): Promise<
 						: [])
 				)
 			)
-			.groupBy(student.id, student.index, student.fname, student.lname);
+			.groupBy(student.id, student.index, student.fname, student.lname)
+			.limit(limit);
 
 		return students.map((s) => {
 			return {
