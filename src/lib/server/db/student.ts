@@ -110,7 +110,7 @@ export async function createStudent(
 				index,
 				fname,
 				lname,
-				state: StateInside // Because the student was just created, he is inside
+				state: StateInside // Because the student was just created, they are inside
 			};
 		});
 	} catch (err: any) {
