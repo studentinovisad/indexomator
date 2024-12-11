@@ -1,6 +1,6 @@
 import { sql, ilike, type Column, type SQL } from 'drizzle-orm';
 
-const EDIT_DISTANCE = 3;
+const EDIT_DISTANCE = 2;
 
 export function fuzzySearchFilters(
 	dbField: Column,
