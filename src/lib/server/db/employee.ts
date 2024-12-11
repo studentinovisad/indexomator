@@ -40,7 +40,7 @@ export async function getEmployees(searchQuery?: string): Promise<
 				or(
 					...(nonEmptySearchQuery
 						? [
-								...fuzzySearchFilters(employee.email, nonEmptySearchQuery),
+								...fuzzySearchFilters(employee.email, nonEmptySearchQuery, true),
 								...fuzzySearchFilters(employee.fname, nonEmptySearchQuery),
 								...fuzzySearchFilters(employee.lname, nonEmptySearchQuery)
 							]
