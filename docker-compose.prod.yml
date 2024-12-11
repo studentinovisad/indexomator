@@ -43,11 +43,10 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - 'postgres-data-vol:/var/lib/postgresql/data:Z'
+      - './database:/var/lib/postgresql/data:z'
     networks:
       - internal
 networks:
   internal:
 volumes:
   traefik-acme-vol:
-  postgres-data-vol:

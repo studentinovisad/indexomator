@@ -3,12 +3,12 @@ import type { ColumnDef } from '@tanstack/table-core';
 
 export const columns: ColumnDef<Person>[] = [
 	{
-		accessorKey: 'type',
-		header: 'Type'
+		accessorKey: 'id',
+		header: 'internal_id'
 	},
 	{
-		accessorKey: 'id',
-		header: 'ID'
+		accessorKey: 'type',
+		header: 'Type'
 	},
 	{
 		accessorKey: 'fname',
@@ -19,8 +19,8 @@ export const columns: ColumnDef<Person>[] = [
 		header: 'Last name'
 	},
 	{
-		accessorKey: 'index',
-		header: 'Index'
+		accessorKey: 'identifier',
+		header: 'Identifier'
 	},
 	{
 		accessorKey: 'state',

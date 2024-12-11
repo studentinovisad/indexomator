@@ -14,17 +14,31 @@ export const load: PageServerLoad = async ({ url }) => {
 		const employees = await employeesP;
 
 		const persons: Person[] = [
-			...students.map((s) => ({ ...s, type: Student })),
-			...employees.map((e) => ({ ...e, type: Employee, index: null }))
+			...students.map((s) => ({
+				id: s.id,
+				type: Student,
+				identifier: s.index,
+				fname: s.fname,
+				lname: s.lname,
+				state: s.state
+			})),
+			...employees.map((e) => ({
+				id: e.id,
+				type: Employee,
+				identifier: e.email,
+				fname: e.fname,
+				lname: e.lname,
+				state: e.state
+			}))
 		];
 
 		return {
 			searchQuery,
 			persons
 		};
-	} catch (err) {
+	} catch (err: any) {
 		return fail(400, {
-			message: `Failed to get students or employees: ${err}`
+			message: `Failed to get students or employees: ${JSON.stringify(err)}`
 		});
 	}
 };
@@ -42,12 +56,12 @@ async function action(event: RequestEvent) {
 		// Check if the id and type are valid
 		if (
 			idS === null ||
-			type === null ||
 			idS === undefined ||
-			type === undefined ||
 			typeof idS !== 'string' ||
-			typeof type !== 'string' ||
 			idS === '' ||
+			type === null ||
+			type === undefined ||
+			typeof type !== 'string' ||
 			type === ''
 		) {
 			return fail(400, {
@@ -65,9 +79,11 @@ async function action(event: RequestEvent) {
 				message: 'Invalid type'
 			});
 		}
-	} catch (err) {
+	} catch (err: any) {
+		const msg = `Failed to toggle state: ${JSON.stringify(err)}`;
+		console.log(msg);
 		return fail(400, {
-			message: `Failed to toggle state: ${err}`
+			message: msg
 		});
 	}
 }

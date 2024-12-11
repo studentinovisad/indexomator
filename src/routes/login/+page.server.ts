@@ -43,12 +43,14 @@ async function action(event: RequestEvent) {
 		const sessionToken = generateSessionToken();
 		const session = await createSession(sessionToken, id);
 		setSessionTokenCookie(event, sessionToken, session.expiresAt);
-
-		// Redirect to the home page
-		return redirect(302, '/');
-	} catch (err) {
+	} catch (err: any) {
+		const msg = `Failed to login: ${JSON.stringify(err)}`;
+		console.log(msg);
 		return fail(400, {
-			message: `Failed to login: ${err}`
+			message: msg
 		});
 	}
+
+	// Redirect to the home page
+	return redirect(302, '/');
 }

@@ -1,9 +1,9 @@
 const employees = [
-	{ id: 1, fname: 'John', lname: 'Doe', personalId: '123456781' },
-	{ id: 2, fname: 'Jane', lname: 'Smith', personalId: '123456782' },
-	{ id: 3, fname: 'Alice', lname: 'Johnson', personalId: '123456783' },
-	{ id: 4, fname: 'Bob', lname: 'Brown', personalId: '123456784' },
-	{ id: 5, fname: 'Charlie', lname: 'Davis', personalId: '123456785' }
+	{ id: 1, email: 'john.doe@pmf.uns.ac.rs', fname: 'John', lname: 'Doe' },
+	{ id: 2, email: 'jane.smith@pmf.uns.ac.rs', fname: 'Jane', lname: 'Smith' },
+	{ id: 3, email: 'alice.johnson@pmf.uns.ac.rs', fname: 'Alice', lname: 'Johnson' },
+	{ id: 4, email: 'bob.brown@pmf.uns.ac.rs', fname: 'Bob', lname: 'Brown' },
+	{ id: 5, email: 'charlie.david@pmf.uns.ac.rs', fname: 'Charlie', lname: 'Davis' }
 ];
 const midpoint = Math.floor(employees.length / 2);
 const seedData = {

@@ -5,10 +5,10 @@ export const Student: PersonType = 'student';
 export const Employee: PersonType = 'employee';
 
 export type Person = {
-	type: PersonType;
 	id: number;
+	type: PersonType;
+	identifier: string;
 	fname: string;
 	lname: string;
-	index: string | null;
 	state: State;
 };

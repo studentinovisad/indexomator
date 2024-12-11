@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { userTable } from './schema/user';
-import { hashPassword } from '../password';
+import { hashPassword, verifyPasswordStrength } from '../password';
 import { DB as db } from './connect';
 
 export async function createUser(username: string, password: string): Promise<void> {
@@ -14,11 +14,21 @@ export async function createUser(username: string, password: string): Promise<vo
 		throw new Error('Invalid password');
 	}
 
-	const passwordHash = await hashPassword(password);
-	await db.insert(userTable).values({
-		username,
-		passwordHash
-	});
+	// Check the strength of the password
+	const strong = await verifyPasswordStrength(password);
+	if (!strong) {
+		throw new Error('Password is too weak');
+	}
+
+	try {
+		const passwordHash = await hashPassword(password);
+		await db.insert(userTable).values({
+			username,
+			passwordHash
+		});
+	} catch (err: any) {
+		throw new Error(`Failed to create user in database: ${JSON.stringify(err)}`);
+	}
 }
 
 export async function getUserIdAndPasswordHash(
@@ -29,16 +39,22 @@ export async function getUserIdAndPasswordHash(
 		throw new Error('Invalid username');
 	}
 
-	const [{ id, passwordHash }] = await db
-		.select({
-			id: userTable.id,
-			passwordHash: userTable.passwordHash
-		})
-		.from(userTable)
-		.where(eq(userTable.username, username));
+	try {
+		const [{ id, passwordHash }] = await db
+			.select({
+				id: userTable.id,
+				passwordHash: userTable.passwordHash
+			})
+			.from(userTable)
+			.where(eq(userTable.username, username));
 
-	return {
-		id,
-		passwordHash
-	};
+		return {
+			id,
+			passwordHash
+		};
+	} catch (err: any) {
+		throw new Error(
+			`Failed to get user id and password hash from database: ${JSON.stringify(err)}`
+		);
+	}
 }

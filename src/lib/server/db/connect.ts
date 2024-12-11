@@ -1,8 +1,10 @@
-import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import { type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { env } from '$env/dynamic/private';
-import { sleep } from '$lib/utils/sleep';
+import { connectDatabaseWithURL } from './connect_generic';
+import { student, studentEntry } from './schema/student';
+import { sanitizeString } from '$lib/utils/sanitize';
+import { StateInside } from '$lib/types/state';
 
 export type Database = PostgresJsDatabase<Record<string, never>>;
 export type Client = postgres.Sql<{}>;
@@ -26,52 +28,69 @@ export async function connectDatabase(): Promise<{
 	// Assert that the MIGRATIONS_PATH environment variable is set
 	if (!migrationsPath) throw new Error('MIGRATIONS_PATH is not set');
 
-	return await connectDatabaseWithURL(dbUrl, migrationsPath);
-}
+	const { database, client } = await connectDatabaseWithURL(dbUrl, migrationsPath);
 
-// Connects to the database using the provided URL
-export async function connectDatabaseWithURL(
-	dbUrl: string,
-	migrationsPath: string
-): Promise<{ database: Database; client: Client }> {
-	// Assert non-null and non-empty dbUrl and migrationsPath
-	if (!dbUrl) throw new Error('dbUrl is required');
-	if (!migrationsPath) throw new Error('migrationsPath is required');
+	// Bootstrap the first student if the student table is empty
+	const students = await database.select({ id: student.id }).from(student);
+	if (students.length === 0) {
+		console.log('Bootstrapping the first student');
 
-	console.log('Connecting to database:', dbUrl);
-	console.log('Running migrations from:', migrationsPath);
+		const firstStudentIndex = env.FIRST_STUDENT_INDEX;
+		// Assert that the FIRST_STUDENT_INDEX environment variable is set
+		if (!firstStudentIndex) throw new Error('FIRST_STUDENT_INDEX is not set');
 
-	const maxAttempts = 10; // Maximum retry attempts (1 attempt per second)
-	const delayMs = 1000; // Delay between attempts (1 second)
+		const firstStudentFirstName = env.FIRST_STUDENT_FIRST_NAME;
+		// Assert that the FIRST_STUDENT_FIRST_NAME environment variable is set
+		if (!firstStudentFirstName) throw new Error('FIRST_STUDENT_FIRST_NAME is not set');
 
-	let attempts = 0;
+		const firstStudentLastName = env.FIRST_STUDENT_LAST_NAME;
+		// Assert that the FIRST_STUDENT_LAST_NAME environment variable is set
+		if (!firstStudentLastName) throw new Error('FIRST_STUDENT_LAST_NAME is not set');
 
-	// Helper function to attempt the database connection
-	const tryConnect = async (): Promise<{ database: Database; client: Client }> => {
-		attempts++;
-		try {
-			// Connect to the database
-			const client = postgres(dbUrl);
-			const database = drizzle(client);
-
-			// Run migrations
-			await migrate(database, { migrationsFolder: migrationsPath });
-
-			return { database, client };
-		} catch (error) {
-			if (attempts >= maxAttempts) {
-				throw new Error('Database connection failed after 10 seconds');
-			}
-			console.log(
-				`Connection attempt ${attempts} failed. Retrying in ${delayMs / 1000} second(s)...`
-			);
-			await sleep(delayMs); // Wait before retrying
-			return tryConnect(); // Recursively retry the connection
+		// Assert fname, lname and index are valid
+		if (
+			firstStudentIndex === null ||
+			firstStudentIndex === undefined ||
+			firstStudentIndex === '' ||
+			firstStudentFirstName === null ||
+			firstStudentFirstName === undefined ||
+			firstStudentFirstName === '' ||
+			firstStudentLastName === null ||
+			firstStudentLastName === undefined ||
+			firstStudentLastName === ''
+		) {
+			throw new Error('Invalid student data');
 		}
-	};
 
-	// Start the connection attempt
-	return tryConnect();
+		const index = sanitizeString(firstStudentIndex);
+		const fname = sanitizeString(firstStudentFirstName);
+		const lname = sanitizeString(firstStudentLastName);
+
+		await database.transaction(async (tx) => {
+			// Create the student
+			const [{ id }] = await tx
+				.insert(student)
+				.values({ fname, lname, index })
+				.returning({ id: student.id });
+
+			// Create the student entry
+			await tx.insert(studentEntry).values({ studentId: id });
+
+			return {
+				id,
+				index,
+				fname,
+				lname,
+				state: StateInside // Because the student was just created, they are inside
+			};
+		});
+
+		console.log('Bootstrapped the first student');
+	} else {
+		console.log('Not bootstrapping the first student');
+	}
+
+	return { database, client };
 }
 
 // WARN: Forces Database | null to become Database (problems with building)

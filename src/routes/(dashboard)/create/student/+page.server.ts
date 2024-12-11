@@ -15,16 +15,16 @@ async function action(event: RequestEvent) {
 		// Check if the fname, lname and index are valid
 		if (
 			fname === null ||
-			lname === null ||
-			index === null ||
 			fname === undefined ||
-			lname === undefined ||
-			index === undefined ||
 			typeof fname !== 'string' ||
-			typeof lname !== 'string' ||
-			typeof index !== 'string' ||
 			fname === '' ||
+			lname === null ||
+			lname === undefined ||
+			typeof lname !== 'string' ||
 			lname === '' ||
+			index === null ||
+			index === undefined ||
+			typeof index !== 'string' ||
 			index === ''
 		) {
 			return fail(400, {
@@ -32,10 +32,12 @@ async function action(event: RequestEvent) {
 			});
 		}
 
-		await createStudent(fname, lname, index);
-	} catch (err) {
+		await createStudent(index, fname, lname);
+	} catch (err: any) {
+		const msg = `Failed to create student: ${JSON.stringify(err)}`;
+		console.log(msg);
 		return fail(400, {
-			message: `Failed to create student: ${err}`
+			message: msg
 		});
 	}
 }

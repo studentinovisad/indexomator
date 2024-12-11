@@ -5,7 +5,8 @@
 	import { enhance } from '$app/forms';
 	import { ArrowLeftRight } from 'lucide-svelte';
 	import type { PersonType } from '$lib/types/person';
-	import type { State } from '$lib/types/state';
+	import { isStateType, type State } from '$lib/types/state';
+	import { isEmail } from '$lib/types/email';
 
 	type DataTableProps<TData, TValue> = {
 		columns: ColumnDef<TData, TValue>[];
@@ -43,15 +44,15 @@
 		</Table.Header>
 		<Table.Body>
 			{#each table.getRowModel().rows as row (row.id)}
-				{@const type = row.getVisibleCells()[0].getValue() as PersonType}
-				{@const id = row.getVisibleCells()[1].getValue() as number}
+				{@const id = row.getVisibleCells()[0].getValue() as number}
+				{@const type = row.getVisibleCells()[1].getValue() as PersonType}
 				<Table.Row data-state={row.getIsSelected() && 'selected'}>
 					{#each row.getVisibleCells() as cell, idx (cell.id)}
+						{@const cellValue = cell.getValue() as string}
 						<Table.Cell>
-							<div class="flex">
+							<div class:capitalize={!isEmail(cellValue)} class="flex">
 								<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
-								{#if idx === 5}
-									{@const state = cell.getValue() as State}
+								{#if isStateType(cellValue)}
 									<form method="POST" use:enhance>
 										<input type="hidden" name="type" value={type} />
 										<button type="submit" class="px-0.5" name="id" value={id}>
