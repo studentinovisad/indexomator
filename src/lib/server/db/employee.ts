@@ -8,8 +8,9 @@ import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
 
 // Gets all employees using optional filters
 export async function getEmployees(
-	searchQuery?: string,
-	limit: number = 10
+	limit: number,
+	offset: number,
+	searchQuery?: string
 ): Promise<
 	{
 		id: number;

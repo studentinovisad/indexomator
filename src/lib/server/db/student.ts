@@ -8,8 +8,9 @@ import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
 
 // Gets all students using optional filters
 export async function getStudents(
-	searchQuery?: string,
-	limit: number = 10
+	limit: number,
+	offset: number,
+	searchQuery?: string
 ): Promise<
 	{
 		id: number;
@@ -56,7 +57,8 @@ export async function getStudents(
 				)
 			)
 			.groupBy(student.id, student.index, student.fname, student.lname)
-			.limit(limit);
+			.limit(limit)
+			.offset(offset);
 
 		return students.map((s) => {
 			return {
