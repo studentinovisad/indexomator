@@ -3,9 +3,11 @@
 	import AppSidebar from '$lib/components/custom/sidebar/app-sidebar.svelte';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 
+	import Logout from '$lib/components/custom/logout/logout.svelte';
+
 	import { page } from '$app/stores';
 
-	let { children } = $props();
+	let { children, data } = $props();
 </script>
 
 <Sidebar.Provider open={true}>
@@ -29,3 +31,5 @@
 		{@render children?.()}
 	</main>
 </Sidebar.Provider>
+
+<Logout id_session={data.id_session} />
