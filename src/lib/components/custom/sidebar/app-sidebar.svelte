@@ -7,6 +7,7 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import SidebarFooter from '$lib/components/ui/sidebar/sidebar-footer.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
+	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js'
 
 	// Menu items.
 	const items = [
@@ -31,6 +32,8 @@
 			icon: Clipboard
 		}
 	];
+
+	const sidebar = useSidebar();
 </script>
 
 <Sidebar.Root>
@@ -41,7 +44,7 @@
 				<Sidebar.Menu>
 					{#each items as item (item.title)}
 						<Sidebar.MenuItem>
-							<Sidebar.MenuButton>
+							<Sidebar.MenuButton onclick={() => {sidebar.setOpenMobile(false)}}>
 								{#snippet child({ props })}
 									<a href={item.url} {...props}>
 										<item.icon /> <span class="select-none">{item.title}</span>
