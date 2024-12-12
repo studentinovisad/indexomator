@@ -27,6 +27,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 	if (session !== null) {
 		// If session is valid, ensure the token is up-to-date
 		setSessionTokenCookie(event, token, session.expiresAt);
+
+		// Redirect to the home page after login
+		if (event.url.pathname === '/login') {
+			return redirect(302, '/');
+		}
 	} else {
 		// If session is invalid, delete the session cookie
 		deleteSessionTokenCookie(event);
