@@ -7,18 +7,18 @@
 
 <Card.Root class="mx-auto w-full max-w-sm">
 	<Card.Header>
-		<Card.Title class="text-2xl">Insert an employee</Card.Title>
+		<Card.Title class="text-2xl">Create employee</Card.Title>
 		<Card.Description>Insert an employee who wants to enter the building.</Card.Description>
 	</Card.Header>
 	<Card.Content>
 		<div class="grid gap-4">
 			<div class="grid gap-2">
 				<Label for="first_name">First Name</Label>
-				<Input id="first_name" type="text" placeholder="Ime zaposlenog" name="fname" required />
+				<Input id="first_name" type="text" placeholder="Sebastijan" name="fname" required />
 			</div>
 			<div class="grid gap-2">
 				<Label for="last_name">Last Name</Label>
-				<Input id="last_name" type="text" placeholder="Prezime zaposlenog" name="lname" required />
+				<Input id="last_name" type="text" placeholder="Kurševalev" name="lname" required />
 			</div>
 			<div class="grid gap-2">
 				<Label for="email">Email</Label>
