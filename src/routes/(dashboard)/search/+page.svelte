@@ -44,5 +44,7 @@
 		</div>
 	</form>
 	<Separator />
-	<DataTable data={data.persons} {columns} />
+	<div class="m-0 sm:m-4">
+		<DataTable data={data.persons} {columns} />
+	</div>
 </div>
