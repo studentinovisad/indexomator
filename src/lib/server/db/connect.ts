@@ -3,7 +3,7 @@ import postgres from 'postgres';
 import { env } from '$env/dynamic/private';
 import { connectDatabaseWithURL } from './connect_generic';
 import { student, studentEntry } from './schema/student';
-import { sanitizeString } from '$lib/utils/sanitize';
+import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
 import { StateInside } from '$lib/types/state';
 
 export type Database = PostgresJsDatabase<Record<string, never>>;
@@ -63,8 +63,8 @@ export async function connectDatabase(): Promise<{
 		}
 
 		const index = sanitizeString(firstStudentIndex);
-		const fname = sanitizeString(firstStudentFirstName);
-		const lname = sanitizeString(firstStudentLastName);
+		const fname = capitalizeString(sanitizeString(firstStudentFirstName));
+		const lname = capitalizeString(sanitizeString(firstStudentLastName));
 
 		await database.transaction(async (tx) => {
 			// Create the student

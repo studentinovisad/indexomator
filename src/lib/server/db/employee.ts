@@ -4,7 +4,7 @@ import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
 import { isInside } from '../isInside';
 import { DB as db } from './connect';
-import { sanitizeString } from '$lib/utils/sanitize';
+import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
 
 // Gets all employees using optional filters
 export async function getEmployees(
@@ -100,8 +100,8 @@ export async function createEmployee(
 	}
 
 	const email = sanitizeString(emailD);
-	const fname = sanitizeString(fnameD);
-	const lname = sanitizeString(lnameD);
+	const fname = capitalizeString(sanitizeString(fnameD));
+	const lname = capitalizeString(sanitizeString(lnameD));
 
 	try {
 		return await db.transaction(async (tx) => {
