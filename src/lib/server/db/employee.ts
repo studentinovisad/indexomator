@@ -67,8 +67,8 @@ export async function getEmployees(
 				state: isInside(s.entryTimestamp, s.exitTimestamp) ? StateInside : StateOutside
 			};
 		});
-	} catch (err: any) {
-		throw new Error('Failed to get employees from database:' + err.message);
+	} catch (err: unknown) {
+		throw new Error(`Failed to get employees from database: ${JSON.stringify(err)}}`);
 	}
 }
 
@@ -122,8 +122,8 @@ export async function createEmployee(
 				state: StateInside // Because the employee was just created, they are inside
 			};
 		});
-	} catch (err: any) {
-		throw new Error('Failed to create employee in database:' + err.message);
+	} catch (err: unknown) {
+		throw new Error(`Failed to create employee in database: ${JSON.stringify(err)}`);
 	}
 }
 
@@ -168,7 +168,7 @@ export async function toggleEmployeeState(id: number): Promise<State> {
 				return StateInside;
 			}
 		});
-	} catch (err: any) {
-		throw new Error('Failed to toggle employee state in database:' + err.message);
+	} catch (err: unknown) {
+		throw new Error(`Failed to toggle employee state in database: ${JSON.stringify(err)}`);
 	}
 }

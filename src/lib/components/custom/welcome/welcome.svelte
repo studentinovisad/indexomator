@@ -1,6 +1,5 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
-	import { Description } from '$lib/components/ui/sheet';
 </script>
 
 <Card.Root class="mx-auto max-w-sm">

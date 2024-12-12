@@ -33,7 +33,7 @@ async function action(event: RequestEvent) {
 		}
 
 		await createStudent(index, fname, lname);
-	} catch (err: any) {
+	} catch (err: unknown) {
 		const msg = `Failed to create student: ${JSON.stringify(err)}`;
 		console.log(msg);
 		return fail(400, {

@@ -36,7 +36,7 @@ export const load: PageServerLoad = async ({ url }) => {
 			searchQuery,
 			persons
 		};
-	} catch (err: any) {
+	} catch (err: unknown) {
 		return fail(400, {
 			message: `Failed to get students or employees: ${JSON.stringify(err)}`
 		});
@@ -79,7 +79,7 @@ async function action(event: RequestEvent) {
 				message: 'Invalid type'
 			});
 		}
-	} catch (err: any) {
+	} catch (err: unknown) {
 		const msg = `Failed to toggle state: ${JSON.stringify(err)}`;
 		console.log(msg);
 		return fail(400, {
