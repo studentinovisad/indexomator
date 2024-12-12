@@ -3,7 +3,7 @@ import studentSeedData from './student';
 import employeeSeedData from './employee';
 import { student, studentEntry, studentExit } from '../schema/student';
 import { employee, employeeEntry, employeeExit } from '../schema/employee';
-import { connectDatabaseWithURL } from '../connect';
+import { connectDatabaseWithURL } from '../connect_generic';
 
 // Load environment variables
 dotenv.config();
