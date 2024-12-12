@@ -1,4 +1,5 @@
 <script lang="ts">
+	import House from 'lucide-svelte/icons/house';
 	import OpenBook from 'lucide-svelte/icons/book-open-text';
 	import Briefcase from 'lucide-svelte/icons/briefcase-business';
 	import Clipboard from 'lucide-svelte/icons/clipboard-list';
@@ -11,6 +12,11 @@
 	// Menu items.
 	const items = [
 		{
+			title: 'Homepage',
+			url: '/',
+			icon: House
+		},
+		{
 			title: 'Create Student',
 			url: '/create/student',
 			icon: OpenBook
@@ -21,44 +27,31 @@
 			icon: Briefcase
 		},
 		{
-			title: 'Search',
-			url: '/search',
+			title: 'Instructions',
+			url: '/instructions',
 			icon: Clipboard
 		}
 	];
 
 	const sidebar = useSidebar();
-	$effect(() => sidebar.setOpen(true));
 </script>
 
 <Sidebar.Root>
 	<Sidebar.Content>
 		<Sidebar.Group>
-			<Sidebar.GroupLabel>
-				<button
-					onclick={() => {
-						sidebar.toggle();
-					}}
-				>
-					<a href="/" class="font-bold">Indexomator</a>
-				</button>
-			</Sidebar.GroupLabel>
+			<Sidebar.GroupLabel class="select-none font-bold">Indexomator</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
 					{#each items as item (item.title)}
 						<Sidebar.MenuItem>
-							<Sidebar.MenuButton>
+							<Sidebar.MenuButton
+								onclick={() => {
+									sidebar.setOpenMobile(false);
+								}}
+							>
 								{#snippet child({ props })}
 									<a href={item.url} {...props}>
-										<button
-											{...props}
-											onclick={() => {
-												sidebar.toggle();
-											}}
-										>
-											<item.icon />
-											<span>{item.title}</span>
-										</button>
+										<item.icon /> <span class="select-none">{item.title}</span>
 									</a>
 								{/snippet}
 							</Sidebar.MenuButton>

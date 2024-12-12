@@ -44,7 +44,7 @@ export const load: PageServerLoad = async ({ url }) => {
 };
 
 export const actions: Actions = {
-	default: action
+	togglestate: action
 };
 
 async function action(event: RequestEvent) {

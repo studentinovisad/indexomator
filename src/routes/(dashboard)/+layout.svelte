@@ -8,7 +8,7 @@
 	let { children } = $props();
 </script>
 
-<Sidebar.Provider>
+<Sidebar.Provider open={true}>
 	<AppSidebar />
 	<main class="w-full">
 		<header class="flex h-16 w-full shrink-0 items-center gap-2 border-b">
@@ -19,8 +19,8 @@
 					Create Student
 				{:else if $page.url.pathname === '/create/employee'}
 					Create Employee
-				{:else if $page.url.pathname === '/search'}
-					Search
+				{:else if $page.url.pathname === '/instructions'}
+					Instructions
 				{:else}
 					Homepage
 				{/if}

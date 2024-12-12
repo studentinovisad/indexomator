@@ -1,357 +1,319 @@
 {
-  "id": "4e2090f1-bddb-43a9-b37c-e37fdf2b6122",
-  "prevId": "da720989-6dbc-4738-8c95-d7a6d7429231",
-  "version": "7",
-  "dialect": "postgresql",
-  "tables": {
-    "public.employee": {
-      "name": "employee",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "email": {
-          "name": "email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "fname": {
-          "name": "fname",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "lname": {
-          "name": "lname",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "employee_email_unique": {
-          "name": "employee_email_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
-        }
-      }
-    },
-    "public.employee_entry": {
-      "name": "employee_entry",
-      "schema": "",
-      "columns": {
-        "employee_id": {
-          "name": "employee_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "timestamp": {
-          "name": "timestamp",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "employee_entry_employee_id_employee_id_fk": {
-          "name": "employee_entry_employee_id_employee_id_fk",
-          "tableFrom": "employee_entry",
-          "tableTo": "employee",
-          "columnsFrom": [
-            "employee_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "employee_entry_employee_id_timestamp_pk": {
-          "name": "employee_entry_employee_id_timestamp_pk",
-          "columns": [
-            "employee_id",
-            "timestamp"
-          ]
-        }
-      },
-      "uniqueConstraints": {}
-    },
-    "public.employee_exit": {
-      "name": "employee_exit",
-      "schema": "",
-      "columns": {
-        "employee_id": {
-          "name": "employee_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "timestamp": {
-          "name": "timestamp",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "employee_exit_employee_id_employee_id_fk": {
-          "name": "employee_exit_employee_id_employee_id_fk",
-          "tableFrom": "employee_exit",
-          "tableTo": "employee",
-          "columnsFrom": [
-            "employee_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "employee_exit_employee_id_timestamp_pk": {
-          "name": "employee_exit_employee_id_timestamp_pk",
-          "columns": [
-            "employee_id",
-            "timestamp"
-          ]
-        }
-      },
-      "uniqueConstraints": {}
-    },
-    "public.session": {
-      "name": "session",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "session_user_id_user_id_fk": {
-          "name": "session_user_id_user_id_fk",
-          "tableFrom": "session",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "public.student": {
-      "name": "student",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "index": {
-          "name": "index",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "fname": {
-          "name": "fname",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "lname": {
-          "name": "lname",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "student_index_unique": {
-          "name": "student_index_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "index"
-          ]
-        }
-      }
-    },
-    "public.student_entry": {
-      "name": "student_entry",
-      "schema": "",
-      "columns": {
-        "student_id": {
-          "name": "student_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "timestamp": {
-          "name": "timestamp",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "student_entry_student_id_student_id_fk": {
-          "name": "student_entry_student_id_student_id_fk",
-          "tableFrom": "student_entry",
-          "tableTo": "student",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "student_entry_student_id_timestamp_pk": {
-          "name": "student_entry_student_id_timestamp_pk",
-          "columns": [
-            "student_id",
-            "timestamp"
-          ]
-        }
-      },
-      "uniqueConstraints": {}
-    },
-    "public.student_exit": {
-      "name": "student_exit",
-      "schema": "",
-      "columns": {
-        "student_id": {
-          "name": "student_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "timestamp": {
-          "name": "timestamp",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "student_exit_student_id_student_id_fk": {
-          "name": "student_exit_student_id_student_id_fk",
-          "tableFrom": "student_exit",
-          "tableTo": "student",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "student_exit_student_id_timestamp_pk": {
-          "name": "student_exit_student_id_timestamp_pk",
-          "columns": [
-            "student_id",
-            "timestamp"
-          ]
-        }
-      },
-      "uniqueConstraints": {}
-    },
-    "public.user": {
-      "name": "user",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "username": {
-          "name": "username",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "password_hash": {
-          "name": "password_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "user_username_unique": {
-          "name": "user_username_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "username"
-          ]
-        }
-      }
-    }
-  },
-  "enums": {},
-  "schemas": {},
-  "_meta": {
-    "columns": {},
-    "schemas": {},
-    "tables": {}
-  }
+	"id": "4e2090f1-bddb-43a9-b37c-e37fdf2b6122",
+	"prevId": "da720989-6dbc-4738-8c95-d7a6d7429231",
+	"version": "7",
+	"dialect": "postgresql",
+	"tables": {
+		"public.employee": {
+			"name": "employee",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"email": {
+					"name": "email",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"fname": {
+					"name": "fname",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"lname": {
+					"name": "lname",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"employee_email_unique": {
+					"name": "employee_email_unique",
+					"nullsNotDistinct": false,
+					"columns": ["email"]
+				}
+			}
+		},
+		"public.employee_entry": {
+			"name": "employee_entry",
+			"schema": "",
+			"columns": {
+				"employee_id": {
+					"name": "employee_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"timestamp": {
+					"name": "timestamp",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"employee_entry_employee_id_employee_id_fk": {
+					"name": "employee_entry_employee_id_employee_id_fk",
+					"tableFrom": "employee_entry",
+					"tableTo": "employee",
+					"columnsFrom": ["employee_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {
+				"employee_entry_employee_id_timestamp_pk": {
+					"name": "employee_entry_employee_id_timestamp_pk",
+					"columns": ["employee_id", "timestamp"]
+				}
+			},
+			"uniqueConstraints": {}
+		},
+		"public.employee_exit": {
+			"name": "employee_exit",
+			"schema": "",
+			"columns": {
+				"employee_id": {
+					"name": "employee_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"timestamp": {
+					"name": "timestamp",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"employee_exit_employee_id_employee_id_fk": {
+					"name": "employee_exit_employee_id_employee_id_fk",
+					"tableFrom": "employee_exit",
+					"tableTo": "employee",
+					"columnsFrom": ["employee_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {
+				"employee_exit_employee_id_timestamp_pk": {
+					"name": "employee_exit_employee_id_timestamp_pk",
+					"columns": ["employee_id", "timestamp"]
+				}
+			},
+			"uniqueConstraints": {}
+		},
+		"public.session": {
+			"name": "session",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"session_user_id_user_id_fk": {
+					"name": "session_user_id_user_id_fk",
+					"tableFrom": "session",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {}
+		},
+		"public.student": {
+			"name": "student",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"index": {
+					"name": "index",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"fname": {
+					"name": "fname",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"lname": {
+					"name": "lname",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"student_index_unique": {
+					"name": "student_index_unique",
+					"nullsNotDistinct": false,
+					"columns": ["index"]
+				}
+			}
+		},
+		"public.student_entry": {
+			"name": "student_entry",
+			"schema": "",
+			"columns": {
+				"student_id": {
+					"name": "student_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"timestamp": {
+					"name": "timestamp",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"student_entry_student_id_student_id_fk": {
+					"name": "student_entry_student_id_student_id_fk",
+					"tableFrom": "student_entry",
+					"tableTo": "student",
+					"columnsFrom": ["student_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {
+				"student_entry_student_id_timestamp_pk": {
+					"name": "student_entry_student_id_timestamp_pk",
+					"columns": ["student_id", "timestamp"]
+				}
+			},
+			"uniqueConstraints": {}
+		},
+		"public.student_exit": {
+			"name": "student_exit",
+			"schema": "",
+			"columns": {
+				"student_id": {
+					"name": "student_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"timestamp": {
+					"name": "timestamp",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"student_exit_student_id_student_id_fk": {
+					"name": "student_exit_student_id_student_id_fk",
+					"tableFrom": "student_exit",
+					"tableTo": "student",
+					"columnsFrom": ["student_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {
+				"student_exit_student_id_timestamp_pk": {
+					"name": "student_exit_student_id_timestamp_pk",
+					"columns": ["student_id", "timestamp"]
+				}
+			},
+			"uniqueConstraints": {}
+		},
+		"public.user": {
+			"name": "user",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"username": {
+					"name": "username",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"password_hash": {
+					"name": "password_hash",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"user_username_unique": {
+					"name": "user_username_unique",
+					"nullsNotDistinct": false,
+					"columns": ["username"]
+				}
+			}
+		}
+	},
+	"enums": {},
+	"schemas": {},
+	"_meta": {
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	}
 }
