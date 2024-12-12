@@ -67,7 +67,7 @@ export async function getStudents(
 				state: isInside(s.entryTimestamp, s.exitTimestamp) ? StateInside : StateOutside
 			};
 		});
-	} catch (err: any) {
+	} catch (err: unknown) {
 		throw new Error(`Failed to get students from database: ${JSON.stringify(err)}`);
 	}
 }
@@ -122,7 +122,7 @@ export async function createStudent(
 				state: StateInside // Because the student was just created, they are inside
 			};
 		});
-	} catch (err: any) {
+	} catch (err: unknown) {
 		throw new Error(`Failed to create student in database: ${JSON.stringify(err)}`);
 	}
 }
@@ -168,7 +168,7 @@ export async function toggleStudentState(id: number): Promise<State> {
 				return StateInside;
 			}
 		});
-	} catch (err: any) {
+	} catch (err: unknown) {
 		throw new Error(`Failed to toggle student state in database: ${JSON.stringify(err)}`);
 	}
 }

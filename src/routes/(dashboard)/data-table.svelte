@@ -2,11 +2,6 @@
 	import { type ColumnDef, getCoreRowModel } from '@tanstack/table-core';
 	import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
-	import { enhance } from '$app/forms';
-	import { ArrowLeftRight } from 'lucide-svelte';
-	import type { PersonType } from '$lib/types/person';
-	import { isStateType, type State } from '$lib/types/state';
-	import { isEmail } from '$lib/types/email';
 
 	type DataTableProps<TData, TValue> = {
 		columns: ColumnDef<TData, TValue>[];

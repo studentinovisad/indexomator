@@ -33,7 +33,7 @@ async function action(event: RequestEvent) {
 		}
 
 		await createEmployee(email, fname, lname);
-	} catch (err: any) {
+	} catch (err: unknown) {
 		const msg = `Failed to create employee: ${JSON.stringify(err)}`;
 		console.log(msg);
 		return fail(400, {
