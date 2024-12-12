@@ -1,4 +1,5 @@
 <script lang="ts">
+	import House from 'lucide-svelte/icons/house';
 	import OpenBook from 'lucide-svelte/icons/book-open-text';
 	import Briefcase from 'lucide-svelte/icons/briefcase-business';
 	import Clipboard from 'lucide-svelte/icons/clipboard-list';
@@ -10,6 +11,11 @@
 	// Menu items.
 	const items = [
 		{
+			title: 'Homepage',
+			url: '/',
+			icon: House
+		},
+		{
 			title: 'Create Student',
 			url: '/create/student',
 			icon: OpenBook
@@ -20,8 +26,8 @@
 			icon: Briefcase
 		},
 		{
-			title: 'Search',
-			url: '/search',
+			title: 'Instructions',
+			url: '/instructions',
 			icon: Clipboard
 		}
 	];
@@ -30,9 +36,7 @@
 <Sidebar.Root>
 	<Sidebar.Content>
 		<Sidebar.Group>
-			<Sidebar.GroupLabel>
-				<a href="/" class="font-bold">Indexomator</a>
-			</Sidebar.GroupLabel>
+			<Sidebar.GroupLabel class="font-bold select-none">Indexomator</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
 					{#each items as item (item.title)}
@@ -40,7 +44,7 @@
 							<Sidebar.MenuButton>
 								{#snippet child({ props })}
 									<a href={item.url} {...props}>
-										<item.icon /> <span>{item.title}</span>
+										<item.icon /> <span class="select-none">{item.title}</span>
 									</a>
 								{/snippet}
 							</Sidebar.MenuButton>
