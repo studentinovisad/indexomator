@@ -6,10 +6,19 @@ import { Employee, Student, type Person } from '$lib/types/person';
 
 export const load: PageServerLoad = async ({ url }) => {
 	try {
+		// TODO: Implement pagination
+		const limit = 10;
+		const offset = 0;
+
+		const studentLimit = Math.round(limit / 2);
+		const employeeLimit = limit - studentLimit;
+		const studentOffset = Math.round(offset / 2);
+		const employeeOffset = offset - studentOffset;
+
 		const searchQuery = url.searchParams.get('q') ?? undefined;
 
-		const studentsP = getStudents(searchQuery);
-		const employeesP = getEmployees(searchQuery);
+		const studentsP = getStudents(studentLimit, studentOffset, searchQuery);
+		const employeesP = getEmployees(employeeLimit, employeeOffset, searchQuery);
 		const students = await studentsP;
 		const employees = await employeesP;
 
