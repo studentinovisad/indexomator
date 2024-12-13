@@ -5,7 +5,6 @@ import { fuzzyConcatSearchFilters, fuzzySearchFilters } from './fuzzysearch';
 import { isInside } from '../isInside';
 import { DB as db } from './connect';
 import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
-import { department } from './schema/department';
 
 // Gets all students using optional filters
 export async function getStudents(

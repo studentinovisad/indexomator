@@ -1,6 +1,6 @@
 import { createUser } from '$lib/server/db/user';
 import { validateSecret } from '$lib/server/secret';
-import { fail, type Actions, type RequestEvent } from '@sveltejs/kit';
+import { fail, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import type { PageServerLoad } from './$types';

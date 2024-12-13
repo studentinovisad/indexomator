@@ -12,7 +12,11 @@ export function generateSessionToken(): string {
 	return token;
 }
 
-export async function createSession(token: string, userId: number, building: string): Promise<Session> {
+export async function createSession(
+	token: string,
+	userId: number,
+	building: string
+): Promise<Session> {
 	// Assert that token is valid
 	if (token === null || token === undefined || token === '') {
 		throw new Error('Invalid token');
@@ -27,7 +31,7 @@ export async function createSession(token: string, userId: number, building: str
 	if (building === null || building === undefined || building === '') {
 		throw new Error('Invalid token');
 	}
-	
+
 	try {
 		const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 		const session: Session = {

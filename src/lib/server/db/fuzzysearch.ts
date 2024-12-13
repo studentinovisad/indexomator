@@ -22,7 +22,7 @@ export function fuzzySearchFilters(
 export function fuzzyConcatSearchFilters(
 	dbField1: Column,
 	dbField2: Column,
-	searchQuery: string,
+	searchQuery: string
 ): SQL[] {
 	// Assert dbFields are valid
 	if (dbField1 === null || dbField1 === undefined) throw new Error('Invalid dbField');

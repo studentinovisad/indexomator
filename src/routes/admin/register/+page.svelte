@@ -18,7 +18,7 @@
 				toast.error('Please fix the errors in the form.');
 			}
 		}
-	})
+	});
 
 	const { form: formData, enhance } = form;
 </script>
@@ -28,9 +28,7 @@
 		<Card.Root class="mx-auto w-full max-w-sm">
 			<Card.Header>
 				<Card.Title class="text-2xl">Register</Card.Title>
-				<Card.Description>
-					Enter credentials for registration
-				</Card.Description>
+				<Card.Description>Enter credentials for registration</Card.Description>
 			</Card.Header>
 			<Card.Content class="grid gap-4">
 				<Form.Field {form} name="username">

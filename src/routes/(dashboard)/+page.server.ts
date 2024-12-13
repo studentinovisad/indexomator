@@ -1,5 +1,5 @@
 import { getStudents, toggleStudentState } from '$lib/server/db/student';
-import { fail, redirect, type Actions, type RequestEvent } from '@sveltejs/kit';
+import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getEmployees, toggleEmployeeState } from '$lib/server/db/employee';
 import { Employee, Student, type Person } from '$lib/types/person';
