@@ -1,8 +1,10 @@
 import { getStudents, toggleStudentState } from '$lib/server/db/student';
-import { fail, type Actions, type RequestEvent } from '@sveltejs/kit';
+import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getEmployees, toggleEmployeeState } from '$lib/server/db/employee';
 import { Employee, Student, type Person } from '$lib/types/person';
+import { invalidateSession } from '$lib/server/db/session';
+import { deleteSessionTokenCookie } from '$lib/server/session';
 
 export const load: PageServerLoad = async ({ url }) => {
 	try {
@@ -29,6 +31,7 @@ export const load: PageServerLoad = async ({ url }) => {
 				identifier: s.index,
 				fname: s.fname,
 				lname: s.lname,
+				department: s.department,
 				state: s.state
 			})),
 			...employees.map((e) => ({
@@ -37,6 +40,7 @@ export const load: PageServerLoad = async ({ url }) => {
 				identifier: e.email,
 				fname: e.fname,
 				lname: e.lname,
+				department: e.department,
 				state: e.state
 			}))
 		];
@@ -95,12 +99,32 @@ export const actions: Actions = {
 			}
 		} catch (err: unknown) {
 			const msg = `Failed to toggle state: ${(err as Error).message}`;
-			console.log(msg);
+			console.debug(msg);
 			return fail(400, {
 				message: msg
 			});
 		}
+	},
+	logout: async (event) => {
+		try {
+			const formData = await event.request.formData();
+			const idS = formData.get('id_session');
+
+			if (idS === null || idS === undefined || typeof idS !== 'string' || idS === '') {
+				return fail(400, {
+					message: 'Invalid or missing fields'
+				});
+			}
+			await invalidateSession(idS);
+			deleteSessionTokenCookie(event);
+		} catch (err: unknown) {
+			const msg = `Failed to toggle state: ${(err as Error).message}`;
+			console.debug(msg);
+			return fail(400, {
+				message: msg
+			});
+		}
+
+		return redirect(302, '/login');
 	}
 };
-
-async function action(event: RequestEvent) {}

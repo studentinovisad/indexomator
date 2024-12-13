@@ -17,6 +17,7 @@ export async function getStudents(
 		index: string;
 		fname: string;
 		lname: string;
+		department: string;
 		state: State;
 	}[]
 > {
@@ -39,6 +40,7 @@ export async function getStudents(
 				index: student.index,
 				fname: student.fname,
 				lname: student.lname,
+				department: student.department,
 				entryTimestamp: sql<Date>`MAX(${studentEntry.timestamp})`.as('entryTimestamp'),
 				exitTimestamp: sql<Date | null>`MAX(${studentExit.timestamp})`.as('exitTimestamp')
 			})
@@ -68,6 +70,7 @@ export async function getStudents(
 				index: s.index,
 				fname: s.fname,
 				lname: s.lname,
+				department: s.department,
 				state: isInside(s.entryTimestamp, s.exitTimestamp) ? StateInside : StateOutside
 			};
 		});

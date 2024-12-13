@@ -29,9 +29,7 @@
 		<Card.Root class="mx-auto w-full max-w-sm">
 			<Card.Header>
 				<Card.Title class="text-2xl">Login</Card.Title>
-				<Card.Description>
-					Enter your credentials to login to the dashboard
-				</Card.Description>
+				<Card.Description>Enter your credentials to login to the dashboard</Card.Description>
 			</Card.Header>
 			<Card.Content class="grid gap-4">
 				<Form.Field {form} name="username">

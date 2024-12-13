@@ -8,7 +8,6 @@ declare global {
 			database: Database;
 			user: User | null;
 			session: Session | null;
-			building: string | null;
 		}
 	}
 }
