@@ -1,6 +1,9 @@
 import { env } from '$env/dynamic/private';
+import { hashPassword, verifyPasswordHash } from './password';
 
-export function validateSecret(secret: string): boolean {
+const secretHash = await hashPassword(env.SECRET);
+
+export async function validateSecret(secret: string): Promise<boolean> {
 	// Assert that the secret is valid
 	if (secret === undefined || secret === null || secret === '') {
 		throw new Error('Invalid secret');
@@ -11,9 +14,5 @@ export function validateSecret(secret: string): boolean {
 		throw new Error('SECRET env is not defined');
 	}
 
-	if (secret === env.SECRET) {
-		return true;
-	} else {
-		return false;
-	}
+	return await verifyPasswordHash(secretHash, secret);
 }
