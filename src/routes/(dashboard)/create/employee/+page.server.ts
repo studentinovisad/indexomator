@@ -27,7 +27,7 @@ export const actions: Actions = {
 			});
 		}
 
-		if (locals.building === null || locals.user === null) {
+		if (locals.session === null || locals.user === null) {
 			return fail(400, {
 				form
 			});
@@ -35,7 +35,7 @@ export const actions: Actions = {
 
 		try {
 			const { email, fname, lname, department } = form.data;
-			const building = locals.building;
+			const building = locals.session.building;
 			const creator = locals.user.username;
 			await createEmployee(email, fname, lname, department, building, creator);
 		} catch (err: unknown) {
