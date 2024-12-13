@@ -25,7 +25,10 @@
 
 {#if collapsible === 'none'}
 	<div
-		class={cn('text-sidebar-foreground flex h-full w-[--sidebar-width] flex-col', className)}
+		class={cn(
+			'bg-sidebar text-sidebar-foreground flex h-full w-[--sidebar-width] flex-col',
+			className
+		)}
 		bind:this={ref}
 		{...restProps}
 	>
@@ -86,7 +89,7 @@
 		>
 			<div
 				data-sidebar="sidebar"
-				class="bg-sidebar group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow"
+				class="group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow"
 			>
 				{@render children?.()}
 			</div>
