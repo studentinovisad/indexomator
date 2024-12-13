@@ -59,12 +59,12 @@ export const actions: Actions = {
 			const idS = formData.get('id');
 			const type = formData.get('type');
 
-			if (locals.building === null || locals.user === null) {
+			if (locals.session === null || locals.user === null) {
 				return fail(400, {
 					message: 'Null building or username'
 				});
 			}
-			const building = locals.building;
+			const building = locals.session.building;
 			const creator = locals.user.username;
 
 			// Check if the id and type are valid

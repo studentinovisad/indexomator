@@ -1,5 +1,5 @@
 {
-  "id": "99c22cf2-2b08-4a63-9706-19b538c0fa19",
+  "id": "0678d168-e0f2-4a1d-9162-87ba9bc76d9f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -308,6 +308,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "building": {
+          "name": "building",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "expires_at": {
           "name": "expires_at",
           "type": "timestamp with time zone",
@@ -326,6 +332,19 @@
           ],
           "columnsTo": [
             "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "session_building_building_name_fk": {
+          "name": "session_building_building_name_fk",
+          "tableFrom": "session",
+          "tableTo": "building",
+          "columnsFrom": [
+            "building"
+          ],
+          "columnsTo": [
+            "name"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
