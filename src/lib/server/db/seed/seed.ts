@@ -39,7 +39,7 @@ async function seedDatabase() {
 		// Insert into the employeeExit table
 		await db.insert(employeeExit).values(employeeSeedData.employeeExit);
 
-		console.log('Seeding completed successfully.');
+		console.debug('Seeding completed successfully.');
 	} catch (error) {
 		console.error('Error seeding database:', error);
 	} finally {

@@ -17,6 +17,7 @@ export async function getEmployees(
 		email: string;
 		fname: string;
 		lname: string;
+		department: string;
 		state: State;
 	}[]
 > {
@@ -39,6 +40,7 @@ export async function getEmployees(
 				email: employee.email,
 				fname: employee.fname,
 				lname: employee.lname,
+				department: employee.department,
 				entryTimestamp: sql<Date>`MAX(${employeeEntry.timestamp})`.as('entryTimestamp'),
 				exitTimestamp: sql<Date | null>`MAX(${employeeExit.timestamp})`.as('exitTimestamp')
 			})
@@ -67,6 +69,7 @@ export async function getEmployees(
 				email: s.email,
 				fname: s.fname,
 				lname: s.lname,
+				department: s.department,
 				state: isInside(s.entryTimestamp, s.exitTimestamp) ? StateInside : StateOutside
 			};
 		});

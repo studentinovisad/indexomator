@@ -20,22 +20,22 @@ export const actions: Actions = {
 				form
 			});
 		}
-    
+
 		// Check if the secret is correct
 		if (!validateSecret(form.data.secret)) {
 			return fail(401, {
-        form,
+				form,
 				message: 'Invalid secret'
 			});
 		}
-    
+
 		try {
 			const { username, password } = form.data;
 			// Create the new user
 			await createUser(username, password);
 		} catch (err: unknown) {
 			const message = `Failed to register: ${(err as Error).message}}`;
-			console.log(message);
+			console.debug(message);
 			return fail(400, {
 				form,
 				message
@@ -43,4 +43,3 @@ export const actions: Actions = {
 		}
 	}
 };
-

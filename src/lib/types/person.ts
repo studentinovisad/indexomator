@@ -1,8 +1,8 @@
 import type { State } from './state';
 
-export type PersonType = 'student' | 'employee';
-export const Student: PersonType = 'student';
-export const Employee: PersonType = 'employee';
+export type PersonType = 'Student' | 'Employee';
+export const Student: PersonType = 'Student';
+export const Employee: PersonType = 'Employee';
 
 export type Person = {
 	id: number;
@@ -10,5 +10,6 @@ export type Person = {
 	identifier: string;
 	fname: string;
 	lname: string;
+	department: string;
 	state: State;
 };

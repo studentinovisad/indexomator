@@ -44,7 +44,7 @@ export const actions: Actions = {
 			setSessionTokenCookie(event, sessionToken, session.expiresAt);
 		} catch (err: unknown) {
 			const message = `Failed to login: ${(err as Error).message}}`;
-			console.log(message);
+			console.debug(message);
 			return fail(400, {
 				form,
 				message

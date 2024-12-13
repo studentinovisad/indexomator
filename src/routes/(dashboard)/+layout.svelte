@@ -1,11 +1,11 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import AppSidebar from '$lib/components/custom/sidebar/app-sidebar.svelte';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
-
-	import Logout from '$lib/components/custom/logout/logout.svelte';
-
-	import { page } from '$app/stores';
+	import Button from '$lib/components/ui/button/button.svelte';
+	import Input from '$lib/components/ui/input/input.svelte';
+	import { Power } from 'lucide-svelte';
 
 	let { children, data } = $props();
 </script>
@@ -32,4 +32,10 @@
 	</main>
 </Sidebar.Provider>
 
-<Logout id_session={data.id_session} />
+<form action="/?/logout" method="POST" class="absolute right-14 top-3">
+	<Input type="hidden" name="id_session" value={data.id_session} />
+	<Button type="submit" variant="outline" size="icon">
+		<Power class="h-[1.2rem] w-[1.2rem]" />
+		<span class="sr-only">Logout</span>
+	</Button>
+</form>
