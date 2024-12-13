@@ -29,7 +29,7 @@ export async function verifyPasswordStrength(password: string): Promise<boolean>
 			const response = await fetch(`https://api.pwnedpasswords.com/range/${hashPrefix}`);
 			data = await response.text();
 		} catch (err: unknown) {
-			throw new Error(`Failed to fetch api.pwnedpasswords.com: ${JSON.stringify(err)}`);
+			throw new Error(`Failed to fetch api.pwnedpasswords.com: ${(err as Error).message}`);
 		}
 
 		const items = data.split('\n');
@@ -42,6 +42,6 @@ export async function verifyPasswordStrength(password: string): Promise<boolean>
 
 		return true;
 	} catch (err: unknown) {
-		throw new Error(`Failed to check password strength: ${JSON.stringify(err)}`);
+		throw new Error(`Failed to check password strength: ${(err as Error).message}`);
 	}
 }

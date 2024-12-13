@@ -43,7 +43,7 @@ async function action(event: RequestEvent) {
 		// Create the new user
 		await createUser(username, password);
 	} catch (err: unknown) {
-		const msg = `Failed to register user: ${JSON.stringify(err)}`;
+		const msg = `Failed to register user: ${(err as Error).message}`;
 		console.log(msg);
 		return fail(400, {
 			message: msg

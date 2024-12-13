@@ -19,7 +19,7 @@ async function action(event: RequestEvent) {
 		await invalidateSession(idS);
 		deleteSessionTokenCookie(event);
 	} catch (err: unknown) {
-		const msg = `Failed to toggle state: ${JSON.stringify(err)}`;
+		const msg = `Failed to toggle state: ${(err as Error).message}`;
 		console.log(msg);
 		return fail(400, {
 			message: msg

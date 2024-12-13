@@ -44,7 +44,7 @@ async function action(event: RequestEvent) {
 		const session = await createSession(sessionToken, id);
 		setSessionTokenCookie(event, sessionToken, session.expiresAt);
 	} catch (err: unknown) {
-		const msg = `Failed to login: ${JSON.stringify(err)}`;
+		const msg = `Failed to login: ${(err as Error).message}`;
 		console.log(msg);
 		return fail(400, {
 			message: msg
