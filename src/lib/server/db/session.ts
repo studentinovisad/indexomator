@@ -12,7 +12,7 @@ export function generateSessionToken(): string {
 	return token;
 }
 
-export async function createSession(token: string, userId: number): Promise<Session> {
+export async function createSession(token: string, userId: number, building: string): Promise<Session> {
 	// Assert that token is valid
 	if (token === null || token === undefined || token === '') {
 		throw new Error('Invalid token');
@@ -23,17 +23,23 @@ export async function createSession(token: string, userId: number): Promise<Sess
 		throw new Error('Invalid userId');
 	}
 
+	// Assert that building is valid
+	if (building === null || building === undefined || building === '') {
+		throw new Error('Invalid token');
+	}
+	
 	try {
 		const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 		const session: Session = {
 			id: sessionId,
 			userId,
+			building,
 			expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
 		};
 		await db.insert(sessionTable).values(session);
 		return session;
 	} catch (err: unknown) {
-		throw new Error(`Failed to create session in database: ${JSON.stringify(err)}`);
+		throw new Error(`Failed to create session in database: ${(err as Error).message}`);
 	}
 }
 
@@ -69,7 +75,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 		}
 		return { session, user };
 	} catch (err: unknown) {
-		throw new Error(`Failed to validate session token: ${JSON.stringify(err)}`);
+		throw new Error(`Failed to validate session token: ${(err as Error).message}`);
 	}
 }
 
@@ -82,7 +88,7 @@ export async function invalidateSession(sessionId: string): Promise<void> {
 	try {
 		await db.delete(sessionTable).where(eq(sessionTable.id, sessionId));
 	} catch (err: unknown) {
-		throw new Error(`Failed to invalidate session in database: ${JSON.stringify(err)}`);
+		throw new Error(`Failed to invalidate session in database: ${(err as Error).message}`);
 	}
 }
 

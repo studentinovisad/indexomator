@@ -44,7 +44,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// Set session and user in locals for the rest of the request
 	event.locals.session = session;
 	event.locals.user = user;
-
+	
 	// Continue with resolving the request
 	return resolve(event);
 };

@@ -72,7 +72,7 @@ export async function getStudents(
 			};
 		});
 	} catch (err: unknown) {
-		throw new Error(`Failed to get students from database: ${JSON.stringify(err)}`);
+		throw new Error(`Failed to get students from database: ${(err as Error).message}`);
 	}
 }
 
@@ -80,12 +80,16 @@ export async function getStudents(
 export async function createStudent(
 	indexD: string,
 	fnameD: string,
-	lnameD: string
+	lnameD: string,
+	department: string,
+	building: string,
+	creator: string
 ): Promise<{
 	id: number;
 	index: string;
 	fname: string;
 	lname: string;
+	department: string;
 	state: State;
 }> {
 	// Assert fname, lname and index are valid
@@ -98,7 +102,16 @@ export async function createStudent(
 		fnameD === '' ||
 		lnameD === null ||
 		lnameD === undefined ||
-		lnameD === ''
+		lnameD === '' ||
+		department === null ||
+		department === undefined ||
+		department === '' ||
+		building === null ||
+		building === undefined ||
+		building === '' ||
+		creator === null ||
+		creator === undefined ||
+		creator === ''
 	) {
 		throw new Error('Invalid student data');
 	}
@@ -112,30 +125,48 @@ export async function createStudent(
 			// Create the student
 			const [{ id }] = await tx
 				.insert(student)
-				.values({ fname, lname, index })
+				.values({ fname, lname, index, department })
 				.returning({ id: student.id });
 
 			// Create the student entry
-			await tx.insert(studentEntry).values({ studentId: id });
+			await tx.insert(studentEntry).values({
+				studentId: id,
+				building,
+				creator
+			});
 
 			return {
 				id,
 				index,
 				fname,
 				lname,
+				department,
 				state: StateInside // Because the student was just created, they are inside
 			};
 		});
 	} catch (err: unknown) {
-		throw new Error(`Failed to create student in database: ${JSON.stringify(err)}`);
+		throw new Error(`Failed to create student in database: ${(err as Error).message}`);
 	}
 }
 
 // Toggles the state of a student (inside to outside and vice versa)
-export async function toggleStudentState(id: number): Promise<State> {
-	// Assert id is valid
-	if (id === null || id === undefined) {
-		throw new Error('Invalid student id');
+export async function toggleStudentState(
+	id: number,
+	building: string,
+	creator: string
+): Promise<State> {
+	// Assert id, building and creator are valid
+	if (
+		id === null ||
+		id === undefined ||
+		building === null ||
+		building === undefined ||
+		building === '' ||
+		creator === null ||
+		creator === undefined ||
+		creator === ''
+	) {
+		throw new Error('Invalid employee data');
 	}
 
 	try {
@@ -164,15 +195,23 @@ export async function toggleStudentState(id: number): Promise<State> {
 			// Toggle the student state
 			if (isInside(entryTimestamp, exitTimestamp)) {
 				// Exit the student
-				await tx.insert(studentExit).values({ studentId: id });
+				await tx.insert(studentExit).values({
+					studentId: id,
+					building,
+					creator
+				});
 				return StateOutside;
 			} else {
 				// Enter the student
-				await tx.insert(studentEntry).values({ studentId: id });
+				await tx.insert(studentEntry).values({
+					studentId: id,
+					building,
+					creator
+				});
 				return StateInside;
 			}
 		});
 	} catch (err: unknown) {
-		throw new Error(`Failed to toggle student state in database: ${JSON.stringify(err)}`);
+		throw new Error(`Failed to toggle student state in database: ${(err as Error).message}`);
 	}
 }
