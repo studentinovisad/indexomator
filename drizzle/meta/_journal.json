@@ -1,34 +1,13 @@
 {
-	"version": "7",
-	"dialect": "postgresql",
-	"entries": [
-		{
-			"idx": 0,
-			"version": "7",
-			"when": 1733681464126,
-			"tag": "0000_fair_prism",
-			"breakpoints": true
-		},
-		{
-			"idx": 1,
-			"version": "7",
-			"when": 1733872349665,
-			"tag": "0001_reflective_gargoyle",
-			"breakpoints": true
-		},
-		{
-			"idx": 2,
-			"version": "7",
-			"when": 1733880166804,
-			"tag": "0002_milky_talisman",
-			"breakpoints": true
-		},
-		{
-			"idx": 3,
-			"version": "7",
-			"when": 1734077186992,
-			"tag": "0003_woozy_robbie_robertson",
-			"breakpoints": true
-		}
-	]
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1734103447845,
+      "tag": "0000_military_wong",
+      "breakpoints": true
+    }
+  ]
 }
