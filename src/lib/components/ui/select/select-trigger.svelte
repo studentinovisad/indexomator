@@ -20,5 +20,6 @@
 	{...restProps}
 >
 	{@render children?.()}
+	<div></div>
 	<ChevronDown class="size-4 opacity-50" />
 </SelectPrimitive.Trigger>
