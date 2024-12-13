@@ -24,7 +24,8 @@ export const actions: Actions = {
 		}
 
 		// Check if the secret is correct
-		if (!validateSecret(form.data.secret)) {
+		const secretOk = await validateSecret(form.data.secret);
+		if (!secretOk) {
 			return fail(401, {
 				form,
 				message: 'Invalid secret'
