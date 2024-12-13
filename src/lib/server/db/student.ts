@@ -1,7 +1,7 @@
 import { or, desc, eq, sql } from 'drizzle-orm';
 import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
-import { fuzzySearchFilters } from './fuzzysearch';
+import { fuzzyConcatSearchFilters, fuzzySearchFilters } from './fuzzysearch';
 import { isInside } from '../isInside';
 import { DB as db } from './connect';
 import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
@@ -51,7 +51,9 @@ export async function getStudents(
 						? [
 								...fuzzySearchFilters(student.index, nonEmptySearchQuery),
 								...fuzzySearchFilters(student.fname, nonEmptySearchQuery),
-								...fuzzySearchFilters(student.lname, nonEmptySearchQuery)
+								...fuzzySearchFilters(student.lname, nonEmptySearchQuery),
+								...fuzzyConcatSearchFilters(student.fname, student.lname, nonEmptySearchQuery),
+								...fuzzyConcatSearchFilters(student.lname, student.fname, nonEmptySearchQuery)
 							]
 						: [])
 				)

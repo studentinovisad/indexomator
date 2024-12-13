@@ -1,7 +1,7 @@
 import { or, desc, eq, sql } from 'drizzle-orm';
 import { employee, employeeEntry, employeeExit } from './schema/employee';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
-import { fuzzySearchFilters } from './fuzzysearch';
+import { fuzzyConcatSearchFilters, fuzzySearchFilters } from './fuzzysearch';
 import { isInside } from '../isInside';
 import { DB as db } from './connect';
 import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
@@ -51,7 +51,9 @@ export async function getEmployees(
 						? [
 								...fuzzySearchFilters(employee.email, nonEmptySearchQuery, true),
 								...fuzzySearchFilters(employee.fname, nonEmptySearchQuery),
-								...fuzzySearchFilters(employee.lname, nonEmptySearchQuery)
+								...fuzzySearchFilters(employee.lname, nonEmptySearchQuery),
+								...fuzzyConcatSearchFilters(employee.fname, employee.lname, nonEmptySearchQuery),
+								...fuzzyConcatSearchFilters(employee.lname, employee.fname, nonEmptySearchQuery)
 							]
 						: [])
 				)
