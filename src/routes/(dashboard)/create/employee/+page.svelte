@@ -24,15 +24,15 @@
 	const { form: formData, enhance } = form;
 </script>
 
-<Card.Root class="mx-auto w-full max-w-sm">
-	<Card.Header>
-		<Card.Title class="text-2xl">Create employee</Card.Title>
-		<Card.Description>
-			Create an employee who wants to enter the building for the first time.
-		</Card.Description>
-	</Card.Header>
-	<Card.Content>
-		<form method="POST" class="grid gap-4" use:enhance>
+<form method="POST" class="flex w-full items-center justify-center px-4 pt-4" use:enhance>
+	<Card.Root class="mx-auto w-full max-w-sm">
+		<Card.Header>
+			<Card.Title class="text-2xl">Create employee</Card.Title>
+			<Card.Description>
+				Create an employee who wants to enter the building for the first time.
+			</Card.Description>
+		</Card.Header>
+		<Card.Content class="grid gap-4">
 			<Form.Field {form} name="fname">
 				<Form.Control>
 					{#snippet children({ props })}
@@ -40,7 +40,6 @@
 						<Input {...props} bind:value={$formData.fname} />
 					{/snippet}
 				</Form.Control>
-				<Form.Description>Employee first name.</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
 			<Form.Field {form} name="lname">
@@ -50,7 +49,6 @@
 						<Input {...props} bind:value={$formData.lname} />
 					{/snippet}
 				</Form.Control>
-				<Form.Description>Employee last name.</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
 			<Form.Field {form} name="email">
@@ -60,7 +58,6 @@
 						<Input {...props} bind:value={$formData.email} />
 					{/snippet}
 				</Form.Control>
-				<Form.Description>Employee email address.</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
 			<Form.Field {form} name="department">
@@ -79,10 +76,9 @@
 						</Select.Root>
 					{/snippet}
 				</Form.Control>
-				<Form.Description>Choose the department for the employee.</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
 			<Form.Button type="submit">Submit</Form.Button>
-		</form>
-	</Card.Content>
-</Card.Root>
+		</Card.Content>
+	</Card.Root>
+</form>
