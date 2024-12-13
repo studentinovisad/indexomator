@@ -47,7 +47,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		};
 	} catch (err: unknown) {
 		return fail(400, {
-			message: `Failed to get students or employees: ${JSON.stringify(err)}`
+			message: `Failed to get students or employees: ${(err as Error).message}`
 		});
 	}
 };
@@ -89,7 +89,7 @@ async function action(event: RequestEvent) {
 			});
 		}
 	} catch (err: unknown) {
-		const msg = `Failed to toggle state: ${JSON.stringify(err)}`;
+		const msg = `Failed to toggle state: ${(err as Error).message}`;
 		console.log(msg);
 		return fail(400, {
 			message: msg

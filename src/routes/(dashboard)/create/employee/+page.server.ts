@@ -34,7 +34,7 @@ async function action(event: RequestEvent) {
 
 		await createEmployee(email, fname, lname);
 	} catch (err: unknown) {
-		const msg = `Failed to create employee: ${JSON.stringify(err)}`;
+		const msg = `Failed to create employee: ${(err as Error).message}`;
 		console.log(msg);
 		return fail(400, {
 			message: msg

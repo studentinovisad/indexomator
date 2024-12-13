@@ -70,7 +70,7 @@ export async function getStudents(
 			};
 		});
 	} catch (err: unknown) {
-		throw new Error(`Failed to get students from database: ${JSON.stringify(err)}`);
+		throw new Error(`Failed to get students from database: ${(err as Error).message}`);
 	}
 }
 
@@ -125,7 +125,7 @@ export async function createStudent(
 			};
 		});
 	} catch (err: unknown) {
-		throw new Error(`Failed to create student in database: ${JSON.stringify(err)}`);
+		throw new Error(`Failed to create student in database: ${(err as Error).message}`);
 	}
 }
 
@@ -171,6 +171,6 @@ export async function toggleStudentState(id: number): Promise<State> {
 			}
 		});
 	} catch (err: unknown) {
-		throw new Error(`Failed to toggle student state in database: ${JSON.stringify(err)}`);
+		throw new Error(`Failed to toggle student state in database: ${(err as Error).message}`);
 	}
 }

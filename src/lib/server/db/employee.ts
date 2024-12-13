@@ -69,7 +69,7 @@ export async function getEmployees(
 			};
 		});
 	} catch (err: unknown) {
-		throw new Error(`Failed to get employees from database: ${JSON.stringify(err)}}`);
+		throw new Error(`Failed to get employees from database: ${(err as Error).message}}`);
 	}
 }
 
@@ -124,7 +124,7 @@ export async function createEmployee(
 			};
 		});
 	} catch (err: unknown) {
-		throw new Error(`Failed to create employee in database: ${JSON.stringify(err)}`);
+		throw new Error(`Failed to create employee in database: ${(err as Error).message}`);
 	}
 }
 
@@ -170,6 +170,6 @@ export async function toggleEmployeeState(id: number): Promise<State> {
 			}
 		});
 	} catch (err: unknown) {
-		throw new Error(`Failed to toggle employee state in database: ${JSON.stringify(err)}`);
+		throw new Error(`Failed to toggle employee state in database: ${(err as Error).message}`);
 	}
 }

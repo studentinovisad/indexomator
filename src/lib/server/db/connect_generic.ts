@@ -38,7 +38,7 @@ export async function connectDatabaseWithURL(
 			return { database, client };
 		} catch (err) {
 			if (attempts >= maxAttempts) {
-				throw new Error(`Database connection failed after 10 seconds: ${JSON.stringify(err)}`);
+				throw new Error(`Database connection failed after 10 seconds: ${(err as Error).message}`);
 			}
 			console.log(
 				`Connection attempt ${attempts} failed. Retrying in ${delayMs / 1000} second(s)...`

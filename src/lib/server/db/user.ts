@@ -27,7 +27,7 @@ export async function createUser(username: string, password: string): Promise<vo
 			passwordHash
 		});
 	} catch (err: unknown) {
-		throw new Error(`Failed to create user in database: ${JSON.stringify(err)}`);
+		throw new Error(`Failed to create user in database: ${(err as Error).message}`);
 	}
 }
 
@@ -54,7 +54,7 @@ export async function getUserIdAndPasswordHash(
 		};
 	} catch (err: unknown) {
 		throw new Error(
-			`Failed to get user id and password hash from database: ${JSON.stringify(err)}`
+			`Failed to get user id and password hash from database: ${(err as Error).message}`
 		);
 	}
 }
