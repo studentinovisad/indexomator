@@ -24,11 +24,11 @@
 </script>
 
 <div class="flex h-screen w-full items-center justify-center px-4">
-	<form method="POST" class="flex w-full items-center justify-center px-4 pt-4" use:enhance>
+	<form method="POST" class="flex w-full items-center justify-center px-4 pb-20" use:enhance>
 		<Card.Root class="mx-auto w-full max-w-sm">
 			<Card.Header>
 				<Card.Title class="text-2xl">Create building</Card.Title>
-				<Card.Description>Enter the name of the new building to create</Card.Description>
+				<Card.Description>Enter the name of the new building to create.</Card.Description>
 			</Card.Header>
 			<Card.Content class="grid gap-4">
 				<Form.Field {form} name="building">
