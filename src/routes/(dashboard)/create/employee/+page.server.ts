@@ -1,43 +1,52 @@
-import { createEmployee } from '$lib/server/db/employee';
-import { fail, type Actions, type RequestEvent } from '@sveltejs/kit';
+import { fail, type Actions } from '@sveltejs/kit';
+import { superValidate, message } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
 
-export const actions: Actions = {
-	default: action
+import { createEmployee } from '$lib/server/db/employee';
+import { getDepartments } from '$lib/server/db/department';
+
+import { formSchema } from './schema';
+import type { PageServerLoad } from './$types';
+
+export const load: PageServerLoad = async () => {
+	const form = await superValidate(zod(formSchema));
+	const departments = await getDepartments();
+
+	return {
+		form,
+		departments
+	};
 };
 
-async function action(event: RequestEvent) {
-	try {
-		const formData = await event.request.formData();
-		const fname = formData.get('fname');
-		const lname = formData.get('lname');
-		const email = formData.get('email');
-
-		// Check if the fname, lname and index are valid
-		if (
-			email === null ||
-			email === undefined ||
-			typeof email !== 'string' ||
-			email === '' ||
-			fname === null ||
-			fname === undefined ||
-			typeof fname !== 'string' ||
-			fname === '' ||
-			lname === null ||
-			lname === undefined ||
-			typeof lname !== 'string' ||
-			lname === ''
-		) {
+export const actions: Actions = {
+	default: async ({ request, locals }) => {
+		const form = await superValidate(request, zod(formSchema));
+		if (!form.valid) {
 			return fail(400, {
-				message: 'Invalid or missing fields'
+				form
 			});
 		}
 
-		await createEmployee(email, fname, lname);
-	} catch (err: unknown) {
-		const msg = `Failed to create employee: ${JSON.stringify(err)}`;
-		console.log(msg);
-		return fail(400, {
-			message: msg
-		});
+		if (locals.building === null || locals.user === null) {
+			return fail(400, {
+				form
+			});
+		}
+
+		try {
+			const { email, fname, lname, department } = form.data;
+			const building = locals.building;
+			const creator = locals.user.username;
+			await createEmployee(email, fname, lname, department, building, creator);
+		} catch (err: unknown) {
+			const message = `Failed to create employee: ${(err as Error).message}}`;
+			console.log(message);
+			return fail(400, {
+				form,
+				message
+			});
+		}
+
+		return message(form, 'Employee created successfully!');
 	}
-}
+};

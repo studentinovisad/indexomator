@@ -77,12 +77,16 @@ export async function getEmployees(
 export async function createEmployee(
 	emailD: string,
 	fnameD: string,
-	lnameD: string
+	lnameD: string,
+	department: string,
+	building: string,
+	creator: string
 ): Promise<{
 	id: number;
 	email: string;
 	fname: string;
 	lname: string;
+	department: string;
 	state: State;
 }> {
 	// Assert email, fname and lname are valid
@@ -95,7 +99,16 @@ export async function createEmployee(
 		fnameD === '' ||
 		lnameD === null ||
 		lnameD === undefined ||
-		lnameD === ''
+		lnameD === '' ||
+		department === null ||
+		department === undefined ||
+		department === '' ||
+		building === null ||
+		building === undefined ||
+		building === '' ||
+		creator === null ||
+		creator === undefined ||
+		creator === ''
 	) {
 		throw new Error('Invalid employee data');
 	}
@@ -109,17 +122,22 @@ export async function createEmployee(
 			// Create the employee
 			const [{ id }] = await tx
 				.insert(employee)
-				.values({ email, fname, lname })
+				.values({ email, fname, lname, department })
 				.returning({ id: employee.id });
 
 			// Create the employee entry
-			await tx.insert(employeeEntry).values({ employeeId: id });
+			await tx.insert(employeeEntry).values({
+				employeeId: id,
+				building,
+				creator
+			});
 
 			return {
 				id,
 				email,
 				fname,
 				lname,
+				department,
 				state: StateInside // Because the employee was just created, they are inside
 			};
 		});
@@ -129,10 +147,23 @@ export async function createEmployee(
 }
 
 // Toggles the state of an employee (inside to outside and vice versa)
-export async function toggleEmployeeState(id: number): Promise<State> {
-	// Assert id is valid
-	if (id === null || id === undefined) {
-		throw new Error('Invalid employee id');
+export async function toggleEmployeeState(
+	id: number,
+	building: string,
+	creator: string
+): Promise<State> {
+	// Assert id, building and creator are valid
+	if (
+		id === null ||
+		id === undefined ||
+		building === null ||
+		building === undefined ||
+		building === '' ||
+		creator === null ||
+		creator === undefined ||
+		creator === ''
+	) {
+		throw new Error('Invalid employee data');
 	}
 
 	try {
@@ -161,11 +192,19 @@ export async function toggleEmployeeState(id: number): Promise<State> {
 			// Toggle the employee state
 			if (isInside(entryTimestamp, exitTimestamp)) {
 				// Exit the employee
-				await tx.insert(employeeExit).values({ employeeId: id });
+				await tx.insert(employeeExit).values({
+					employeeId: id,
+					building,
+					creator
+				});
 				return StateOutside;
 			} else {
 				// Enter the employee
-				await tx.insert(employeeEntry).values({ employeeId: id });
+				await tx.insert(employeeEntry).values({
+					employeeId: id,
+					building,
+					creator
+				});
 				return StateInside;
 			}
 		});

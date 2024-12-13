@@ -15,6 +15,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	if (token === null) {
 		event.locals.user = null;
 		event.locals.session = null;
+		event.locals.building = null;
 		// Redirect to the login page (or whatever page makes sense for unauthenticated users)
 		if (event.url.pathname !== '/login') {
 			return redirect(302, '/login');
@@ -44,6 +45,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// Set session and user in locals for the rest of the request
 	event.locals.session = session;
 	event.locals.user = user;
+	event.locals.building = null; // TODO
 
 	// Continue with resolving the request
 	return resolve(event);

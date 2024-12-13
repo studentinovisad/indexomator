@@ -1,6 +1,6 @@
 import type { Database } from '$lib/server/db/connect';
-import type { User } from '$lib/server/user';
-import type { Session } from '$lib/server/session';
+import type { User } from '$lib/server/db/schema/user';
+import type { Session } from '$lib/server/db/schema/session';
 
 declare global {
 	namespace App {
@@ -8,6 +8,7 @@ declare global {
 			database: Database;
 			user: User | null;
 			session: Session | null;
+			building: string | null;
 		}
 	}
 }

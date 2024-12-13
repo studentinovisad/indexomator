@@ -8,9 +8,9 @@ export const employee = pgTable('employee', {
 	email: text('email').notNull().unique(),
 	fname: text('fname').notNull(),
 	lname: text('lname').notNull(),
-	departmentId: integer('department_id')
+	department: text('department')
 		.notNull()
-		.references(() => department.id, { onDelete: 'restrict' })
+		.references(() => department.name, { onDelete: 'restrict' })
 });
 
 export const employeeEntry = pgTable(
@@ -20,9 +20,9 @@ export const employeeEntry = pgTable(
 			.notNull()
 			.references(() => employee.id, { onDelete: 'cascade' }),
 		timestamp: timestamp('timestamp').defaultNow().notNull(),
-		buildingId: integer('building_id')
+		building: text('building')
 			.notNull()
-			.references(() => building.id, { onDelete: 'restrict' }),
+			.references(() => building.name, { onDelete: 'restrict' }),
 		creator: text('creator')
 			.notNull()
 			.references(() => userTable.username, { onDelete: 'no action' })
@@ -41,9 +41,9 @@ export const employeeExit = pgTable(
 			.notNull()
 			.references(() => employee.id, { onDelete: 'cascade' }),
 		timestamp: timestamp('timestamp').defaultNow().notNull(),
-		buildingId: integer('building_id')
+		building: text('building')
 			.notNull()
-			.references(() => building.id, { onDelete: 'restrict' }),
+			.references(() => building.name, { onDelete: 'restrict' }),
 		creator: text('creator')
 			.notNull()
 			.references(() => userTable.username, { onDelete: 'no action' })
