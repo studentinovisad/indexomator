@@ -32,14 +32,14 @@ export const actions: Actions = {
 				form
 			});
 		}
-
+    
 		try {
 			const { index, fname, lname, department } = form.data;
 			const building = locals.session.building;
 			const creator = locals.user.username;
 			await createStudent(index, fname, lname, department, building, creator);
 		} catch (err: unknown) {
-			const message = `Failed to create student: ${JSON.stringify(err)}`;
+			const message = `Failed to create student: ${(err as Error).message}`;
 			console.log(message);
 			return fail(400, {
 				form,

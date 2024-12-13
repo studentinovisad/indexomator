@@ -32,7 +32,7 @@ export const actions: Actions = {
 				form
 			});
 		}
-
+    
 		try {
 			const { email, fname, lname, department } = form.data;
 			const building = locals.session.building;

@@ -39,7 +39,7 @@ export async function createSession(token: string, userId: number, building: str
 		await db.insert(sessionTable).values(session);
 		return session;
 	} catch (err: unknown) {
-		throw new Error(`Failed to create session in database: ${JSON.stringify(err)}`);
+		throw new Error(`Failed to create session in database: ${(err as Error).message}`);
 	}
 }
 
@@ -75,7 +75,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 		}
 		return { session, user };
 	} catch (err: unknown) {
-		throw new Error(`Failed to validate session token: ${JSON.stringify(err)}`);
+		throw new Error(`Failed to validate session token: ${(err as Error).message}`);
 	}
 }
 
@@ -88,7 +88,7 @@ export async function invalidateSession(sessionId: string): Promise<void> {
 	try {
 		await db.delete(sessionTable).where(eq(sessionTable.id, sessionId));
 	} catch (err: unknown) {
-		throw new Error(`Failed to invalidate session in database: ${JSON.stringify(err)}`);
+		throw new Error(`Failed to invalidate session in database: ${(err as Error).message}`);
 	}
 }
 

@@ -20,12 +20,15 @@ export const actions: Actions = {
 				form
 			});
 		}
+    
 		// Check if the secret is correct
 		if (!validateSecret(form.data.secret)) {
 			return fail(401, {
+        form,
 				message: 'Invalid secret'
 			});
 		}
+    
 		try {
 			const { username, password } = form.data;
 			// Create the new user
