@@ -14,7 +14,7 @@ export async function connectDatabaseWithURL(
 	if (!migrationsPath) throw new Error('migrationsPath is required');
 
 	console.log('Connecting to database');
-	console.debug('Database url (contains secret):', dbUrl);
+	console.debug('DEBUG: Database url (contains secret):', dbUrl);
 	console.log('Running migrations from:', migrationsPath);
 
 	const maxAttempts = 10; // Maximum retry attempts (1 attempt per second)
