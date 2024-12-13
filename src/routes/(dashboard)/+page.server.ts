@@ -53,46 +53,54 @@ export const load: PageServerLoad = async ({ url }) => {
 };
 
 export const actions: Actions = {
-	togglestate: action
+	togglestate: async ({ request, locals }) => {
+		try {
+			const formData = await request.formData();
+			const idS = formData.get('id');
+			const type = formData.get('type');
+
+			if (locals.building === null || locals.user === null) {
+				return fail(400, {
+					message: 'Null building or username'
+				});
+			}
+			const building = locals.building;
+			const creator = locals.user.username;
+
+			// Check if the id and type are valid
+			if (
+				idS === null ||
+				idS === undefined ||
+				typeof idS !== 'string' ||
+				idS === '' ||
+				type === null ||
+				type === undefined ||
+				typeof type !== 'string' ||
+				type === ''
+			) {
+				return fail(400, {
+					message: 'Invalid or missing fields'
+				});
+			}
+
+			const id = Number.parseInt(idS);
+			if (type === Student) {
+				await toggleStudentState(id, building, creator);
+			} else if (type === Employee) {
+				await toggleEmployeeState(id, building, creator);
+			} else {
+				return fail(400, {
+					message: 'Invalid type'
+				});
+			}
+		} catch (err: unknown) {
+			const msg = `Failed to toggle state: ${(err as Error).message}`;
+			console.log(msg);
+			return fail(400, {
+				message: msg
+			});
+		}
+	}
 };
 
-async function action(event: RequestEvent) {
-	try {
-		const formData = await event.request.formData();
-		const idS = formData.get('id');
-		const type = formData.get('type');
-
-		// Check if the id and type are valid
-		if (
-			idS === null ||
-			idS === undefined ||
-			typeof idS !== 'string' ||
-			idS === '' ||
-			type === null ||
-			type === undefined ||
-			typeof type !== 'string' ||
-			type === ''
-		) {
-			return fail(400, {
-				message: 'Invalid or missing fields'
-			});
-		}
-
-		const id = Number.parseInt(idS);
-		if (type === Student) {
-			await toggleStudentState(id);
-		} else if (type === Employee) {
-			await toggleEmployeeState(id);
-		} else {
-			return fail(400, {
-				message: 'Invalid type'
-			});
-		}
-	} catch (err: unknown) {
-		const msg = `Failed to toggle state: ${(err as Error).message}`;
-		console.log(msg);
-		return fail(400, {
-			message: msg
-		});
-	}
-}
+async function action(event: RequestEvent) {}
