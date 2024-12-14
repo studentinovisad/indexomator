@@ -7,7 +7,7 @@
 	let { id, type }: { id: number; type: string } = $props();
 </script>
 
-<form action="?/togglestate" method="POST" use:enhance class="w-full">
+<form method="POST" action="?/togglestate" class="w-full" use:enhance>
 	<Input type="hidden" name="type" value={type} />
 	<Button variant="outline" type="submit" name="id" value={id} class="w-full">
 		<ArrowLeftRight /> <span class="hidden sm:block">Toggle State</span>
