@@ -20,7 +20,6 @@
 		searchBox?.submit();
 	}}
 >
-	<!--reset needs to be changed !!!!!-->
 	<div class="flex gap-2 px-4 py-2">
 		<Input id="search" class="max-w-xs" placeholder="Search..." name="q" value={searchQuery} />
 		<Button type="submit" size="icon" class="flex-shrink-0">

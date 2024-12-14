@@ -8,8 +8,7 @@ import { deleteSessionTokenCookie } from '$lib/server/session';
 
 export const load: PageServerLoad = async ({ url }) => {
 	try {
-		// TODO: Implement pagination
-		const limit = 10;
+		const limit = 1000;
 		const offset = 0;
 
 		const studentLimit = Math.round(limit / 2);
