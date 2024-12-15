@@ -28,7 +28,7 @@ services:
       - '--entrypoints.web.http.redirections.entrypoint.to=websecure'
       - '--entrypoints.web.http.redirections.entrypoint.scheme=https'
       - '--entrypoints.websecure.address=:443'
-      - '--certificatesresolvers.letsencrypt.acme.email=cert@evidencija.app' # Replace with your domain
+      - '--certificatesresolvers.letsencrypt.acme.email=cert@${DOMAIN}'
       - '--certificatesresolvers.letsencrypt.acme.storage=acme/acme.json'
       - '--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web'
       - '--experimental.plugins.bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin'
@@ -57,7 +57,7 @@ services:
       - internal
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.app.rule=Host(`evidencija.app`)' # Replace with your domain
+      - 'traefik.http.routers.app.rule=Host(`${DOMAIN}`)'
       - 'traefik.http.routers.app.middlewares=crowdsec@docker'
       - 'traefik.http.middlewares.crowdsec.plugin.bouncer.enabled=true'
       - 'traefik.http.middlewares.crowdsec.plugin.bouncer.crowdsecmode=stream'
