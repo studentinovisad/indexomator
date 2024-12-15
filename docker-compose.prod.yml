@@ -1,21 +1,48 @@
 services:
+  crowdsec:
+    image: docker.io/crowdsecurity/crowdsec:v1.6.4
+    environment:
+      COLLECTIONS: crowdsecurity/traefik crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules
+      CUSTOM_HOSTNAME: crowdsec
+      BOUNCER_KEY_TRAEFIK: ${BOUNCER_KEY_TRAEFIK}
+    volumes:
+      - './acquis.yaml:/etc/crowdsec/acquis.yaml:ro,z'
+      - 'traefik-logs-vol:/var/log/traefik:ro,z'
+      - 'crowdsec-db-vol:/var/lib/crowdsec/data:Z'
+      - 'crowdsec-conf-vol:/etc/crowdsec:Z'
+    labels:
+      - 'traefik.enable=false'
+    networks:
+      - internal
+    restart: unless-stopped
   traefik:
-    image: traefik:v3
+    depends_on:
+      - crowdsec
+    image: docker.io/library/traefik:v3.2.2
     command:
+      - '--accesslog'
+      - '--accesslog.filepath=/var/log/traefik/access.log'
       - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
       - '--entrypoints.web.address=:80'
+      - '--entrypoints.web.http.redirections.entrypoint.to=websecure'
+      - '--entrypoints.web.http.redirections.entrypoint.scheme=https'
       - '--entrypoints.websecure.address=:443'
-      - '--certificatesresolvers.letsencrypt.acme.email=cert@evidencija.app' # Change to your domain
+      - '--certificatesresolvers.letsencrypt.acme.email=cert@evidencija.app' # Replace with your domain
       - '--certificatesresolvers.letsencrypt.acme.storage=acme/acme.json'
       - '--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web'
+      - '--experimental.plugins.bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin'
+      - '--experimental.plugins.bouncer.version=v1.3.5'
     ports:
       - '80:80'
       - '443:443'
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock:ro,z'
+      - 'traefik-logs-vol:/var/log/traefik:z'
       - 'traefik-acme-vol:/acme:Z'
     networks:
       - internal
+    restart: unless-stopped
   app:
     depends_on:
       - postgres
@@ -31,9 +58,16 @@ services:
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.app.rule=Host(`evidencija.app`)' # Replace with your domain
+      - 'traefik.http.routers.app.middlewares=crowdsec@docker'
+      - 'traefik.http.middlewares.crowdsec.plugin.bouncer.enabled=true'
+      - 'traefik.http.middlewares.crowdsec.plugin.bouncer.crowdsecmode=stream'
+      - 'traefik.http.middlewares.crowdsec.plugin.bouncer.crowdseclapikey=${BOUNCER_KEY_TRAEFIK}'
+      - 'traefik.http.middlewares.crowdsec.plugin.bouncer.crowdsecappsecenabled=true'
+      - 'traefik.http.routers.app.entrypoints=websecure'
       - 'traefik.http.routers.app.tls=true'
       - 'traefik.http.routers.app.tls.certresolver=letsencrypt'
       - 'traefik.http.services.app.loadbalancer.server.port=3000'
+    restart: unless-stopped
   postgres:
     build:
       context: .
@@ -46,7 +80,11 @@ services:
       - './database:/var/lib/postgresql/data:z'
     networks:
       - internal
+    restart: unless-stopped
 networks:
   internal:
 volumes:
+  crowdsec-db-vol:
+  crowdsec-conf-vol:
+  traefik-logs-vol:
   traefik-acme-vol:
