@@ -6,10 +6,7 @@ services:
       CUSTOM_HOSTNAME: crowdsec
       BOUNCER_KEY_TRAEFIK: ${BOUNCER_KEY_TRAEFIK}
     volumes:
-      - type: bind
-        source: ./acquis.yaml
-        target: /etc/crowdsec/acquis.yaml
-        read_only: true
+      - './acquis.yaml:/etc/crowdsec/acquis.yaml:ro,z'
       - 'traefik-logs-vol:/var/log/traefik:ro,z'
       - 'crowdsec-db-vol:/var/lib/crowdsec/data:Z'
       - 'crowdsec-conf-vol:/etc/crowdsec:Z'
