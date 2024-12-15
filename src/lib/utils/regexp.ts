@@ -1,5 +1,6 @@
-export const nameRegExp = /^[a-zA-ZčČćĆǆǄđĐšŠžŽ]+(?:\s[a-zA-ZčČćĆǆǄđĐšŠžŽ])*$/;
-export const nameRegExpMsg = 'String must be one word or two words with space in between';
+export const nameRegExp = /^[a-zA-ZčČćĆǆǄđĐšŠžŽ]+(?:(?:\s|-)[a-zA-ZčČćĆǆǄđĐšŠžŽ]+)?$/;
+export const nameRegExpMsg =
+	'String must be one word or two words with space or dash (-) in between';
 
 export const indexRegExp = /^\d{1,4}[a-zA-Z]?\/(?:\d{2}|\d{4})$/;
 export const indexRegExpMsg =
