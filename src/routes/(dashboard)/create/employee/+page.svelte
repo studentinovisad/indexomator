@@ -24,7 +24,7 @@
 	const { form: formData, enhance } = form;
 </script>
 
-<form method="POST" class="flex w-full items-center justify-center px-4 pt-4" use:enhance>
+<form method="POST" class="flex h-[90dvh] w-full items-center justify-center px-4" use:enhance>
 	<Card.Root class="mx-auto w-full max-w-sm">
 		<Card.Header>
 			<Card.Title class="text-2xl">Create employee</Card.Title>
