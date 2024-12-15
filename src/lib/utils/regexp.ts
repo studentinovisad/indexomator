@@ -2,7 +2,7 @@ export const nameRegExp = /^[a-zA-ZčČćĆǆǄđĐšŠžŽ]+(?:(?:\s|-)[a-zA-Z�
 export const nameRegExpMsg =
 	'String must be one word or two words with space or dash (-) in between';
 
-export const indexRegExp = /^\d{1,4}[a-zA-Z]?\/(?:\d{2}|\d{4})$/;
+export const indexRegExp = /^\d{1,4}[a-zA-Z]?\/(?:\d{2}|\d{4})(?:[A-Z]{1,3})?$/;
 export const indexRegExpMsg =
 	'String must be in format: 1-4 numbers, optional single character and 2 or 4 numbers (year)';
 
