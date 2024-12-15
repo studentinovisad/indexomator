@@ -23,34 +23,32 @@
 	const { form: formData, enhance } = form;
 </script>
 
-<div class="flex h-screen w-full items-center justify-center px-4">
-	<form method="POST" class="flex w-full items-center justify-center px-4 pb-20" use:enhance>
-		<Card.Root class="mx-auto w-full max-w-sm">
-			<Card.Header>
-				<Card.Title class="text-2xl">Create department</Card.Title>
-				<Card.Description>Enter the name of the new department to create.</Card.Description>
-			</Card.Header>
-			<Card.Content class="grid gap-4">
-				<Form.Field {form} name="department">
-					<Form.Control>
-						{#snippet children({ props })}
-							<Form.Label>Department</Form.Label>
-							<Input {...props} bind:value={$formData.department} />
-						{/snippet}
-					</Form.Control>
-					<Form.FieldErrors />
-				</Form.Field>
-				<Form.Field {form} name="secret">
-					<Form.Control>
-						{#snippet children({ props })}
-							<Form.Label>Secret</Form.Label>
-							<Input type="password" {...props} bind:value={$formData.secret} />
-						{/snippet}
-					</Form.Control>
-					<Form.FieldErrors />
-				</Form.Field>
-				<Form.Button type="submit">Submit</Form.Button>
-			</Card.Content>
-		</Card.Root>
-	</form>
-</div>
+<form method="POST" class="flex h-[90dvh] w-full items-center justify-center px-4" use:enhance>
+	<Card.Root class="mx-auto w-full max-w-sm">
+		<Card.Header>
+			<Card.Title class="text-2xl">Create department</Card.Title>
+			<Card.Description>Enter the name of the new department to create.</Card.Description>
+		</Card.Header>
+		<Card.Content class="grid gap-4">
+			<Form.Field {form} name="department">
+				<Form.Control>
+					{#snippet children({ props })}
+						<Form.Label>Department</Form.Label>
+						<Input {...props} bind:value={$formData.department} />
+					{/snippet}
+				</Form.Control>
+				<Form.FieldErrors />
+			</Form.Field>
+			<Form.Field {form} name="secret">
+				<Form.Control>
+					{#snippet children({ props })}
+						<Form.Label>Secret</Form.Label>
+						<Input type="password" {...props} bind:value={$formData.secret} />
+					{/snippet}
+				</Form.Control>
+				<Form.FieldErrors />
+			</Form.Field>
+			<Form.Button type="submit">Submit</Form.Button>
+		</Card.Content>
+	</Card.Root>
+</form>
