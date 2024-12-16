@@ -1,5 +1,5 @@
 export function sanitizeString(value: string): string {
-	return value.trim().toLowerCase().toWellFormed();
+	return value.trim().toLowerCase().replaceAll('-', ' ').toWellFormed();
 }
 
 export function capitalizeString(value: string): string {
