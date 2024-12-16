@@ -27,9 +27,10 @@ export async function getStudents(
 	}
 
 	// Don't search if the search query is empty when trimmed
-	const nonEmptySearchQuery = searchQuery
-		? searchQuery.trim() !== ''
-			? searchQuery
+	const sanitizedSearchQuery = searchQuery ? sanitizeString(searchQuery) : undefined;
+	const nonEmptySearchQuery = sanitizedSearchQuery
+		? sanitizedSearchQuery !== ''
+			? sanitizedSearchQuery
 			: undefined
 		: undefined;
 

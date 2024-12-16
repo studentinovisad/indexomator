@@ -27,9 +27,10 @@ export async function getEmployees(
 	}
 
 	// Don't search if the search query is empty when trimmed
-	const nonEmptySearchQuery = searchQuery
-		? searchQuery.trim() !== ''
-			? searchQuery
+	const sanitizedSearchQuery = searchQuery ? sanitizeString(searchQuery) : undefined;
+	const nonEmptySearchQuery = sanitizedSearchQuery
+		? sanitizedSearchQuery !== ''
+			? sanitizedSearchQuery
 			: undefined
 		: undefined;
 
@@ -61,7 +62,8 @@ export async function getEmployees(
 				)
 			)
 			.groupBy(employee.id, employee.fname, employee.lname)
-			.limit(limit);
+			.limit(limit)
+			.offset(offset);
 
 		return employees.map((s) => {
 			return {
