@@ -1,4 +1,4 @@
-import { or, desc, eq, sql } from 'drizzle-orm';
+import { or, eq, sql } from 'drizzle-orm';
 import { employee, employeeEntry, employeeExit } from './schema/employee';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzyConcatSearchFilters, fuzzySearchFilters } from './fuzzysearch';
@@ -97,6 +97,7 @@ export async function createEmployee(
 	fname: string;
 	lname: string;
 	department: string;
+	building: string;
 	state: State;
 }> {
 	// Assert email, fname and lname are valid
@@ -148,6 +149,7 @@ export async function createEmployee(
 				fname,
 				lname,
 				department,
+				building,
 				state: StateInside // Because the employee was just created, they are inside
 			};
 		});
@@ -178,26 +180,18 @@ export async function toggleEmployeeState(
 
 	try {
 		return await db.transaction(async (tx) => {
-			// Get the employee entry
-			const [{ timestamp: entryTimestamp }] = await tx
+			// Get the employee entry and exit timestamps
+			const [{ entryTimestamp, exitTimestamp }] = await tx
 				.select({
-					timestamp: employeeEntry.timestamp
+					id: employee.id,
+					entryTimestamp: sql<Date>`MAX(${employeeEntry.timestamp})`.as('entryTimestamp'),
+					exitTimestamp: sql<Date | null>`MAX(${employeeExit.timestamp})`.as('exitTimestamp')
 				})
-				.from(employeeEntry)
-				.where(eq(employeeEntry.employeeId, id))
-				.orderBy(desc(employeeEntry.timestamp))
-				.limit(1);
-
-			// Get the employee exit
-			const exits = await tx
-				.select({
-					timestamp: employeeExit.timestamp
-				})
-				.from(employeeExit)
-				.where(eq(employeeExit.employeeId, id))
-				.orderBy(desc(employeeExit.timestamp))
-				.limit(1);
-			const exitTimestamp = exits.length > 0 ? exits[0].timestamp : null;
+				.from(employee)
+				.leftJoin(employeeEntry, eq(employee.id, employeeEntry.employeeId))
+				.leftJoin(employeeExit, eq(employee.id, employeeExit.employeeId))
+				.where(eq(employee.id, id))
+				.groupBy(employee.id);
 
 			// Toggle the employee state
 			if (isInside(entryTimestamp, exitTimestamp)) {

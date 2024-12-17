@@ -1,9 +1,9 @@
 import type { Building } from '$lib/types/db';
-import { DB } from './connect';
+import { DB as db } from './connect';
 import { building } from './schema/building';
 
 export async function getBuildings(): Promise<Building[]> {
-	return await DB.select().from(building);
+	return await db.select().from(building);
 }
 
 export async function createBuilding(name: string): Promise<void> {
@@ -12,7 +12,7 @@ export async function createBuilding(name: string): Promise<void> {
 		throw new Error('Invalid name');
 	}
 
-	await DB.insert(building).values({
+	await db.insert(building).values({
 		name
 	});
 }
