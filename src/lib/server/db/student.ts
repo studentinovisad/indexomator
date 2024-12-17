@@ -54,7 +54,7 @@ export async function getStudents(
 				or(
 					...(nonEmptySearchQuery
 						? [
-								...fuzzySearchFilters(student.index, nonEmptySearchQuery, 2, true),
+								...fuzzySearchFilters(student.index, nonEmptySearchQuery, 1, true),
 								...fuzzySearchFilters(student.fname, nonEmptySearchQuery, 3),
 								...fuzzySearchFilters(student.lname, nonEmptySearchQuery, 3),
 								...fuzzyConcatSearchFilters(student.fname, student.lname, nonEmptySearchQuery, 3),
