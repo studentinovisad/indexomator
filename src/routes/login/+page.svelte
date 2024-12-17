@@ -76,13 +76,13 @@
 				<Form.Button type="submit">Submit</Form.Button>
 			</Card.Content>
 			<Card.Footer>
-				<p class="px-2 text-center text-sm text-muted-foreground">
-					By logging in, you acknowledge that this software is under the <a
+				<p class="w-full px-2 text-center text-sm text-muted-foreground">
+					This software is licensed under the <a
 						href="https://raw.githubusercontent.com/aleksasiriski/indexomator/refs/heads/main/LICENSE"
 						class="underline underline-offset-4 hover:text-primary"
 					>
 						MIT
-					</a> license.
+					</a> License.
 				</p>
 			</Card.Footer>
 		</Card.Root>
