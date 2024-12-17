@@ -27,7 +27,7 @@ export function fuzzySearchFilters(
 	}
 
 	return [
-		sql`LEVENSHTEIN(${dbField}, ${searchQuery}) < ${distance}`,
+		sql`LEVENSHTEIN(LOWER(${dbField}), ${searchQuery}) <= ${distance}`,
 		ilike(dbField, `${substr ? '%' : ''}${searchQuery}%`)
 	];
 }
@@ -63,9 +63,9 @@ export function fuzzyConcatSearchFilters(
 	if (substr === null || substr === undefined) {
 		throw new Error('Invalid substr');
 	}
-
+	
 	return [
-		sql`LEVENSHTEIN(${dbField1} || ' ' || ${dbField2}, ${searchQuery}) < ${distance}`,
+		sql`LEVENSHTEIN(LOWER(${dbField1}) || ' ' || LOWER(${dbField2}), ${searchQuery}) <= ${distance}`,
 		// @ts-expect-error because there is no typedef for sql as first param in ilike function
 		ilike(sql`${dbField1} || ' ' || ${dbField2}`, `${substr ? '%' : ''}${searchQuery}%`)
 	];
