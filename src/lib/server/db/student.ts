@@ -1,4 +1,4 @@
-import { or, desc, eq, sql } from 'drizzle-orm';
+import { or, eq, sql } from 'drizzle-orm';
 import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzyConcatSearchFilters, fuzzySearchFilters } from './fuzzysearch';
@@ -97,6 +97,7 @@ export async function createStudent(
 	fname: string;
 	lname: string;
 	department: string;
+	building: string;
 	state: State;
 }> {
 	// Assert fname, lname and index are valid
@@ -132,7 +133,7 @@ export async function createStudent(
 			// Create the student
 			const [{ id }] = await tx
 				.insert(student)
-				.values({ fname, lname, index, department })
+				.values({ index, fname, lname, department })
 				.returning({ id: student.id });
 
 			// Create the student entry
@@ -148,6 +149,7 @@ export async function createStudent(
 				fname,
 				lname,
 				department,
+				building,
 				state: StateInside // Because the student was just created, they are inside
 			};
 		});
@@ -173,31 +175,23 @@ export async function toggleStudentState(
 		creator === undefined ||
 		creator === ''
 	) {
-		throw new Error('Invalid employee data');
+		throw new Error('Invalid student data');
 	}
 
 	try {
 		return await db.transaction(async (tx) => {
-			// Get the student entry
-			const [{ timestamp: entryTimestamp }] = await tx
+			// Get the student entry and exit timestamps
+			const [{ entryTimestamp, exitTimestamp }] = await tx
 				.select({
-					timestamp: studentEntry.timestamp
+					id: student.id,
+					entryTimestamp: sql<Date>`MAX(${studentEntry.timestamp})`.as('entryTimestamp'),
+					exitTimestamp: sql<Date | null>`MAX(${studentExit.timestamp})`.as('exitTimestamp')
 				})
-				.from(studentEntry)
-				.where(eq(studentEntry.studentId, id))
-				.orderBy(desc(studentEntry.timestamp))
-				.limit(1);
-
-			// Get the student exit
-			const exits = await tx
-				.select({
-					timestamp: studentExit.timestamp
-				})
-				.from(studentExit)
-				.where(eq(studentExit.studentId, id))
-				.orderBy(desc(studentExit.timestamp))
-				.limit(1);
-			const exitTimestamp = exits.length > 0 ? exits[0].timestamp : null;
+				.from(student)
+				.leftJoin(studentEntry, eq(student.id, studentEntry.studentId))
+				.leftJoin(studentExit, eq(student.id, studentExit.studentId))
+				.where(eq(student.id, id))
+				.groupBy(student.id);
 
 			// Toggle the student state
 			if (isInside(entryTimestamp, exitTimestamp)) {
