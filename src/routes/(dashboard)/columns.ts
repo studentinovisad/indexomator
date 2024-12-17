@@ -29,6 +29,10 @@ export const columns: ColumnDef<Person>[] = [
 		header: 'Department'
 	},
 	{
+		accessorKey: 'building',
+		header: 'Building'
+	},
+	{
 		accessorKey: 'state',
 		header: 'State'
 	},

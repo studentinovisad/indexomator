@@ -18,6 +18,7 @@ export async function getStudents(
 		fname: string;
 		lname: string;
 		department: string;
+		building: string | null;
 		state: State;
 	}[]
 > {
@@ -43,6 +44,7 @@ export async function getStudents(
 				lname: student.lname,
 				department: student.department,
 				entryTimestamp: sql<Date>`MAX(${studentEntry.timestamp})`.as('entryTimestamp'),
+				entryBuilding: studentEntry.building,
 				exitTimestamp: sql<Date | null>`MAX(${studentExit.timestamp})`.as('exitTimestamp')
 			})
 			.from(student)
@@ -61,7 +63,7 @@ export async function getStudents(
 						: [])
 				)
 			)
-			.groupBy(student.id, student.index, student.fname, student.lname)
+			.groupBy(student.id, student.index, student.fname, student.lname, studentEntry.building)
 			.limit(limit)
 			.offset(offset);
 
@@ -72,6 +74,7 @@ export async function getStudents(
 				fname: s.fname,
 				lname: s.lname,
 				department: s.department,
+				building: isInside(s.entryTimestamp, s.exitTimestamp) ? s.entryBuilding : null,
 				state: isInside(s.entryTimestamp, s.exitTimestamp) ? StateInside : StateOutside
 			};
 		});

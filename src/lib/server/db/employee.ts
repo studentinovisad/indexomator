@@ -18,6 +18,7 @@ export async function getEmployees(
 		fname: string;
 		lname: string;
 		department: string;
+		building: string | null;
 		state: State;
 	}[]
 > {
@@ -43,6 +44,7 @@ export async function getEmployees(
 				lname: employee.lname,
 				department: employee.department,
 				entryTimestamp: sql<Date>`MAX(${employeeEntry.timestamp})`.as('entryTimestamp'),
+				entryBuilding: employeeEntry.building,
 				exitTimestamp: sql<Date | null>`MAX(${employeeExit.timestamp})`.as('exitTimestamp')
 			})
 			.from(employee)
@@ -61,7 +63,7 @@ export async function getEmployees(
 						: [])
 				)
 			)
-			.groupBy(employee.id, employee.fname, employee.lname)
+			.groupBy(employee.id, employee.email, employee.fname, employee.lname, employeeEntry.building)
 			.limit(limit)
 			.offset(offset);
 
@@ -72,6 +74,7 @@ export async function getEmployees(
 				fname: s.fname,
 				lname: s.lname,
 				department: s.department,
+				building: isInside(s.entryTimestamp, s.exitTimestamp) ? s.entryBuilding : null,
 				state: isInside(s.entryTimestamp, s.exitTimestamp) ? StateInside : StateOutside
 			};
 		});
