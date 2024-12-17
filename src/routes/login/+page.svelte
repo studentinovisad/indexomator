@@ -7,6 +7,8 @@
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
 	import { formSchema } from './schema';
+	import LogoLight from '$lib/assets/images/light.svg';
+	import LogoDark from '$lib/assets/images/dark.svg';
 
 	let { data, form: actionData } = $props();
 
@@ -26,10 +28,12 @@
 
 <div class="flex h-screen w-full items-center justify-center px-4">
 	<form method="POST" class="flex w-full items-center justify-center px-4 pt-4" use:enhance>
-		<Card.Root class="mx-auto w-full max-w-sm">
-			<Card.Header>
+		<Card.Root class="mx-auto w-full max-w-sm portrait:border-0">
+			<Card.Header class="flex-col items-center">
+				<img class="hidden size-20 sm:pb-3 dark:block" src={LogoLight} alt="Logo light" />
+				<img class="block size-20 sm:pb-3 dark:hidden" src={LogoDark} alt="Logo dark" />
 				<Card.Title class="text-2xl">Login</Card.Title>
-				<Card.Description>Enter your credentials to login to the dashboard</Card.Description>
+				<Card.Description class="hidden xsm:block text-center">Enter your credentials to login to the dashboard.</Card.Description>
 				<p class="text-rose-600 dark:text-rose-500">{actionData?.message}</p>
 			</Card.Header>
 			<Card.Content class="grid gap-4">
@@ -71,6 +75,16 @@
 				</Form.Field>
 				<Form.Button type="submit">Submit</Form.Button>
 			</Card.Content>
+			<Card.Footer>
+				<p class="w-full px-2 text-center text-sm text-muted-foreground">
+					This software is licensed under the <a
+						href="https://raw.githubusercontent.com/aleksasiriski/indexomator/refs/heads/main/LICENSE"
+						class="underline underline-offset-4 hover:text-primary"
+					>
+						MIT
+					</a> License.
+				</p>
+			</Card.Footer>
 		</Card.Root>
 	</form>
 </div>
