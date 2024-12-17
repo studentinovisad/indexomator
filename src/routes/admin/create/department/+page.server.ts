@@ -19,7 +19,8 @@ export const actions: Actions = {
 		const form = await superValidate(event.request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {
-				form
+				form,
+				message: 'Invalid form inputs'
 			});
 		}
 
@@ -36,14 +37,16 @@ export const actions: Actions = {
 			const { department } = form.data;
 			await createDepartment(department);
 		} catch (err: unknown) {
-			const message = `Failed to create department: ${(err as Error).message}}`;
-			console.debug(message);
+			console.debug(`Failed to create department: ${(err as Error).message}`);
 			return fail(400, {
 				form,
-				message
+				message: 'Department already exists'
 			});
 		}
 
-		return message(form, 'Department created successfully!');
+		return {
+			form,
+			message: 'Department created successfully!'
+		};
 	}
 };

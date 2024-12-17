@@ -7,7 +7,7 @@
 	import DataTable from './data-table.svelte';
 	import { columns } from './columns';
 
-	let { data } = $props();
+	let { data, form: actionData } = $props();
 	const searchQuery = data.searchQuery;
 
 	let searchBox: HTMLFormElement | null;
@@ -28,6 +28,7 @@
 		<Button type="reset" variant="destructive" size="icon" class="flex-shrink-0">
 			<Reset />
 		</Button>
+		<p class="my-auto text-rose-600 dark:text-rose-500">{actionData?.message}</p>
 	</div>
 </form>
 <Separator />

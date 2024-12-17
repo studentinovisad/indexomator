@@ -23,13 +23,15 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {
-				form
+				form,
+				message: 'Invalid form inputs'
 			});
 		}
 
 		if (locals.session === null || locals.user === null) {
-			return fail(400, {
-				form
+			return fail(401, {
+				form,
+				message: 'Invalid session'
 			});
 		}
 
@@ -39,14 +41,16 @@ export const actions: Actions = {
 			const creator = locals.user.username;
 			await createStudent(index, fname, lname, department, building, creator);
 		} catch (err: unknown) {
-			const message = `Failed to create student: ${(err as Error).message}`;
-			console.debug(message);
+			console.debug(`Failed to create student: ${(err as Error).message}`);
 			return fail(400, {
 				form,
-				message
+				message: 'Student already exists'
 			});
 		}
 
-		return message(form, 'Student created successfully!');
+		return {
+			form,
+			message: 'Student created successfully!'
+		};
 	}
 };

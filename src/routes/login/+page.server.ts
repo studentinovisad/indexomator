@@ -24,18 +24,18 @@ export const actions: Actions = {
 		const form = await superValidate(event.request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {
-				form
+				form,
+				message: 'Invalid form inputs'
 			});
 		}
+
 		try {
 			const { username, password, building } = form.data;
 			// Check if the username and password are valid
 			const { id, passwordHash } = await getUserIdAndPasswordHash(username);
 			const validPassword = await verifyPasswordHash(passwordHash, password);
 			if (!validPassword) {
-				return fail(401, {
-					message: 'Invalid username or password'
-				});
+				throw new Error('Invalid username or password');
 			}
 
 			// Create a new session token
@@ -43,11 +43,10 @@ export const actions: Actions = {
 			const session = await createSession(sessionToken, id, building);
 			setSessionTokenCookie(event, sessionToken, session.expiresAt);
 		} catch (err: unknown) {
-			const message = `Failed to login: ${(err as Error).message}}`;
-			console.debug(message);
-			return fail(400, {
+			console.debug(`Failed to login: ${(err as Error).message}`);
+			return fail(401, {
 				form,
-				message
+				message: 'Invalid username or password'
 			});
 		}
 

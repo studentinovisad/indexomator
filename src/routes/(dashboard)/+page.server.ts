@@ -8,18 +8,9 @@ import { deleteSessionTokenCookie } from '$lib/server/session';
 
 export const load: PageServerLoad = async ({ url }) => {
 	try {
-		const limit = 1000;
-		const offset = 0;
-
-		const studentLimit = Math.round(limit / 2);
-		const employeeLimit = limit - studentLimit;
-		const studentOffset = Math.round(offset / 2);
-		const employeeOffset = offset - studentOffset;
-
 		const searchQuery = url.searchParams.get('q') ?? undefined;
-
-		const studentsP = getStudents(studentLimit, studentOffset, searchQuery);
-		const employeesP = getEmployees(employeeLimit, employeeOffset, searchQuery);
+		const studentsP = getStudents(1000, 0, searchQuery);
+		const employeesP = getEmployees(1000, 0, searchQuery);
 		const students = await studentsP;
 		const employees = await employeesP;
 
@@ -49,8 +40,9 @@ export const load: PageServerLoad = async ({ url }) => {
 			persons
 		};
 	} catch (err: unknown) {
-		return fail(400, {
-			message: `Failed to get students or employees: ${(err as Error).message}`
+		console.debug(`Failed to get students and employees: ${(err as Error).message}`);
+		return fail(500, {
+			message: 'Failed to get students and employees'
 		});
 	}
 };
@@ -63,8 +55,8 @@ export const actions: Actions = {
 			const type = formData.get('type');
 
 			if (locals.session === null || locals.user === null) {
-				return fail(400, {
-					message: 'Null building or username'
+				return fail(401, {
+					message: 'Invalid session'
 				});
 			}
 			const building = locals.session.building;
@@ -93,14 +85,13 @@ export const actions: Actions = {
 				await toggleEmployeeState(id, building, creator);
 			} else {
 				return fail(400, {
-					message: 'Invalid type'
+					message: 'Invalid type (neither student nor employee)'
 				});
 			}
 		} catch (err: unknown) {
-			const msg = `Failed to toggle state: ${(err as Error).message}`;
-			console.debug(msg);
+			console.debug(`Failed to toggle state: ${(err as Error).message}`);
 			return fail(400, {
-				message: msg
+				message: 'Failed to toggle state'
 			});
 		}
 	},
@@ -108,19 +99,18 @@ export const actions: Actions = {
 		try {
 			const formData = await event.request.formData();
 			const idS = formData.get('id_session');
-
 			if (idS === null || idS === undefined || typeof idS !== 'string' || idS === '') {
 				return fail(400, {
 					message: 'Invalid or missing fields'
 				});
 			}
+
 			await invalidateSession(idS);
 			deleteSessionTokenCookie(event);
 		} catch (err: unknown) {
-			const msg = `Failed to toggle state: ${(err as Error).message}`;
-			console.debug(msg);
+			console.debug(`Failed to logout: ${(err as Error).message}`);
 			return fail(400, {
-				message: msg
+				message: 'Failed to logout'
 			});
 		}
 

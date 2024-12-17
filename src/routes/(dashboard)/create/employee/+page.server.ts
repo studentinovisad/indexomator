@@ -1,5 +1,5 @@
 import { fail, type Actions } from '@sveltejs/kit';
-import { superValidate, message } from 'sveltekit-superforms';
+import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 
 import { createEmployee } from '$lib/server/db/employee';
@@ -23,13 +23,15 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {
-				form
+				form,
+				message: 'Invalid form inputs'
 			});
 		}
 
 		if (locals.session === null || locals.user === null) {
-			return fail(400, {
-				form
+			return fail(401, {
+				form,
+				message: 'Invalid session'
 			});
 		}
 
@@ -39,14 +41,16 @@ export const actions: Actions = {
 			const creator = locals.user.username;
 			await createEmployee(email, fname, lname, department, building, creator);
 		} catch (err: unknown) {
-			const message = `Failed to create employee: ${(err as Error).message}}`;
-			console.debug(message);
+			console.debug(`Failed to create employee: ${(err as Error).message}`);
 			return fail(400, {
 				form,
-				message
+				message: 'Employee already exists'
 			});
 		}
 
-		return message(form, 'Employee created successfully!');
+		return {
+			form,
+			message: 'Employee created successfully!'
+		};
 	}
 };
