@@ -63,7 +63,7 @@ export function fuzzyConcatSearchFilters(
 	if (substr === null || substr === undefined) {
 		throw new Error('Invalid substr');
 	}
-	
+
 	return [
 		sql`LEVENSHTEIN(LOWER(${dbField1}) || ' ' || LOWER(${dbField2}), ${searchQuery}) <= ${distance}`,
 		// @ts-expect-error because there is no typedef for sql as first param in ilike function

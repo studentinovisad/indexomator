@@ -30,10 +30,12 @@
 	<form method="POST" class="flex w-full items-center justify-center px-4 pt-4" use:enhance>
 		<Card.Root class="mx-auto w-full max-w-sm portrait:border-0">
 			<Card.Header class="flex-col items-center">
-				<img class="hidden size-20 sm:pb-3 dark:block" src={LogoLight} alt="Logo light" />
-				<img class="block size-20 sm:pb-3 dark:hidden" src={LogoDark} alt="Logo dark" />
+				<img class="hidden size-20 dark:block sm:pb-3" src={LogoLight} alt="Logo light" />
+				<img class="block size-20 dark:hidden sm:pb-3" src={LogoDark} alt="Logo dark" />
 				<Card.Title class="text-2xl">Login</Card.Title>
-				<Card.Description class="hidden xsm:block text-center">Enter your credentials to login to the dashboard.</Card.Description>
+				<Card.Description class="hidden text-center xsm:block"
+					>Enter your credentials to login to the dashboard.</Card.Description
+				>
 				<p class="text-rose-600 dark:text-rose-500">{actionData?.message}</p>
 			</Card.Header>
 			<Card.Content class="grid gap-4">
