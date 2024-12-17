@@ -42,11 +42,9 @@
 	<Sidebar.Content>
 		<Sidebar.Group>
 			<Sidebar.GroupLabel class="select-none font-bold">
-				<div class="flex items-center">
-					<img class="m-2 hidden size-10 dark:block" src={LogoLight} alt="Logo light" />
-					<img class="m-2 block size-10 dark:hidden" src={LogoDark} alt="Logo dark" />
+					<img class="mt-1 mr-2 hidden size-7 dark:block" src={LogoLight} alt="Logo Light" />
+					<img class="mt-1 mr-2 block size-7 dark:hidden" src={LogoDark} alt="Logo Dark" />
 					Indexomator
-				</div>
 			</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
