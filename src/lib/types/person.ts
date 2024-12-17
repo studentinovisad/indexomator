@@ -11,6 +11,6 @@ export type Person = {
 	fname: string;
 	lname: string;
 	department: string;
-	building: string | null;
+	// building: string | null;
 	state: State;
 };

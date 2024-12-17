@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ url }) => {
 				fname: s.fname,
 				lname: s.lname,
 				department: s.department,
-				building: s.building,
+				// building: s.building,
 				state: s.state
 			})),
 			...employees.map((e) => ({
@@ -32,7 +32,7 @@ export const load: PageServerLoad = async ({ url }) => {
 				fname: e.fname,
 				lname: e.lname,
 				department: e.department,
-				building: e.building,
+				// building: e.building,
 				state: e.state
 			}))
 		];

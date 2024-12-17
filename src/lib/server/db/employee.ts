@@ -18,7 +18,7 @@ export async function getEmployees(
 		fname: string;
 		lname: string;
 		department: string;
-		building: string | null;
+		// building: string | null;
 		state: State;
 	}[]
 > {
@@ -44,7 +44,7 @@ export async function getEmployees(
 				lname: employee.lname,
 				department: employee.department,
 				entryTimestamp: sql<Date>`MAX(${employeeEntry.timestamp})`.as('entryTimestamp'),
-				entryBuilding: employeeEntry.building,
+				// entryBuilding: employeeEntry.building,
 				exitTimestamp: sql<Date | null>`MAX(${employeeExit.timestamp})`.as('exitTimestamp')
 			})
 			.from(employee)
@@ -63,19 +63,19 @@ export async function getEmployees(
 						: [])
 				)
 			)
-			.groupBy(employee.id, employee.email, employee.fname, employee.lname, employeeEntry.building)
+			.groupBy(employee.id, employee.email, employee.fname, employee.lname) // , employeeEntry.building
 			.limit(limit)
 			.offset(offset);
 
-		return employees.map((s) => {
+		return employees.map((e) => {
 			return {
-				id: s.id,
-				email: s.email,
-				fname: s.fname,
-				lname: s.lname,
-				department: s.department,
-				building: isInside(s.entryTimestamp, s.exitTimestamp) ? s.entryBuilding : null,
-				state: isInside(s.entryTimestamp, s.exitTimestamp) ? StateInside : StateOutside
+				id: e.id,
+				email: e.email,
+				fname: e.fname,
+				lname: e.lname,
+				department: e.department,
+				// building: isInside(e.entryTimestamp, e.exitTimestamp) ? e.entryBuilding : null,
+				state: isInside(e.entryTimestamp, e.exitTimestamp) ? StateInside : StateOutside
 			};
 		});
 	} catch (err: unknown) {
