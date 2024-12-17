@@ -14,7 +14,7 @@
 		validators: zodClient(formSchema),
 		onUpdated: ({ form: f }) => {
 			if (f.valid) {
-				toast.success(`You submitted ${JSON.stringify(f.data, null, 2)}`);
+				toast.success('Employee created successfully!');
 			} else {
 				toast.error('Please fix the errors in the form.');
 			}

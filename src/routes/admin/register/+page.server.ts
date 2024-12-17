@@ -44,5 +44,10 @@ export const actions: Actions = {
 				message: 'Username already exists or password is too weak'
 			});
 		}
+
+		return {
+			form,
+			message: 'User created successfully!'
+		};
 	}
 };
