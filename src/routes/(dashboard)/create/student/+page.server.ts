@@ -1,5 +1,5 @@
 import { fail, type Actions } from '@sveltejs/kit';
-import { superValidate, message } from 'sveltekit-superforms';
+import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 
 import { createStudent } from '$lib/server/db/student';
