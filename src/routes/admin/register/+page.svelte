@@ -7,7 +7,7 @@
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { formSchema } from './schema';
 
-	let { data } = $props();
+	let { data, form: actionData } = $props();
 
 	const form = superForm(data.form, {
 		validators: zodClient(formSchema),
@@ -28,6 +28,7 @@
 		<Card.Header>
 			<Card.Title class="text-2xl">Register</Card.Title>
 			<Card.Description>Enter credentials for user registration.</Card.Description>
+			<p class="text-rose-600 dark:text-rose-500">{actionData?.message}</p>
 		</Card.Header>
 		<Card.Content class="grid gap-4">
 			<Form.Field {form} name="username">

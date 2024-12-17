@@ -1,3 +1,5 @@
+install:
+	pnpm i --frozen-lockfile
 prod-start:
 	docker compose -f docker-compose.prod.yml up -d
 prod-stop:

@@ -7,7 +7,7 @@
 	import { toast } from 'svelte-sonner';
 	import { formSchema } from './schema';
 
-	let { data } = $props();
+	let { data, form: actionData } = $props();
 
 	const form = superForm(data.form, {
 		validators: zodClient(formSchema),
@@ -28,6 +28,7 @@
 		<Card.Header>
 			<Card.Title class="text-2xl">Create department</Card.Title>
 			<Card.Description>Enter the name of the new department to create.</Card.Description>
+			<p class="text-rose-600 dark:text-rose-500">{actionData?.message}</p>
 		</Card.Header>
 		<Card.Content class="grid gap-4">
 			<Form.Field {form} name="department">
