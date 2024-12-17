@@ -1,4 +1,4 @@
-import { or, eq, sql } from 'drizzle-orm';
+import { or, eq, sql, and } from 'drizzle-orm';
 import { employee, employeeEntry, employeeExit } from './schema/employee';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzyConcatSearchFilters, fuzzySearchFilters } from './fuzzysearch';
@@ -36,6 +36,15 @@ export async function getEmployees(
 		: undefined;
 
 	try {
+		const maxEntrySubquery = db
+			.select({
+				employeeId: employeeEntry.employeeId,
+				maxEntryTimestamp: sql<Date>`MAX(${employeeEntry.timestamp})`.as('maxEntryTimestamp')
+			})
+			.from(employeeEntry)
+			.groupBy(employeeEntry.employeeId)
+			.as('max_entry');
+
 		const employees = await db
 			.select({
 				id: employee.id,
@@ -43,12 +52,19 @@ export async function getEmployees(
 				fname: employee.fname,
 				lname: employee.lname,
 				department: employee.department,
-				entryTimestamp: sql<Date>`MAX(${employeeEntry.timestamp})`.as('entryTimestamp'),
+				entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 				entryBuilding: employeeEntry.building,
 				exitTimestamp: sql<Date | null>`MAX(${employeeExit.timestamp})`.as('exitTimestamp')
 			})
 			.from(employee)
-			.leftJoin(employeeEntry, eq(employee.id, employeeEntry.employeeId))
+			.leftJoin(maxEntrySubquery, eq(maxEntrySubquery.employeeId, employee.id))
+			.leftJoin(
+				employeeEntry,
+				and(
+					eq(employeeEntry.employeeId, employee.id),
+					eq(employeeEntry.timestamp, maxEntrySubquery.maxEntryTimestamp)
+				)
+			)
 			.leftJoin(employeeExit, eq(employee.id, employeeExit.employeeId))
 			.where(
 				or(
@@ -63,19 +79,26 @@ export async function getEmployees(
 						: [])
 				)
 			)
-			.groupBy(employee.id, employee.email, employee.fname, employee.lname, employeeEntry.building)
+			.groupBy(
+				employee.id,
+				employee.email,
+				employee.fname,
+				employee.lname,
+				maxEntrySubquery.maxEntryTimestamp,
+				employeeEntry.building
+			)
 			.limit(limit)
 			.offset(offset);
 
-		return employees.map((s) => {
+		return employees.map((e) => {
 			return {
-				id: s.id,
-				email: s.email,
-				fname: s.fname,
-				lname: s.lname,
-				department: s.department,
-				building: isInside(s.entryTimestamp, s.exitTimestamp) ? s.entryBuilding : null,
-				state: isInside(s.entryTimestamp, s.exitTimestamp) ? StateInside : StateOutside
+				id: e.id,
+				email: e.email,
+				fname: e.fname,
+				lname: e.lname,
+				department: e.department,
+				building: isInside(e.entryTimestamp, e.exitTimestamp) ? e.entryBuilding : null,
+				state: isInside(e.entryTimestamp, e.exitTimestamp) ? StateInside : StateOutside
 			};
 		});
 	} catch (err: unknown) {

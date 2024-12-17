@@ -1,4 +1,4 @@
-import { or, eq, sql } from 'drizzle-orm';
+import { or, eq, sql, and } from 'drizzle-orm';
 import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzyConcatSearchFilters, fuzzySearchFilters } from './fuzzysearch';
@@ -36,6 +36,15 @@ export async function getStudents(
 		: undefined;
 
 	try {
+		const maxEntrySubquery = db
+			.select({
+				studentId: studentEntry.studentId,
+				maxEntryTimestamp: sql<Date>`MAX(${studentEntry.timestamp})`.as('maxEntryTimestamp')
+			})
+			.from(studentEntry)
+			.groupBy(studentEntry.studentId)
+			.as('max_entry');
+
 		const students = await db
 			.select({
 				id: student.id,
@@ -43,12 +52,19 @@ export async function getStudents(
 				fname: student.fname,
 				lname: student.lname,
 				department: student.department,
-				entryTimestamp: sql<Date>`MAX(${studentEntry.timestamp})`.as('entryTimestamp'),
+				entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 				entryBuilding: studentEntry.building,
 				exitTimestamp: sql<Date | null>`MAX(${studentExit.timestamp})`.as('exitTimestamp')
 			})
 			.from(student)
-			.leftJoin(studentEntry, eq(student.id, studentEntry.studentId))
+			.leftJoin(maxEntrySubquery, eq(maxEntrySubquery.studentId, student.id))
+			.leftJoin(
+				studentEntry,
+				and(
+					eq(studentEntry.studentId, student.id),
+					eq(studentEntry.timestamp, maxEntrySubquery.maxEntryTimestamp)
+				)
+			)
 			.leftJoin(studentExit, eq(student.id, studentExit.studentId))
 			.where(
 				or(
@@ -63,7 +79,14 @@ export async function getStudents(
 						: [])
 				)
 			)
-			.groupBy(student.id, student.index, student.fname, student.lname, studentEntry.building)
+			.groupBy(
+				student.id,
+				student.index,
+				student.fname,
+				student.lname,
+				maxEntrySubquery.maxEntryTimestamp,
+				studentEntry.building
+			)
 			.limit(limit)
 			.offset(offset);
 
