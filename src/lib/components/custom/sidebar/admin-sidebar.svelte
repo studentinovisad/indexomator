@@ -8,6 +8,8 @@
 	import SidebarFooter from '$lib/components/ui/sidebar/sidebar-footer.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
+	import LogoLight from '$lib/assets/images/light.svg';
+	import LogoDark from '$lib/assets/images/dark.svg';
 
 	// Menu items.
 	const items = [
@@ -39,7 +41,13 @@
 <Sidebar.Root>
 	<Sidebar.Content>
 		<Sidebar.Group>
-			<Sidebar.GroupLabel class="select-none font-bold">Indexomator</Sidebar.GroupLabel>
+			<Sidebar.GroupLabel class="select-none font-bold">
+				<div class="flex items-center">
+					<img class="m-2 hidden size-10 dark:block" src={LogoLight} alt="Logo light" />
+					<img class="m-2 block size-10 dark:hidden" src={LogoDark} alt="Logo dark" />
+					Indexomator
+				</div>
+			</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
 					{#each items as item (item.title)}

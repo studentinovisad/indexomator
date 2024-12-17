@@ -7,6 +7,8 @@
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
 	import { formSchema } from './schema';
+	import LogoLight from '$lib/assets/images/light.svg';
+	import LogoDark from '$lib/assets/images/dark.svg';
 
 	let { data, form: actionData } = $props();
 
@@ -28,6 +30,8 @@
 	<form method="POST" class="flex w-full items-center justify-center px-4 pt-4" use:enhance>
 		<Card.Root class="mx-auto w-full max-w-sm">
 			<Card.Header>
+				<img class="ml-auto hidden size-20 dark:block" src={LogoLight} alt="Logo light" />
+				<img class="ml-auto block size-20 dark:hidden" src={LogoDark} alt="Logo dark" />
 				<Card.Title class="text-2xl">Login</Card.Title>
 				<Card.Description>Enter your credentials to login to the dashboard</Card.Description>
 				<p class="text-rose-600 dark:text-rose-500">{actionData?.message}</p>
