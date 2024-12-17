@@ -71,8 +71,8 @@ export async function getEmployees(
 					...(nonEmptySearchQuery
 						? [
 								...fuzzySearchFilters(employee.email, nonEmptySearchQuery, 1, true),
-								...fuzzySearchFilters(employee.fname, nonEmptySearchQuery, 3),
-								...fuzzySearchFilters(employee.lname, nonEmptySearchQuery, 3),
+								...fuzzySearchFilters(employee.fname, nonEmptySearchQuery, 2),
+								...fuzzySearchFilters(employee.lname, nonEmptySearchQuery, 2),
 								...fuzzyConcatSearchFilters(employee.fname, employee.lname, nonEmptySearchQuery, 3),
 								...fuzzyConcatSearchFilters(employee.lname, employee.fname, nonEmptySearchQuery, 3)
 							]
