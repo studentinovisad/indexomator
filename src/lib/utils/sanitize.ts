@@ -10,23 +10,23 @@ export function capitalizeString(value: string): string {
 }
 
 export function removeDiacritics(input: string): string {
-	const diacriticsMap = new Map([
-		['č', 'c'],
-		['Č', 'C'],
-		['ć', 'c'],
-		['Ć', 'C'],
-		['ǆ', 'dz'],
-		['Ǆ', 'Dz'],
-		['đ', 'dj'],
-		['Đ', 'Dj'],
-		['š', 's'],
-		['Š', 'S'],
-		['ž', 'z'],
-		['Ž', 'Z']
-	]);
-
 	return input
-		.split('')
+		.split('') // Splits string into characters
 		.map((char) => diacriticsMap.get(char) ?? char)
 		.join('');
 }
+
+const diacriticsMap = new Map([
+	['č', 'c'],
+	['Č', 'C'],
+	['ć', 'c'],
+	['Ć', 'C'],
+	['ǆ', 'dz'],
+	['Ǆ', 'Dz'],
+	['đ', 'dj'],
+	['Đ', 'Dj'],
+	['š', 's'],
+	['Š', 'S'],
+	['ž', 'z'],
+	['Ž', 'Z']
+]);
