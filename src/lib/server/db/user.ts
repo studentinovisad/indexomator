@@ -1,5 +1,5 @@
-import { eq } from 'drizzle-orm';
-import { userTable } from './schema/user';
+import { and, desc, eq, gt, sql } from 'drizzle-orm';
+import { ratelimitTable, userTable } from './schema/user';
 import { hashPassword, verifyPasswordStrength } from '../password';
 import { DB as db } from './connect';
 
@@ -57,4 +57,59 @@ export async function getUserIdAndPasswordHash(
 			`Failed to get user id and password hash from database: ${(err as Error).message}`
 		);
 	}
+}
+
+// Returns true if the user is ratelimited, otherwise false.
+export async function checkUserRatelimit(
+	userId: number,
+	ratelimitMaxAttempts: number,
+	ratelimitTimeout: number
+): Promise<boolean> {
+	// Assert that id is valid
+	if (userId === null || userId === undefined) {
+		throw new Error('Invalid userId');
+	}
+
+	// Assert that ratelimitMaxAttempts is valid
+	if (
+		ratelimitMaxAttempts === null ||
+		ratelimitMaxAttempts === undefined ||
+		ratelimitMaxAttempts <= 0
+	) {
+		throw new Error('Invalid ratelimitMaxAttempts');
+	}
+
+	// Assert that ratelimitTimeout is valid
+	if (ratelimitTimeout === null || ratelimitTimeout === undefined || ratelimitTimeout <= 0) {
+		throw new Error('Invalid ratelimitTimeout');
+	}
+	const ratelimitTimeoutMS = ratelimitTimeout * 1000;
+
+	return await db.transaction(async (tx) => {
+		// Get all the timestamps for the user
+		const timestamps = await tx
+			.select()
+			.from(ratelimitTable)
+			.where(
+				and(
+					eq(ratelimitTable.userId, userId),
+					gt(ratelimitTable.timestamp, new Date(Date.now() - ratelimitTimeoutMS))
+				)
+			)
+			.orderBy(desc(ratelimitTable.timestamp));
+
+		// Check if it's already locked
+		if (timestamps.length > 0 && timestamps[0].lock) {
+			return true;
+		}
+
+		// Check if the next attempt should get locked out
+		const shouldLock = timestamps.length >= ratelimitMaxAttempts - 1;
+		await tx.insert(ratelimitTable).values({
+			userId,
+			lock: shouldLock
+		});
+
+		return false;
+	});
 }

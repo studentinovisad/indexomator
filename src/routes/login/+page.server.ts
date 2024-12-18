@@ -1,5 +1,5 @@
 import { createSession, generateSessionToken } from '$lib/server/db/session';
-import { getUserIdAndPasswordHash } from '$lib/server/db/user';
+import { checkUserRatelimit, getUserIdAndPasswordHash } from '$lib/server/db/user';
 import { verifyPasswordHash } from '$lib/server/password';
 import { setSessionTokenCookie } from '$lib/server/session';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
@@ -8,6 +8,7 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { formSchema } from './schema';
 import type { PageServerLoad } from './$types';
 import { getBuildings } from '$lib/server/db/building';
+import { env } from '$env/dynamic/private';
 
 export const load: PageServerLoad = async () => {
 	const form = await superValidate(zod(formSchema));
@@ -21,6 +22,9 @@ export const load: PageServerLoad = async () => {
 
 export const actions: Actions = {
 	default: async (event) => {
+		const ratelimitMaxAttempts = Number.parseInt(env.RATELIMIT_MAX_ATTEMPTS ?? '5');
+		const ratelimitTimeout = Number.parseInt(env.RATELIMIT_TIMEOUT ?? '60');
+
 		const form = await superValidate(event.request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {
@@ -33,6 +37,16 @@ export const actions: Actions = {
 			const { username, password, building } = form.data;
 			// Check if the username and password are valid
 			const { id, passwordHash } = await getUserIdAndPasswordHash(username);
+
+			// Check if the ratelimit has been hit
+			const ratelimited = await checkUserRatelimit(id, ratelimitMaxAttempts, ratelimitTimeout);
+			if (ratelimited) {
+				return fail(401, {
+					form,
+					message: `Ratelimited, please wait ${ratelimitTimeout}s before trying again`
+				});
+			}
+
 			const validPassword = await verifyPasswordHash(passwordHash, password);
 			if (!validPassword) {
 				throw new Error('Invalid username or password');
