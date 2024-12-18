@@ -57,13 +57,39 @@ This will start the server on: `http://localhost:5173`.
 Just use the `docker-compose.prod.yaml`:
 
 ```bash
-docker compose -f docker-compose.prod.yaml up -d
+make prod-start
 ```
 
 or:
 
 ```bash
-podman-compose -f docker-compose.prod.yaml up -d
+docker compose -f docker-compose.prod.yml up -d
+```
+
+or:
+
+```bash
+podman-compose -f docker-compose.prod.yml up -d
+```
+
+### Updating
+
+In order to update you production deployment, first run:
+
+```bash
+git pull
+```
+
+And after that rebuild the images:
+
+```bash
+make prod-update
+```
+
+or:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 ## First steps
