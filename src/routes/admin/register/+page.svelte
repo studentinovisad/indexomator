@@ -6,16 +6,19 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { formSchema } from './schema';
+	import { page } from '$app/stores';
 
 	let { data, form: actionData } = $props();
 
 	const form = superForm(data.form, {
 		validators: zodClient(formSchema),
 		onUpdated: ({ form: f }) => {
-			if (f.valid) {
-				toast.success('User created successfully!');
+			if (actionData?.message === undefined) return;
+			const msg = actionData.message;
+			if (f.valid && $page.status === 200) {
+				toast.success(msg);
 			} else {
-				toast.error('Please fix the errors in the form.');
+				toast.error(msg);
 			}
 		}
 	});
@@ -28,7 +31,6 @@
 		<Card.Header>
 			<Card.Title class="text-2xl">Register</Card.Title>
 			<Card.Description>Enter credentials for user registration.</Card.Description>
-			<p class="text-rose-600 dark:text-rose-500">{actionData?.message}</p>
 		</Card.Header>
 		<Card.Content class="grid gap-4">
 			<Form.Field {form} name="username">
