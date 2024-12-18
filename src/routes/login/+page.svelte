@@ -9,16 +9,19 @@
 	import { formSchema } from './schema';
 	import LogoLight from '$lib/assets/images/light.svg';
 	import LogoDark from '$lib/assets/images/dark.svg';
+	import { page } from '$app/stores';
 
 	let { data, form: actionData } = $props();
 
 	const form = superForm(data.form, {
 		validators: zodClient(formSchema),
 		onUpdated: ({ form: f }) => {
-			if (f.valid) {
-				toast.success('Logged in successfully!');
+			if (actionData?.message === undefined) return;
+			const msg = actionData.message;
+			if (f.valid && $page.status === 200) {
+				toast.success(msg);
 			} else {
-				toast.error('Please fix the errors in the form.');
+				toast.error(msg);
 			}
 		}
 	});
@@ -36,7 +39,6 @@
 				<Card.Description class="hidden text-center xsm:block"
 					>Enter your credentials to login to the dashboard.</Card.Description
 				>
-				<p class="text-rose-600 dark:text-rose-500">{actionData?.message}</p>
 			</Card.Header>
 			<Card.Content class="grid gap-4">
 				<Form.Field {form} name="username">

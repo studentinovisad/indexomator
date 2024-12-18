@@ -7,7 +7,7 @@
 	let { children } = $props();
 </script>
 
-<Toaster />
+<Toaster richColors />
 
 <ModeWatcher defaultMode={'dark'} />
 <ThemeToggle />
