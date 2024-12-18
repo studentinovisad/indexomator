@@ -53,6 +53,7 @@ services:
       ORIGIN: ${ORIGIN}
       DATABASE_URL: ${DATABASE_URL}
       SECRET: ${SECRET}
+      PUBLIC_INDEX_REGEX: ${PUBLIC_INDEX_REGEX}
     networks:
       - internal
     labels:
