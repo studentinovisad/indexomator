@@ -54,7 +54,7 @@ This will start the server on: `http://localhost:5173`.
 
 ## Production
 
-Just use the `docker-compose.prod.yaml`:
+Just use the [`docker-compose.prod.yml`](docker-compose.prod.yml):
 
 ```bash
 make prod-start
