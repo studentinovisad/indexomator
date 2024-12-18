@@ -73,7 +73,7 @@
 							<Input {...props} bind:value={$formData.email} />
 							<Button
 								type="button"
-								onclick={(e) => {
+								onclick={() => {
 									if (
 										$formData.fname !== '' &&
 										$formData.lname !== '' &&
