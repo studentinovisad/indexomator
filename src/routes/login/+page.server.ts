@@ -35,21 +35,24 @@ export const actions: Actions = {
 
 		try {
 			const { username, password, building } = form.data;
-			// Check if the username and password are valid
+
+			// Check if the username exists
 			const { id, passwordHash } = await getUserIdAndPasswordHash(username);
 
 			// Check if the ratelimit has been hit
 			const ratelimited = await checkUserRatelimit(id, ratelimitMaxAttempts, ratelimitTimeout);
 			if (ratelimited) {
+				console.warn(`Ratelimited by IP: ${event.getClientAddress()}`);
 				return fail(401, {
 					form,
 					message: `Ratelimited, please wait ${ratelimitTimeout}s before trying again`
 				});
 			}
 
+			// Check if the password matches
 			const validPassword = await verifyPasswordHash(passwordHash, password);
 			if (!validPassword) {
-				throw new Error('Invalid username or password');
+				throw new Error('Incorrect password');
 			}
 
 			// Create a new session token
