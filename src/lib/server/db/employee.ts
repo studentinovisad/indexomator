@@ -70,11 +70,11 @@ export async function getEmployees(
 				or(
 					...(nonEmptySearchQuery
 						? [
-								...fuzzySearchFilters(employee.email, nonEmptySearchQuery, 1, true),
-								...fuzzySearchFilters(employee.fname, nonEmptySearchQuery, 2),
-								...fuzzySearchFilters(employee.lname, nonEmptySearchQuery, 2),
-								...fuzzyConcatSearchFilters(employee.fname, employee.lname, nonEmptySearchQuery, 3),
-								...fuzzyConcatSearchFilters(employee.lname, employee.fname, nonEmptySearchQuery, 3)
+								...fuzzySearchFilters(employee.email, nonEmptySearchQuery, {substr: true}),
+								...fuzzySearchFilters(employee.fname, nonEmptySearchQuery, {distance: 2}),
+								...fuzzySearchFilters(employee.lname, nonEmptySearchQuery, {distance: 2}),
+								...fuzzyConcatSearchFilters(employee.fname, employee.lname, nonEmptySearchQuery, {distance: 3}),
+								...fuzzyConcatSearchFilters(employee.lname, employee.fname, nonEmptySearchQuery, {distance: 3})
 							]
 						: [])
 				)
