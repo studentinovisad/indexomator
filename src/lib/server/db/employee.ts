@@ -70,7 +70,7 @@ export async function getEmployees(
 				or(
 					...(nonEmptySearchQuery
 						? [
-								...fuzzySearchFilters([employee.email], nonEmptySearchQuery, { substr: true }),
+								...fuzzySearchFilters([employee.email], nonEmptySearchQuery),
 								...fuzzySearchFilters([employee.fname], nonEmptySearchQuery, { distance: 2 }),
 								...fuzzySearchFilters([employee.lname], nonEmptySearchQuery, { distance: 2 }),
 								...fuzzySearchFilters([employee.fname, employee.lname], nonEmptySearchQuery, { distance: 3 }),

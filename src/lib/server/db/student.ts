@@ -70,7 +70,7 @@ export async function getStudents(
 				or(
 					...(nonEmptySearchQuery
 						? [
-								...fuzzySearchFilters([student.index], nonEmptySearchQuery, { substr: true }),
+								...fuzzySearchFilters([student.index], nonEmptySearchQuery),
 								...fuzzySearchFilters([student.fname], nonEmptySearchQuery, { distance: 2 }),
 								...fuzzySearchFilters([student.lname], nonEmptySearchQuery, { distance: 2 }),
 								...fuzzySearchFilters([student.fname, student.lname], nonEmptySearchQuery, { distance: 3 }),
