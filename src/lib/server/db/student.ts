@@ -73,8 +73,12 @@ export async function getStudents(
 								...fuzzySearchFilters([student.index], nonEmptySearchQuery),
 								...fuzzySearchFilters([student.fname], nonEmptySearchQuery, { distance: 2 }),
 								...fuzzySearchFilters([student.lname], nonEmptySearchQuery, { distance: 2 }),
-								...fuzzySearchFilters([student.fname, student.lname], nonEmptySearchQuery, { distance: 3 }),
-								...fuzzySearchFilters([student.lname, student.fname], nonEmptySearchQuery, { distance: 3 }),
+								...fuzzySearchFilters([student.fname, student.lname], nonEmptySearchQuery, {
+									distance: 3
+								}),
+								...fuzzySearchFilters([student.lname, student.fname], nonEmptySearchQuery, {
+									distance: 3
+								})
 							]
 						: [])
 				)
