@@ -7,16 +7,19 @@
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
 	import { formSchema } from './schema';
+	import { page } from '$app/stores';
 
 	let { data, form: actionData } = $props();
 
 	const form = superForm(data.form, {
 		validators: zodClient(formSchema),
 		onUpdated: ({ form: f }) => {
-			if (f.valid) {
-				toast.success('Student created successfully!');
+			if (actionData?.message === undefined) return;
+			const msg = actionData.message;
+			if (f.valid && $page.status === 200) {
+				toast.success(msg);
 			} else {
-				toast.error('Please fix the errors in the form.');
+				toast.error(msg);
 			}
 		}
 	});
@@ -31,7 +34,6 @@
 			<Card.Description>
 				Create an student who wants to enter the building for the first time.
 			</Card.Description>
-			<p class="my-auto text-rose-600 dark:text-rose-500">{actionData?.message}</p>
 		</Card.Header>
 		<Card.Content class="grid gap-4">
 			<Form.Field {form} name="fname">

@@ -2,26 +2,40 @@
 	import * as Card from '$lib/components/ui/card';
 	import * as Form from '$lib/components/ui/form';
 	import * as Select from '$lib/components/ui/select';
+	import AtSign from 'lucide-svelte/icons/at-sign';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
 	import { formSchema } from './schema';
+	import { page } from '$app/stores';
+	import { Button } from '$lib/components/ui/button';
+	import { removeDiacritics } from '$lib/utils/sanitize';
 
 	let { data, form: actionData } = $props();
 
 	const form = superForm(data.form, {
 		validators: zodClient(formSchema),
 		onUpdated: ({ form: f }) => {
-			if (f.valid) {
-				toast.success('Employee created successfully!');
+			if (actionData?.message === undefined) return;
+			const msg = actionData.message;
+			if (f.valid && $page.status === 200) {
+				toast.success(msg);
 			} else {
-				toast.error('Please fix the errors in the form.');
+				toast.error(msg);
 			}
 		}
 	});
 
 	const { form: formData, enhance } = form;
+
+	function constructEmail(): string {
+		const fname = removeDiacritics($formData.fname).toLowerCase();
+		const lname = removeDiacritics($formData.lname).toLowerCase();
+		const department = removeDiacritics($formData.department).toLowerCase();
+
+		return `${fname}.${lname}@${department}.uns.ac.rs`;
+	}
 </script>
 
 <form method="POST" class="flex h-[90dvh] w-full items-center justify-center px-4" use:enhance>
@@ -31,7 +45,6 @@
 			<Card.Description>
 				Create an employee who wants to enter the building for the first time.
 			</Card.Description>
-			<p class="my-auto text-rose-600 dark:text-rose-500">{actionData?.message}</p>
 		</Card.Header>
 		<Card.Content class="grid gap-4">
 			<Form.Field {form} name="fname">
@@ -56,7 +69,33 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Email</Form.Label>
-						<Input {...props} bind:value={$formData.email} />
+						<div class="flex gap-2">
+							<Input {...props} bind:value={$formData.email} />
+							<Button
+								type="button"
+								onclick={() => {
+									if (
+										$formData.fname !== '' &&
+										$formData.lname !== '' &&
+										$formData.department !== ''
+									) {
+										$formData.email = constructEmail();
+									} else if ($formData.fname === '') {
+										toast.error('You have to fill out the "First Name" field.');
+									} else if ($formData.lname === '') {
+										toast.error('You have to fill out the "Last Name" field.');
+									} else if ($formData.department === '') {
+										toast.error('You have to fill out the "Department" field.');
+									}
+								}}
+								data-sidebar="trigger"
+								variant="outline"
+								size="icon"
+							>
+								<AtSign />
+								<span class="sr-only">Generate Email</span>
+							</Button>
+						</div>
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
