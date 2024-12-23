@@ -5,6 +5,7 @@ import { getEmployees, toggleEmployeeState } from '$lib/server/db/employee';
 import { Employee, Student, type Person } from '$lib/types/person';
 import { invalidateSession } from '$lib/server/db/session';
 import { deleteSessionTokenCookie } from '$lib/server/session';
+import { StateInside, StateOutside, type State } from '$lib/types/state';
 
 export const load: PageServerLoad = async ({ url }) => {
 	try {
@@ -13,6 +14,16 @@ export const load: PageServerLoad = async ({ url }) => {
 		const employeesP = getEmployees(1000, 0, searchQuery);
 		const students = await studentsP;
 		const employees = await employeesP;
+
+		const studentsAllP = getStudents(1000, 0, '');
+		const employeesAllP = getEmployees(1000, 0, '');
+		const studentsAll = await studentsAllP;
+		const employeesAll = await employeesAllP;
+
+		const studentsInsideCount = studentsAll.filter(student => student.state == StateInside).length;
+		const employeesInsideCount = employeesAll.filter(employee => employee.state === StateInside).length;
+
+		let count=employeesInsideCount+studentsInsideCount;
 
 		const persons: Person[] = [
 			...students.map((s) => ({
@@ -37,9 +48,20 @@ export const load: PageServerLoad = async ({ url }) => {
 			}))
 		];
 
+		persons.sort((a, b) => {
+			if (a.state === StateInside && b.state !== StateInside) {
+				return -1; 
+			}
+			if (a.state !== StateInside && b.state === StateInside) {
+				return 1;   
+			}
+			return 0; 
+		});
+
 		return {
 			searchQuery,
-			persons
+			persons,
+			count
 		};
 	} catch (err: unknown) {
 		console.debug(`Failed to get students and employees: ${(err as Error).message}`);

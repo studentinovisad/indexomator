@@ -28,6 +28,8 @@
 		<Button type="reset" variant="destructive" size="icon" class="flex-shrink-0">
 			<Reset />
 		</Button>
+		<p class="my-auto text-gray-600 dark:text-gray-500">Persons inside the building: {data.count}</p>
+	
 		<p class="my-auto text-rose-600 dark:text-rose-500">{actionData?.message}</p>
 	</div>
 </form>
