@@ -3,7 +3,9 @@
 		type ColumnDef,
 		getCoreRowModel,
 		getPaginationRowModel,
-		type PaginationState
+		getSortedRowModel,
+		type PaginationState,
+		type SortingState
 	} from '@tanstack/table-core';
 	import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
@@ -17,6 +19,7 @@
 	let { data, columns }: DataTableProps<TData, TValue> = $props();
 
 	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 });
+	let sorting = $state<SortingState>([]);
 
 	const table = createSvelteTable({
 		get data() {
@@ -26,6 +29,9 @@
 		state: {
 			get pagination() {
 				return pagination;
+			},
+			get sorting() {
+				return sorting;
 			}
 		},
 		onPaginationChange: (updater) => {
@@ -35,8 +41,16 @@
 				pagination = updater;
 			}
 		},
+		onSortingChange: (updater) => {
+			if (typeof updater === 'function') {
+				sorting = updater(sorting);
+			} else {
+				sorting = updater;
+			}
+		},
 		getCoreRowModel: getCoreRowModel(),
-		getPaginationRowModel: getPaginationRowModel()
+		getPaginationRowModel: getPaginationRowModel(),
+		getSortedRowModel: getSortedRowModel()
 	});
 </script>
 
@@ -49,10 +63,29 @@
 						{#if idx !== 0}
 							<Table.Head>
 								{#if !header.isPlaceholder}
-									<FlexRender
-										content={header.column.columnDef.header}
-										context={header.getContext()}
-									/>
+									<div
+										class="flex cursor-pointer items-center"
+										role="button"
+										tabindex="0"
+										onclick={() => {
+											header.column.toggleSorting(header.column.getIsSorted() === 'asc');
+										}}
+										onkeydown={(e) => {
+											if (e.key === 'Enter' || e.key === ' ') {
+												header.column.toggleSorting(header.column.getIsSorted() === 'asc');
+											}
+										}}
+									>
+										<FlexRender
+											content={header.column.columnDef.header}
+											context={header.getContext()}
+										/>
+										{#if header.column.getIsSorted() === 'asc'}
+											<span>↑</span>
+										{:else if header.column.getIsSorted() === 'desc'}
+											<span>↓</span>
+										{/if}
+									</div>
 								{/if}
 							</Table.Head>
 						{/if}
