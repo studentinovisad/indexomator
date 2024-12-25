@@ -35,6 +35,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	} else {
 		// If session is invalid, delete the session cookie
 		deleteSessionTokenCookie(event);
+
 		// Redirect to the login page after session expiry
 		if (event.url.pathname !== '/login') {
 			return redirect(302, '/login');

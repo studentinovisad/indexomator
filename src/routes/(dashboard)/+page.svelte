@@ -5,33 +5,54 @@
 	import Search from 'lucide-svelte/icons/search';
 	import Reset from 'lucide-svelte/icons/list-restart';
 	import DataTable from './data-table.svelte';
+	import { toast } from 'svelte-sonner';
+	import { page } from '$app/stores';
 	import { columns } from './columns';
+	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 
 	let { data, form: actionData } = $props();
-	const searchQuery = data.searchQuery;
 
-	let searchBox: HTMLFormElement | null;
+	$effect(() => {
+		const msg = actionData?.message;
+		if (msg !== undefined) {
+			if ($page.status === 200) {
+				toast.success(msg);
+			} else {
+				toast.error(msg);
+			}
+		}
+	});
+
+	let searchQuery = $state('');
+	const persons = $derived(actionData?.persons ?? data.persons ?? []);
 </script>
 
 <form
-	action="/"
-	bind:this={searchBox}
-	onreset={() => {
-		searchBox?.submit();
+	method="POST"
+	action="?/search"
+	class="flex gap-2 px-4 py-2"
+	use:enhance={() => {
+		return async ({ update }) => {
+			await update({ reset: false });
+		};
 	}}
 >
-	<div class="flex gap-2 px-4 py-2">
-		<Input id="search" class="max-w-xs" placeholder="Search..." name="q" value={searchQuery} />
-		<Button type="submit" size="icon" class="flex-shrink-0">
-			<Search />
-		</Button>
-		<Button type="reset" variant="destructive" size="icon" class="flex-shrink-0">
-			<Reset />
-		</Button>
-		<p class="my-auto text-rose-600 dark:text-rose-500">{actionData?.message}</p>
-	</div>
+	<Input id="search" class="max-w-xs" placeholder="Search..." name="q" bind:value={searchQuery} />
+	<Button type="submit" size="icon" class="flex-shrink-0">
+		<Search />
+	</Button>
+	<Button
+		onclick={() => goto('/')}
+		type="reset"
+		variant="destructive"
+		size="icon"
+		class="flex-shrink-0"
+	>
+		<Reset />
+	</Button>
 </form>
 <Separator />
 <div class="m-0 sm:m-4">
-	<DataTable data={data.persons ?? []} {columns} />
+	<DataTable data={persons} {columns} />
 </div>
