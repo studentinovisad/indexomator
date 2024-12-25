@@ -4,7 +4,7 @@ import { env } from '$env/dynamic/private';
 import { connectDatabaseWithURL } from './connect_generic';
 
 export type Database = PostgresJsDatabase<Record<string, never>>;
-export type Client = postgres.Sql<{}>;
+export type Client = postgres.Sql<{}>; // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 // Connects to the database using the DATABASE_URL environment variable
 export async function connectDatabase(): Promise<{
