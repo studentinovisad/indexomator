@@ -8,8 +8,8 @@ import { deleteSessionTokenCookie } from '$lib/server/session';
 
 export const load: PageServerLoad = async () => {
 	try {
-		const studentsP = getStudents(1000, 0, undefined);
-		const employeesP = getEmployees(1000, 0, undefined);
+		const studentsP = getStudents(1000, 0);
+		const employeesP = getEmployees(1000, 0);
 		const students = await studentsP;
 		const employees = await employeesP;
 
@@ -42,7 +42,6 @@ export const load: PageServerLoad = async () => {
 	} catch (err: unknown) {
 		console.debug(`Failed to get students and employees: ${(err as Error).message}`);
 		return fail(500, {
-			persons: [] as Person[],
 			message: 'Failed to get students and employees'
 		});
 	}
