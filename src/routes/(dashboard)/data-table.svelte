@@ -64,7 +64,7 @@
 							<Table.Head>
 								{#if !header.isPlaceholder}
 									<div
-										class="flex items-center cursor-pointer"
+										class="flex cursor-pointer items-center"
 										role="button"
 										tabindex="0"
 										onclick={() => {
