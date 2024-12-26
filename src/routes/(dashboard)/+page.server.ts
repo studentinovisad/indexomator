@@ -53,7 +53,7 @@ export const actions: Actions = {
 			const type = formData.get('type');
 			const searchQuery = formData.get('q');
 
-			// Check if the id and type are valid
+			// Check if the id, type and searchQuery are valid
 			if (
 				idS === null ||
 				idS === undefined ||
@@ -78,14 +78,14 @@ export const actions: Actions = {
 					message: 'Invalid session'
 				});
 			}
-			const building = locals.session.building;
-			const creator = locals.user.username;
+			const { building } = locals.session;
+			const { username } = locals.user;
 
 			const id = Number.parseInt(idS);
 			if (type === Student) {
-				await toggleStudentState(id, building, creator);
+				await toggleStudentState(id, building, username);
 			} else if (type === Employee) {
-				await toggleEmployeeState(id, building, creator);
+				await toggleEmployeeState(id, building, username);
 			} else {
 				return fail(500, {
 					message: 'Invalid type (neither student nor employee)'
