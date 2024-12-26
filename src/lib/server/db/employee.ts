@@ -1,4 +1,4 @@
-import { or, eq, sql, and } from 'drizzle-orm';
+import { or, eq, and, max, gt, count, sql, isNull } from 'drizzle-orm';
 import { employee, employeeEntry, employeeExit } from './schema/employee';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
@@ -88,6 +88,7 @@ export async function getEmployees(
 				employee.email,
 				employee.fname,
 				employee.lname,
+				employee.department,
 				maxEntrySubquery.maxEntryTimestamp,
 				employeeEntry.building
 			)
@@ -107,6 +108,43 @@ export async function getEmployees(
 		});
 	} catch (err: unknown) {
 		throw new Error(`Failed to get employees from database: ${(err as Error).message}}`);
+	}
+}
+
+// Gets the count of all employees that are inside, per building
+export async function getEmployeesCountPerBuilding(): Promise<
+	{
+		building: string;
+		insideCount: number;
+	}[]
+> {
+	try {
+		const employeeInsideSubquery = db
+			.select({
+				employeeId: employeeEntry.employeeId,
+				entryBuilding: employeeEntry.building,
+				maxEntryTimestamp: max(employeeEntry.timestamp),
+				maxExitTimestamp: max(employeeExit.timestamp)
+			})
+			.from(employeeEntry)
+			.leftJoin(employeeExit, eq(employeeEntry.employeeId, employeeExit.employeeId))
+			.groupBy(employeeEntry.employeeId, employeeEntry.building)
+			.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
+				or(isNull(maxExitTimestamp), gt(maxEntryTimestamp, maxExitTimestamp))
+			)
+			.as('employee_inside');
+
+		return await db
+			.select({
+				building: employeeInsideSubquery.entryBuilding,
+				insideCount: count(employeeInsideSubquery.employeeId)
+			})
+			.from(employeeInsideSubquery)
+			.groupBy(employeeInsideSubquery.entryBuilding);
+	} catch (err: unknown) {
+		throw new Error(
+			`Failed to get inside count of employees from database: ${(err as Error).message}}`
+		);
 	}
 }
 

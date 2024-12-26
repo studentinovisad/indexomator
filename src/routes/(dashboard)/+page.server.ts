@@ -1,28 +1,28 @@
-import { getStudents, toggleStudentState } from '$lib/server/db/student';
+import {
+	getStudents,
+	getStudentsCountPerBuilding,
+	toggleStudentState
+} from '$lib/server/db/student';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getEmployees, toggleEmployeeState } from '$lib/server/db/employee';
+import {
+	getEmployees,
+	getEmployeesCountPerBuilding,
+	toggleEmployeeState
+} from '$lib/server/db/employee';
 import { Employee, Student, type Person } from '$lib/types/person';
 import { invalidateSession } from '$lib/server/db/session';
 import { deleteSessionTokenCookie } from '$lib/server/session';
-import { StateInside, StateOutside, type State } from '$lib/types/state';
 
 export const load: PageServerLoad = async () => {
 	try {
 		const studentsP = getStudents(1000, 0);
 		const employeesP = getEmployees(1000, 0);
+		const studentsInsideP = getStudentsCountPerBuilding();
+		const employeesInsideP = getEmployeesCountPerBuilding();
+
 		const students = await studentsP;
 		const employees = await employeesP;
-
-		const studentsAllP = getStudents(1000, 0, '');
-		const employeesAllP = getEmployees(1000, 0, '');
-		const studentsAll = await studentsAllP;
-		const employeesAll = await employeesAllP;
-
-		const studentsInsideCount = studentsAll.filter(student => student.state == StateInside).length;
-		const employeesInsideCount = employeesAll.filter(employee => employee.state === StateInside).length;
-
-		let count=employeesInsideCount+studentsInsideCount;
 
 		const persons: Person[] = [
 			...students.map((s) => ({
@@ -47,19 +47,13 @@ export const load: PageServerLoad = async () => {
 			}))
 		];
 
-		persons.sort((a, b) => {
-			if (a.state === StateInside && b.state !== StateInside) {
-				return -1; 
-			}
-			if (a.state !== StateInside && b.state === StateInside) {
-				return 1;   
-			}
-			return 0; 
-		});
+		const studentsInside = await studentsInsideP;
+		const employeesInside = await employeesInsideP;
 
 		return {
 			persons,
-			count
+			studentsInside,
+			employeesInside
 		};
 	} catch (err: unknown) {
 		console.debug(`Failed to get students and employees: ${(err as Error).message}`);

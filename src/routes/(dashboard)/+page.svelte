@@ -10,6 +10,7 @@
 	import { columns } from './columns';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import InsideCountPerBuilding from './insideCountPerBuilding.svelte';
 
 	let { data, form: actionData } = $props();
 
@@ -26,7 +27,8 @@
 
 	let searchQuery = $state('');
 	const persons = $derived(actionData?.persons ?? data.persons ?? []);
-  const insideCount = $derived(data.count);
+	const studentsInside = $derived(data.studentsInside ?? []);
+	const employeesInside = $derived(data.employeesInside ?? []);
 </script>
 
 <form
@@ -52,7 +54,8 @@
 	>
 		<Reset />
 	</Button>
-  <p class="my-auto text-gray-600 dark:text-gray-500">Persons inside the building: {insideCount}</p>
+	<InsideCountPerBuilding caption="Students" data={studentsInside} />
+	<InsideCountPerBuilding caption="Employees" data={employeesInside} />
 </form>
 <Separator />
 <div class="m-0 sm:m-4">

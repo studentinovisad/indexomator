@@ -1,4 +1,4 @@
-import { or, eq, sql, and } from 'drizzle-orm';
+import { or, eq, and, max, gt, count, sql, isNull, isNotNull } from 'drizzle-orm';
 import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
@@ -88,6 +88,7 @@ export async function getStudents(
 				student.index,
 				student.fname,
 				student.lname,
+				student.department,
 				maxEntrySubquery.maxEntryTimestamp,
 				studentEntry.building
 			)
@@ -107,6 +108,43 @@ export async function getStudents(
 		});
 	} catch (err: unknown) {
 		throw new Error(`Failed to get students from database: ${(err as Error).message}`);
+	}
+}
+
+// Gets the count of all students that are inside, per building
+export async function getStudentsCountPerBuilding(): Promise<
+	{
+		building: string;
+		insideCount: number;
+	}[]
+> {
+	try {
+		const studentInsideSubquery = db
+			.select({
+				studentId: studentEntry.studentId,
+				entryBuilding: studentEntry.building,
+				maxEntryTimestamp: max(studentEntry.timestamp),
+				maxExitTimestamp: max(studentExit.timestamp)
+			})
+			.from(studentEntry)
+			.leftJoin(studentExit, eq(studentEntry.studentId, studentExit.studentId))
+			.groupBy(studentEntry.studentId, studentEntry.building)
+			.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
+				or(isNull(maxExitTimestamp), gt(maxEntryTimestamp, maxExitTimestamp))
+			)
+			.as('student_inside');
+
+		return await db
+			.select({
+				building: studentInsideSubquery.entryBuilding,
+				insideCount: count(studentInsideSubquery.studentId)
+			})
+			.from(studentInsideSubquery)
+			.groupBy(studentInsideSubquery.entryBuilding);
+	} catch (err: unknown) {
+		throw new Error(
+			`Failed to get inside count of students from database: ${(err as Error).message}}`
+		);
 	}
 }
 
