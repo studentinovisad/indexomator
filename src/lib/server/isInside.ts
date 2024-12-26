@@ -1,4 +1,4 @@
-export function isInside(entryTimestamp: Date, exitTimestamp: Date | null): boolean {
+export function isInside(entryTimestamp: Date | null, exitTimestamp: Date | null): boolean {
 	// Assert entryTimestamp is valid
 	if (entryTimestamp === null || entryTimestamp === undefined) {
 		throw new Error('Entry timestamp is not valid');

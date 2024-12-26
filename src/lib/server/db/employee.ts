@@ -1,4 +1,4 @@
-import { or, eq, sql, and } from 'drizzle-orm';
+import { or, eq, and, max } from 'drizzle-orm';
 import { employee, employeeEntry, employeeExit } from './schema/employee';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
@@ -39,7 +39,7 @@ export async function getEmployees(
 		const maxEntrySubquery = db
 			.select({
 				employeeId: employeeEntry.employeeId,
-				maxEntryTimestamp: sql<Date>`MAX(${employeeEntry.timestamp})`.as('maxEntryTimestamp')
+				maxEntryTimestamp: max(employeeEntry.timestamp).as('max_entry_timestamp')
 			})
 			.from(employeeEntry)
 			.groupBy(employeeEntry.employeeId)
@@ -54,7 +54,7 @@ export async function getEmployees(
 				department: employee.department,
 				entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 				entryBuilding: employeeEntry.building,
-				exitTimestamp: sql<Date | null>`MAX(${employeeExit.timestamp})`.as('exitTimestamp')
+				exitTimestamp: max(employeeExit.timestamp)
 			})
 			.from(employee)
 			.leftJoin(maxEntrySubquery, eq(maxEntrySubquery.employeeId, employee.id))
@@ -88,6 +88,7 @@ export async function getEmployees(
 				employee.email,
 				employee.fname,
 				employee.lname,
+				employee.department,
 				maxEntrySubquery.maxEntryTimestamp,
 				employeeEntry.building
 			)
@@ -211,8 +212,8 @@ export async function toggleEmployeeState(
 			const [{ entryTimestamp, exitTimestamp }] = await tx
 				.select({
 					id: employee.id,
-					entryTimestamp: sql<Date>`MAX(${employeeEntry.timestamp})`.as('entryTimestamp'),
-					exitTimestamp: sql<Date | null>`MAX(${employeeExit.timestamp})`.as('exitTimestamp')
+					entryTimestamp: max(employeeEntry.timestamp),
+					exitTimestamp: max(employeeExit.timestamp)
 				})
 				.from(employee)
 				.leftJoin(employeeEntry, eq(employee.id, employeeEntry.employeeId))
