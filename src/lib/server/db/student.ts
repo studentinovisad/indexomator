@@ -1,7 +1,7 @@
 import { or, eq, and, max } from 'drizzle-orm';
 import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
-import { fuzzySearchFilters } from './fuzzysearch';
+import { fuzzySearchFilters, sqlConcat, sqlLeast, sqlLevenshteinDistance } from './fuzzysearch';
 import { isInside } from '../isInside';
 import { DB as db } from './connect';
 import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
@@ -45,55 +45,103 @@ export async function getStudents(
 			.groupBy(studentEntry.studentId)
 			.as('max_entry');
 
-		const students = await db
-			.select({
-				id: student.id,
-				index: student.index,
-				fname: student.fname,
-				lname: student.lname,
-				department: student.department,
-				entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
-				entryBuilding: studentEntry.building,
-				exitTimestamp: max(studentExit.timestamp)
-			})
-			.from(student)
-			.leftJoin(maxEntrySubquery, eq(maxEntrySubquery.studentId, student.id))
-			.leftJoin(
-				studentEntry,
-				and(
-					eq(studentEntry.studentId, student.id),
-					eq(studentEntry.timestamp, maxEntrySubquery.maxEntryTimestamp)
-				)
-			)
-			.leftJoin(studentExit, eq(student.id, studentExit.studentId))
-			.where(
-				or(
-					...(nonEmptySearchQuery
-						? [
-								...fuzzySearchFilters([student.index], nonEmptySearchQuery),
-								...fuzzySearchFilters([student.fname], nonEmptySearchQuery, { distance: 2 }),
-								...fuzzySearchFilters([student.lname], nonEmptySearchQuery, { distance: 2 }),
-								...fuzzySearchFilters([student.fname, student.lname], nonEmptySearchQuery, {
-									distance: 3
-								}),
-								...fuzzySearchFilters([student.lname, student.fname], nonEmptySearchQuery, {
-									distance: 3
-								})
-							]
-						: [])
-				)
-			)
-			.groupBy(
-				student.id,
-				student.index,
-				student.fname,
-				student.lname,
-				student.department,
-				maxEntrySubquery.maxEntryTimestamp,
-				studentEntry.building
-			)
-			.limit(limit)
-			.offset(offset);
+		const students =
+			nonEmptySearchQuery !== undefined
+				? await db
+						.select({
+							id: student.id,
+							index: student.index,
+							fname: student.fname,
+							lname: student.lname,
+							department: student.department,
+							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
+							entryBuilding: studentEntry.building,
+							exitTimestamp: max(studentExit.timestamp),
+							leastDistance: sqlLeast([
+								sqlLevenshteinDistance(sqlConcat([student.fname], ' '), nonEmptySearchQuery),
+								sqlLevenshteinDistance(sqlConcat([student.lname], ' '), nonEmptySearchQuery),
+								sqlLevenshteinDistance(
+									sqlConcat([student.fname, student.lname], ' '),
+									nonEmptySearchQuery
+								),
+								sqlLevenshteinDistance(
+									sqlConcat([student.lname, student.fname], ' '),
+									nonEmptySearchQuery
+								)
+							]).as('least_distance')
+						})
+						.from(student)
+						.leftJoin(maxEntrySubquery, eq(maxEntrySubquery.studentId, student.id))
+						.leftJoin(
+							studentEntry,
+							and(
+								eq(studentEntry.studentId, student.id),
+								eq(studentEntry.timestamp, maxEntrySubquery.maxEntryTimestamp)
+							)
+						)
+						.leftJoin(studentExit, eq(student.id, studentExit.studentId))
+						.where(
+							or(
+								...(nonEmptySearchQuery
+									? [
+											...fuzzySearchFilters([student.index], nonEmptySearchQuery),
+											...fuzzySearchFilters([student.fname], nonEmptySearchQuery, { distance: 4 }),
+											...fuzzySearchFilters([student.lname], nonEmptySearchQuery, { distance: 4 }),
+											...fuzzySearchFilters([student.fname, student.lname], nonEmptySearchQuery, {
+												distance: 5
+											}),
+											...fuzzySearchFilters([student.lname, student.fname], nonEmptySearchQuery, {
+												distance: 5
+											})
+										]
+									: [])
+							)
+						)
+						.groupBy(
+							student.id,
+							student.index,
+							student.fname,
+							student.lname,
+							student.department,
+							maxEntrySubquery.maxEntryTimestamp,
+							studentEntry.building
+						)
+						.orderBy(({ leastDistance, index }) => [leastDistance, index])
+						.limit(limit)
+						.offset(offset)
+				: await db
+						.select({
+							id: student.id,
+							index: student.index,
+							fname: student.fname,
+							lname: student.lname,
+							department: student.department,
+							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
+							entryBuilding: studentEntry.building,
+							exitTimestamp: max(studentExit.timestamp)
+						})
+						.from(student)
+						.leftJoin(maxEntrySubquery, eq(maxEntrySubquery.studentId, student.id))
+						.leftJoin(
+							studentEntry,
+							and(
+								eq(studentEntry.studentId, student.id),
+								eq(studentEntry.timestamp, maxEntrySubquery.maxEntryTimestamp)
+							)
+						)
+						.leftJoin(studentExit, eq(student.id, studentExit.studentId))
+						.groupBy(
+							student.id,
+							student.index,
+							student.fname,
+							student.lname,
+							student.department,
+							maxEntrySubquery.maxEntryTimestamp,
+							studentEntry.building
+						)
+						.orderBy(({ index }) => [index])
+						.limit(limit)
+						.offset(offset);
 
 		return students.map((s) => {
 			return {

@@ -32,8 +32,8 @@ export function fuzzySearchFilters(
 
 	const concatFields = sqlConcat(dbFields, ' ');
 	const ilikeFilter = ilike(
-		concatFields as unknown as Column, // WARN: Because there is no typedef for sql as first param in ilike function
-		`${opts.substr !== undefined ? '%' : ''}${searchQuery}%`
+		concatFields as unknown as Column, // WARN: There is no typedef for sql as first param in ilike function
+		`${opts.substr === true ? '%' : ''}${searchQuery}%`
 	) as SQL<boolean>;
 	const levenshteinFilter =
 		opts.distance !== undefined ? [sqlLevenshtein(concatFields, searchQuery, opts.distance)] : [];
@@ -45,23 +45,32 @@ export function fuzzySearchFilters(
  * Returns the sql for concatenating multiple columns with a separator using CONCAT_WS
  */
 export function sqlConcat(cols: Column[], separator?: string): SQL<Column> {
-	return cols
+	const sqlCols = cols
 		.map((col) => sql<Column>`${col}`)
-		.reduce((prev, curr) =>
-			separator !== undefined ? sql`${prev} || ${separator} || ${curr}` : sql`${prev} || ${curr}`
-		);
+		.reduce((prev, curr) => sql`${prev}, ${curr}`);
+	return separator !== undefined
+		? sql<Column>`CONCAT_WS(${separator}, ${sqlCols})`
+		: sql<Column>`CONCAT(${sqlCols})`;
 }
 
 /*
- * Returns the sql for getting the levenshtein distance if distance isn't passed
- * Otherwise, returns the sql for determining if the levenshtein distance is less than or equal to the passed distance
+ * Returns the sql for getting the least value out of N columns
  */
-export function sqlLevenshtein(
-	col: SQL<Column>,
-	input: string,
-	distance?: number
-): SQL<boolean | number> {
-	return distance !== undefined
-		? sql<boolean>`LEVENSHTEIN(LOWER(${col}), LOWER(${input})) <= ${distance}`
-		: sql<number>`LEVENSHTEIN(LOWER(${col}), LOWER(${input}))`;
+export function sqlLeast(cols: SQL<number>[]): SQL<number> {
+	const sqlCols = cols.reduce((prev, curr) => sql`${prev}, ${curr}`);
+	return sql<number>`LEAST(${sqlCols})`;
+}
+
+/*
+ * Returns the sql for determining if the levenshtein distance is less than or equal to the passed distance
+ */
+export function sqlLevenshtein(col: SQL<Column>, input: string, distance: number): SQL<boolean> {
+	return sql<boolean>`LEVENSHTEIN(LOWER(${col}), LOWER(${input})) <= ${distance}`;
+}
+
+/*
+ * Returns the sql for getting the levenshtein distance
+ */
+export function sqlLevenshteinDistance(col: SQL<Column>, input: string): SQL<number> {
+	return sql<number>`LEVENSHTEIN(LOWER(${col}), LOWER(${input}))`;
 }
