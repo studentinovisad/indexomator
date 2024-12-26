@@ -82,19 +82,17 @@ export async function getStudents(
 						.leftJoin(studentExit, eq(student.id, studentExit.studentId))
 						.where(
 							or(
-								...(nonEmptySearchQuery
-									? [
-											...fuzzySearchFilters([student.index], nonEmptySearchQuery),
-											...fuzzySearchFilters([student.fname], nonEmptySearchQuery, { distance: 4 }),
-											...fuzzySearchFilters([student.lname], nonEmptySearchQuery, { distance: 4 }),
-											...fuzzySearchFilters([student.fname, student.lname], nonEmptySearchQuery, {
-												distance: 5
-											}),
-											...fuzzySearchFilters([student.lname, student.fname], nonEmptySearchQuery, {
-												distance: 5
-											})
-										]
-									: [])
+								...[
+									...fuzzySearchFilters([student.index], nonEmptySearchQuery),
+									...fuzzySearchFilters([student.fname], nonEmptySearchQuery, { distance: 4 }),
+									...fuzzySearchFilters([student.lname], nonEmptySearchQuery, { distance: 4 }),
+									...fuzzySearchFilters([student.fname, student.lname], nonEmptySearchQuery, {
+										distance: 5
+									}),
+									...fuzzySearchFilters([student.lname, student.fname], nonEmptySearchQuery, {
+										distance: 5
+									})
+								]
 							)
 						)
 						.groupBy(

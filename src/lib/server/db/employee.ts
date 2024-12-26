@@ -82,21 +82,19 @@ export async function getEmployees(
 						.leftJoin(employeeExit, eq(employee.id, employeeExit.employeeId))
 						.where(
 							or(
-								...(nonEmptySearchQuery
-									? [
-											...fuzzySearchFilters([employee.email], nonEmptySearchQuery, {
-												substr: true
-											}),
-											...fuzzySearchFilters([employee.fname], nonEmptySearchQuery, { distance: 4 }),
-											...fuzzySearchFilters([employee.lname], nonEmptySearchQuery, { distance: 4 }),
-											...fuzzySearchFilters([employee.fname, employee.lname], nonEmptySearchQuery, {
-												distance: 5
-											}),
-											...fuzzySearchFilters([employee.lname, employee.fname], nonEmptySearchQuery, {
-												distance: 5
-											})
-										]
-									: [])
+								...[
+									...fuzzySearchFilters([employee.email], nonEmptySearchQuery, {
+										substr: true
+									}),
+									...fuzzySearchFilters([employee.fname], nonEmptySearchQuery, { distance: 4 }),
+									...fuzzySearchFilters([employee.lname], nonEmptySearchQuery, { distance: 4 }),
+									...fuzzySearchFilters([employee.fname, employee.lname], nonEmptySearchQuery, {
+										distance: 5
+									}),
+									...fuzzySearchFilters([employee.lname, employee.fname], nonEmptySearchQuery, {
+										distance: 5
+									})
+								]
 							)
 						)
 						.groupBy(
