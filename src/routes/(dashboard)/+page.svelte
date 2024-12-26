@@ -10,6 +10,7 @@
 	import { columns } from './columns';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import { searchStore } from '$lib/stores/search.svelte';
 
 	let { data, form: actionData } = $props();
 
@@ -32,7 +33,16 @@
 	method="POST"
 	action="?/search"
 	class="flex gap-2 px-4 py-2"
-	use:enhance={() => {
+	use:enhance={({ formData }) => {
+		const searchQuery = formData.get('q');
+
+		// Check if the searchQuery is valid
+		if (searchQuery === null || searchQuery === undefined || typeof searchQuery !== 'string') {
+			toast.error('Invalid search query');
+		} else {
+			searchStore.query = searchQuery;
+		}
+
 		return async ({ update }) => {
 			await update({ reset: false });
 		};
