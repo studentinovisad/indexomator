@@ -1,4 +1,4 @@
-<script lang="ts" generics="TData, TValue">
+<script lang="ts">
 	import {
 		type ColumnDef,
 		getCoreRowModel,
@@ -10,13 +10,14 @@
 	import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import Button from '$lib/components/ui/button/button.svelte';
+	import type { Person } from '$lib/types/person';
 
-	type DataTableProps<TData, TValue> = {
-		columns: ColumnDef<TData, TValue>[];
-		data: TData[];
+	type DataTableProps<Person> = {
+		columns: ColumnDef<Person>[];
+		data: Person[];
 	};
 
-	let { data, columns }: DataTableProps<TData, TValue> = $props();
+	let { data, columns }: DataTableProps<Person> = $props();
 
 	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 });
 	let sorting = $state<SortingState>([]);
