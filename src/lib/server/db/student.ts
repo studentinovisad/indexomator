@@ -1,4 +1,4 @@
-import { or, eq, and, max, gt, count, sql, isNull } from 'drizzle-orm';
+import { or, eq, and, max, gt, count, isNull } from 'drizzle-orm';
 import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
@@ -40,7 +40,7 @@ export async function getStudents(
 		const maxEntrySubquery = db
 			.select({
 				studentId: studentEntry.studentId,
-				maxEntryTimestamp: sql<Date>`MAX(${studentEntry.timestamp})`.as('maxEntryTimestamp')
+				maxEntryTimestamp: max(studentEntry.timestamp).as('max_entry_timestamp')
 			})
 			.from(studentEntry)
 			.groupBy(studentEntry.studentId)
@@ -55,7 +55,7 @@ export async function getStudents(
 				department: student.department,
 				entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 				entryBuilding: studentEntry.building,
-				exitTimestamp: sql<Date | null>`MAX(${studentExit.timestamp})`.as('exitTimestamp')
+				exitTimestamp: max(studentExit.timestamp)
 			})
 			.from(student)
 			.leftJoin(maxEntrySubquery, eq(maxEntrySubquery.studentId, student.id))
@@ -251,8 +251,8 @@ export async function toggleStudentState(
 			const [{ entryTimestamp, exitTimestamp }] = await tx
 				.select({
 					id: student.id,
-					entryTimestamp: sql<Date>`MAX(${studentEntry.timestamp})`.as('entryTimestamp'),
-					exitTimestamp: sql<Date | null>`MAX(${studentExit.timestamp})`.as('exitTimestamp')
+					entryTimestamp: max(studentEntry.timestamp),
+					exitTimestamp: max(studentExit.timestamp)
 				})
 				.from(student)
 				.leftJoin(studentEntry, eq(student.id, studentEntry.studentId))
