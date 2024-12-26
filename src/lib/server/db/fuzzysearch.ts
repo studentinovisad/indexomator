@@ -30,16 +30,38 @@ export function fuzzySearchFilters(
 		throw new Error('Invalid distance option');
 	}
 
-	const concatQuery = dbFields
-		.map((field) => sql`${field}`)
-		.reduce((prev, curr) => sql`${prev} || ' ' || ${curr}`);
-
-	// @ts-expect-error because there is no typedef for sql as first param in ilike function
-	const ilikeFilter = ilike(concatQuery, `${opts.substr ? '%' : ''}${searchQuery}%`);
+	const concatFields = sqlConcat(dbFields, ' ');
+	const ilikeFilter = ilike(
+		concatFields as unknown as Column, // WARN: Because there is no typedef for sql as first param in ilike function
+		`${opts.substr !== undefined ? '%' : ''}${searchQuery}%`
+	) as SQL<boolean>;
 	const levenshteinFilter =
-		opts.distance !== undefined
-			? [sql`LEVENSHTEIN(LOWER(${concatQuery}), ${searchQuery}) <= ${opts.distance}`]
-			: [];
+		opts.distance !== undefined ? [sqlLevenshtein(concatFields, searchQuery, opts.distance)] : [];
 
 	return [ilikeFilter, ...levenshteinFilter];
+}
+
+/*
+ * Returns the sql for concatenating multiple columns with a separator using CONCAT_WS
+ */
+export function sqlConcat(cols: Column[], separator?: string): SQL<Column> {
+	return cols
+		.map((col) => sql<Column>`${col}`)
+		.reduce((prev, curr) =>
+			separator !== undefined ? sql`${prev} || ${separator} || ${curr}` : sql`${prev} || ${curr}`
+		);
+}
+
+/*
+ * Returns the sql for getting the levenshtein distance if distance isn't passed
+ * Otherwise, returns the sql for determining if the levenshtein distance is less than or equal to the passed distance
+ */
+export function sqlLevenshtein(
+	col: SQL<Column>,
+	input: string,
+	distance?: number
+): SQL<boolean | number> {
+	return distance !== undefined
+		? sql<boolean>`LEVENSHTEIN(LOWER(${col}), LOWER(${input})) <= ${distance}`
+		: sql<number>`LEVENSHTEIN(LOWER(${col}), LOWER(${input}))`;
 }
