@@ -7,6 +7,7 @@ RUN corepack enable
 FROM base AS build
 RUN pnpm i --frozen-lockfile
 COPY . .
+# Ugly workaround some build bug that tries to connect to the DB while bundling
 ENV STAGE build
 RUN pnpm run build
 
@@ -20,6 +21,7 @@ COPY --from=base /app/pnpm-lock.yaml .
 COPY --from=build /app/build .
 COPY --from=deps /app/node_modules ./node_modules
 COPY drizzle ./drizzle
+# Hardcode the migrations path
 ENV MIGRATIONS_PATH ./drizzle
 EXPOSE 3000
 CMD ["./index.js"]
