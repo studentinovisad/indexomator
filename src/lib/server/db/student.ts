@@ -1,4 +1,4 @@
-import { or, eq, and, max, gt, count, sql, isNull, isNotNull } from 'drizzle-orm';
+import { or, eq, and, max, gt, count, sql, isNull } from 'drizzle-orm';
 import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
