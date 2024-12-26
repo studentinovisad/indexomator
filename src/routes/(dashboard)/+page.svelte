@@ -26,6 +26,7 @@
 
 	let searchQuery = $state('');
 	const persons = $derived(actionData?.persons ?? data.persons ?? []);
+  const insideCount = $derived(data.count);
 </script>
 
 <form
@@ -51,6 +52,7 @@
 	>
 		<Reset />
 	</Button>
+  <p class="my-auto text-gray-600 dark:text-gray-500">Persons inside the building: {insideCount}</p>
 </form>
 <Separator />
 <div class="m-0 sm:m-4">
