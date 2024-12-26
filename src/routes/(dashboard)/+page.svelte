@@ -33,6 +33,10 @@
 	method="POST"
 	action="?/search"
 	class="flex gap-2 px-4 py-2"
+	onreset={() => {
+		searchStore.query = '';
+		goto('/');
+	}}
 	use:enhance={({ formData }) => {
 		const input = formData.get('q');
 
@@ -52,13 +56,7 @@
 	<Button type="submit" size="icon" class="flex-shrink-0">
 		<Search />
 	</Button>
-	<Button
-		onclick={() => goto('/')}
-		type="reset"
-		variant="destructive"
-		size="icon"
-		class="flex-shrink-0"
-	>
+	<Button type="reset" variant="destructive" size="icon" class="flex-shrink-0">
 		<Reset />
 	</Button>
 </form>
