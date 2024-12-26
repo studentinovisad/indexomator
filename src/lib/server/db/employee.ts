@@ -5,6 +5,7 @@ import { fuzzySearchFilters } from './fuzzysearch';
 import { isInside } from '../isInside';
 import { DB as db } from './connect';
 import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
+import { building } from './schema/building';
 
 // Gets all employees using optional filters
 export async function getEmployees(
@@ -136,11 +137,12 @@ export async function getEmployeesCountPerBuilding(): Promise<
 
 		return await db
 			.select({
-				building: employeeInsideSubquery.entryBuilding,
+				building: building.name,
 				insideCount: count(employeeInsideSubquery.employeeId)
 			})
-			.from(employeeInsideSubquery)
-			.groupBy(employeeInsideSubquery.entryBuilding);
+			.from(building)
+			.leftJoin(employeeInsideSubquery, eq(building.name, employeeInsideSubquery.entryBuilding))
+			.groupBy(building.name);
 	} catch (err: unknown) {
 		throw new Error(
 			`Failed to get inside count of employees from database: ${(err as Error).message}}`
