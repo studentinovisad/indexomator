@@ -34,13 +34,13 @@
 	action="?/search"
 	class="flex gap-2 px-4 py-2"
 	use:enhance={({ formData }) => {
-		const searchQuery = formData.get('q');
+		const input = formData.get('q');
 
-		// Check if the searchQuery is valid
-		if (searchQuery === null || searchQuery === undefined || typeof searchQuery !== 'string') {
+		// Check if the input is valid
+		if (input === null || input === undefined || typeof input !== 'string') {
 			toast.error('Invalid search query');
 		} else {
-			searchStore.query = searchQuery;
+			searchStore.query = input;
 		}
 
 		return async ({ update }) => {

@@ -65,8 +65,7 @@ export const actions: Actions = {
 				type === '' ||
 				searchQuery === null ||
 				searchQuery === undefined ||
-				typeof searchQuery !== 'string' ||
-				searchQuery === ''
+				typeof searchQuery !== 'string'
 			) {
 				return fail(400, {
 					message: 'Invalid or missing fields'
