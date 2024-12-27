@@ -1,41 +1,15 @@
-import { getStudents, toggleStudentState } from '$lib/server/db/student';
+import { toggleStudentState } from '$lib/server/db/student';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getEmployees, toggleEmployeeState } from '$lib/server/db/employee';
-import { Employee, Student, type Person } from '$lib/types/person';
+import { toggleEmployeeState } from '$lib/server/db/employee';
+import { Employee, Student } from '$lib/types/person';
 import { invalidateSession } from '$lib/server/db/session';
 import { deleteSessionTokenCookie } from '$lib/server/session';
+import { search } from '$lib/utils/search';
 
 export const load: PageServerLoad = async () => {
 	try {
-		const studentsP = getStudents(1000, 0);
-		const employeesP = getEmployees(1000, 0);
-		const students = await studentsP;
-		const employees = await employeesP;
-
-		const persons: Person[] = [
-			...students.map((s) => ({
-				id: s.id,
-				type: Student,
-				identifier: s.index,
-				fname: s.fname,
-				lname: s.lname,
-				department: s.department,
-				building: s.building,
-				state: s.state
-			})),
-			...employees.map((e) => ({
-				id: e.id,
-				type: Employee,
-				identifier: e.email,
-				fname: e.fname,
-				lname: e.lname,
-				department: e.department,
-				building: e.building,
-				state: e.state
-			}))
-		];
-
+		const persons = await search();
 		return {
 			persons
 		};
@@ -51,36 +25,16 @@ export const actions: Actions = {
 	search: async ({ request }) => {
 		try {
 			const formData = await request.formData();
-			const searchQuery = formData.get('q')?.toString() ?? undefined;
+			const searchQuery = formData.get('q');
 
-			const studentsP = getStudents(1000, 0, searchQuery);
-			const employeesP = getEmployees(1000, 0, searchQuery);
-			const students = await studentsP;
-			const employees = await employeesP;
+			// Check if the searchQuery is valid
+			if (searchQuery === null || searchQuery === undefined || typeof searchQuery !== 'string') {
+				return fail(400, {
+					message: 'Invalid search query'
+				});
+			}
 
-			const persons: Person[] = [
-				...students.map((s) => ({
-					id: s.id,
-					type: Student,
-					identifier: s.index,
-					fname: s.fname,
-					lname: s.lname,
-					department: s.department,
-					building: s.building,
-					state: s.state
-				})),
-				...employees.map((e) => ({
-					id: e.id,
-					type: Employee,
-					identifier: e.email,
-					fname: e.fname,
-					lname: e.lname,
-					department: e.department,
-					building: e.building,
-					state: e.state
-				}))
-			];
-
+			const persons = await search(searchQuery);
 			return {
 				searchQuery,
 				persons
@@ -97,16 +51,9 @@ export const actions: Actions = {
 			const formData = await request.formData();
 			const idS = formData.get('id');
 			const type = formData.get('type');
+			const searchQuery = formData.get('q');
 
-			if (locals.session === null || locals.user === null) {
-				return fail(401, {
-					message: 'Invalid session'
-				});
-			}
-			const building = locals.session.building;
-			const creator = locals.user.username;
-
-			// Check if the id and type are valid
+			// Check if the id, type and searchQuery are valid
 			if (
 				idS === null ||
 				idS === undefined ||
@@ -115,25 +62,39 @@ export const actions: Actions = {
 				type === null ||
 				type === undefined ||
 				typeof type !== 'string' ||
-				type === ''
+				type === '' ||
+				searchQuery === null ||
+				searchQuery === undefined ||
+				typeof searchQuery !== 'string'
 			) {
 				return fail(400, {
 					message: 'Invalid or missing fields'
 				});
 			}
 
+			if (locals.session === null || locals.user === null) {
+				return fail(401, {
+					message: 'Invalid session'
+				});
+			}
+			const { building } = locals.session;
+			const { username } = locals.user;
+
 			const id = Number.parseInt(idS);
 			if (type === Student) {
-				await toggleStudentState(id, building, creator);
+				await toggleStudentState(id, building, username);
 			} else if (type === Employee) {
-				await toggleEmployeeState(id, building, creator);
+				await toggleEmployeeState(id, building, username);
 			} else {
 				return fail(500, {
 					message: 'Invalid type (neither student nor employee)'
 				});
 			}
 
+			const persons = await search(searchQuery);
 			return {
+				searchQuery,
+				persons,
 				message: 'Successfully toggled state'
 			};
 		} catch (err: unknown) {
