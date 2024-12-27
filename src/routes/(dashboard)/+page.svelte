@@ -11,6 +11,7 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import InsideCountPerBuilding from './insideCountPerBuilding.svelte';
+	import { searchStore } from '$lib/stores/search.svelte';
 
 	let { data, form: actionData } = $props();
 
@@ -35,7 +36,20 @@
 	method="POST"
 	action="?/search"
 	class="flex gap-2 px-4 py-2"
-	use:enhance={() => {
+	onreset={() => {
+		searchStore.query = '';
+		goto('/');
+	}}
+	use:enhance={({ formData }) => {
+		const input = formData.get('q');
+
+		// Check if the input is valid
+		if (input === null || input === undefined || typeof input !== 'string') {
+			toast.error('Invalid search query');
+		} else {
+			searchStore.query = input;
+		}
+
 		return async ({ update }) => {
 			await update({ reset: false });
 		};
@@ -45,13 +59,7 @@
 	<Button type="submit" size="icon" class="flex-shrink-0">
 		<Search />
 	</Button>
-	<Button
-		onclick={() => goto('/')}
-		type="reset"
-		variant="destructive"
-		size="icon"
-		class="flex-shrink-0"
-	>
+	<Button type="reset" variant="destructive" size="icon" class="flex-shrink-0">
 		<Reset />
 	</Button>
 	<InsideCountPerBuilding caption="Students" data={studentsInside} />
