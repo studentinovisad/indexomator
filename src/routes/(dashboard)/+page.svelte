@@ -4,13 +4,15 @@
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import Search from 'lucide-svelte/icons/search';
 	import Reset from 'lucide-svelte/icons/list-restart';
+	import Chart from 'lucide-svelte/icons/chart-no-axes-combined';
 	import DataTable from './data-table.svelte';
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/stores';
 	import { columns } from './columns';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
-	import InsideCountPerBuilding from './insideCountPerBuilding.svelte';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import InsideCountPerBuilding from '../../lib/components/custom/insideCountPerBuilding.svelte';
 
 	let { data, form: actionData } = $props();
 
@@ -54,9 +56,23 @@
 	>
 		<Reset />
 	</Button>
-	<InsideCountPerBuilding caption="Students" data={studentsInside} />
-	<InsideCountPerBuilding caption="Employees" data={employeesInside} />
+	<Dialog.Root>
+		<Dialog.Trigger
+			><Button variant="secondary" size="icon" class="flex-shrink-0"><Chart /></Button
+			></Dialog.Trigger
+		>
+		<Dialog.Content>
+			<Dialog.Header>
+				<Dialog.Title>Statistics</Dialog.Title>
+			</Dialog.Header>
+			<Dialog.Description>Check how many people are currently inside.</Dialog.Description>
+			<div class="flex w-full">
+				<InsideCountPerBuilding dataStudents={studentsInside} dataEmployees={employeesInside} />
+			</div>
+		</Dialog.Content>
+	</Dialog.Root>
 </form>
+
 <Separator />
 <div class="m-0 sm:m-4">
 	<DataTable data={persons} {columns} />
