@@ -1,7 +1,7 @@
-import { toggleStudentState } from '$lib/server/db/student';
+import { toggleStudentState, getStudentsCountPerBuilding } from '$lib/server/db/student';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { toggleEmployeeState } from '$lib/server/db/employee';
+import { toggleEmployeeState, getEmployeesCountPerBuilding } from '$lib/server/db/employee';
 import { Employee, Student } from '$lib/types/person';
 import { invalidateSession } from '$lib/server/db/session';
 import { deleteSessionTokenCookie } from '$lib/server/session';
@@ -9,9 +9,18 @@ import { search } from '$lib/utils/search';
 
 export const load: PageServerLoad = async () => {
 	try {
-		const persons = await search();
+		const personsP = search();
+		const studentsInsideP = getStudentsCountPerBuilding();
+		const employeesInsideP = getEmployeesCountPerBuilding();
+
+		const persons = await personsP;
+		const studentsInside = await studentsInsideP;
+		const employeesInside = await employeesInsideP;
+
 		return {
-			persons
+			persons,
+			studentsInside,
+			employeesInside
 		};
 	} catch (err: unknown) {
 		console.debug(`Failed to get students and employees: ${(err as Error).message}`);
