@@ -1,53 +1,19 @@
-import {
-	getStudents,
-	getStudentsCountPerBuilding,
-	toggleStudentState
-} from '$lib/server/db/student';
+import { toggleStudentState, getStudentsCountPerBuilding } from '$lib/server/db/student';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import {
-	getEmployees,
-	getEmployeesCountPerBuilding,
-	toggleEmployeeState
-} from '$lib/server/db/employee';
-import { Employee, Student, type Person } from '$lib/types/person';
+import { toggleEmployeeState, getEmployeesCountPerBuilding } from '$lib/server/db/employee';
+import { Employee, Student } from '$lib/types/person';
 import { invalidateSession } from '$lib/server/db/session';
 import { deleteSessionTokenCookie } from '$lib/server/session';
 import { search } from '$lib/utils/search';
 
 export const load: PageServerLoad = async () => {
 	try {
-		const studentsP = getStudents(1000, 0);
-		const employeesP = getEmployees(1000, 0);
+		const personsP = search();
 		const studentsInsideP = getStudentsCountPerBuilding();
 		const employeesInsideP = getEmployeesCountPerBuilding();
 
-		const students = await studentsP;
-		const employees = await employeesP;
-
-		const persons: Person[] = [
-			...students.map((s) => ({
-				id: s.id,
-				type: Student,
-				identifier: s.index,
-				fname: s.fname,
-				lname: s.lname,
-				department: s.department,
-				building: s.building,
-				state: s.state
-			})),
-			...employees.map((e) => ({
-				id: e.id,
-				type: Employee,
-				identifier: e.email,
-				fname: e.fname,
-				lname: e.lname,
-				department: e.department,
-				building: e.building,
-				state: e.state
-			}))
-		];
-
+    const persons = await personsP;
 		const studentsInside = await studentsInsideP;
 		const employeesInside = await employeesInsideP;
 

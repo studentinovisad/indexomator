@@ -12,7 +12,7 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import InsideCountPerBuilding from '../../lib/components/custom/insideCountPerBuilding.svelte';
+	import InsideCountPerBuilding from '$lib/components/custom/insideCountPerBuilding.svelte';
 	import { searchStore } from '$lib/stores/search.svelte';
 
 	let { data, form: actionData } = $props();
