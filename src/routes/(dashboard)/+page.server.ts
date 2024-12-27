@@ -13,7 +13,7 @@ export const load: PageServerLoad = async () => {
 		const studentsInsideP = getStudentsCountPerBuilding();
 		const employeesInsideP = getEmployeesCountPerBuilding();
 
-    const persons = await personsP;
+		const persons = await personsP;
 		const studentsInside = await studentsInsideP;
 		const employeesInside = await employeesInsideP;
 
