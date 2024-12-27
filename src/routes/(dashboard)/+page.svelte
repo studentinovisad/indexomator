@@ -12,7 +12,7 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import InsideCountPerBuilding from '$lib/components/custom/insideCountPerBuilding.svelte';
+	import InsideCountPerBuilding from '$lib/components/custom/inside_counter/insideCountPerBuilding.svelte';
 	import { searchStore } from '$lib/stores/search.svelte';
 
 	let { data, form: actionData } = $props();
@@ -65,7 +65,11 @@
 		<Reset />
 	</Button>
 	<Dialog.Root>
-		<Dialog.Trigger class={`${buttonVariants({ variant: "secondary", size: "icon" })} flex-shrink-0`}><Chart /></Dialog.Trigger>
+		<Dialog.Trigger
+			class={`${buttonVariants({ variant: 'secondary', size: 'icon' })} flex-shrink-0`}
+		>
+			<Chart />
+		</Dialog.Trigger>
 		<Dialog.Content>
 			<Dialog.Header>
 				<Dialog.Title>Statistics</Dialog.Title>
