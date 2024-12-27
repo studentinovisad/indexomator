@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/button/button.svelte';
+	import Button, { buttonVariants } from '$lib/components/ui/button/button.svelte';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import Search from 'lucide-svelte/icons/search';
@@ -65,10 +65,7 @@
 		<Reset />
 	</Button>
 	<Dialog.Root>
-		<Dialog.Trigger
-			><Button variant="secondary" size="icon" class="flex-shrink-0"><Chart /></Button
-			></Dialog.Trigger
-		>
+		<Dialog.Trigger class={`${buttonVariants({ variant: "secondary", size: "icon" })} flex-shrink-0`}><Chart /></Dialog.Trigger>
 		<Dialog.Content>
 			<Dialog.Header>
 				<Dialog.Title>Statistics</Dialog.Title>
