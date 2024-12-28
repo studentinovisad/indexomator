@@ -1,11 +1,11 @@
 import type { RequestEvent } from '@sveltejs/kit';
-import { SESSION_TOKEN_TTL } from './db/session';
+import { INACTIVITY_TIMEOUT } from './db/session';
 
 export function setSessionTokenCookie(event: RequestEvent, token: string, timestamp: Date): void {
 	event.cookies.set('session', token, {
 		httpOnly: true,
 		sameSite: 'lax',
-		expires: new Date(timestamp.getTime() + SESSION_TOKEN_TTL),
+		expires: new Date(timestamp.getTime() + INACTIVITY_TIMEOUT),
 		path: '/'
 	});
 }

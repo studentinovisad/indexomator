@@ -4,9 +4,11 @@ import { sha256 } from '@oslojs/crypto/sha2';
 import { userTable, type User } from './schema/user';
 import { sessionTable, type Session } from './schema/session';
 import { DB as db } from './connect';
+import { env } from '$env/dynamic/private';
 
-export const SESSION_TOKEN_TTL = 1000 * 60 * 30; // 30 minutes
-export const MAX_ACTIVE_SESSIONS = 2;
+
+export const INACTIVITY_TIMEOUT = Number.parseInt(env.INACTIVITY_TIMEOUT ?? '30') * 60 * 1000;
+export const MAX_ACTIVE_SESSIONS = Number.parseInt(env.MAX_ACTIVE_SESSIONS ?? '2');
 
 export function generateSessionToken(): string {
 	const bytes = new Uint8Array(20);
@@ -67,7 +69,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 			return { session: null, user: null };
 		}
 		const { user, session } = result[0];
-		if (Date.now() > session.timestamp.getTime() + SESSION_TOKEN_TTL) {
+		if (Date.now() > session.timestamp.getTime() + INACTIVITY_TIMEOUT) {
 			await db.delete(sessionTable).where(eq(sessionTable.id, session.id));
 			return { session: null, user: null };
 		} else {
