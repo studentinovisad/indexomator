@@ -58,7 +58,7 @@ export const actions: Actions = {
 			// Create a new session token
 			const sessionToken = generateSessionToken();
 			const session = await createSession(sessionToken, id, building);
-			setSessionTokenCookie(event, sessionToken, session.expiresAt);
+			setSessionTokenCookie(event, sessionToken, session.timestamp);
 		} catch (err: unknown) {
 			console.debug(`Failed to login: ${(err as Error).message}`);
 			return fail(401, {

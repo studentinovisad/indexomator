@@ -11,10 +11,7 @@ export const sessionTable = pgTable('session', {
 	building: text('building')
 		.notNull()
 		.references(() => building.name),
-	expiresAt: timestamp('expires_at', {
-		withTimezone: true,
-		mode: 'date'
-	}).notNull()
+	timestamp: timestamp('timestamp').defaultNow().notNull()
 });
 
 export type Session = InferSelectModel<typeof sessionTable>;
