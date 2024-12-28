@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, desc, eq, notInArray } from 'drizzle-orm';
 import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from '@oslojs/encoding';
 import { sha256 } from '@oslojs/crypto/sha2';
 import { userTable, type User } from './schema/user';
@@ -6,6 +6,7 @@ import { sessionTable, type Session } from './schema/session';
 import { DB as db } from './connect';
 
 export const SESSION_TOKEN_TTL = 1000 * 60 * 30; // 30 minutes
+export const MAX_ACTIVE_SESSIONS = 2;
 
 export function generateSessionToken(): string {
 	const bytes = new Uint8Array(20);
@@ -36,8 +37,11 @@ export async function createSession(
 
 	try {
 		const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-		const result = await db.insert(sessionTable).values({ id: sessionId, userId, building }).returning();
-		if(result.length !== 1) {
+		const result = await db
+			.insert(sessionTable)
+			.values({ id: sessionId, userId, building })
+			.returning();
+		if (result.length !== 1) {
 			throw new Error('Insert length is not 1');
 		}
 		return result[0];
@@ -66,8 +70,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 		if (Date.now() > session.timestamp.getTime() + SESSION_TOKEN_TTL) {
 			await db.delete(sessionTable).where(eq(sessionTable.id, session.id));
 			return { session: null, user: null };
-		}
-		else {
+		} else {
 			session.timestamp = new Date(Date.now());
 			await db
 				.update(sessionTable)
@@ -93,6 +96,31 @@ export async function invalidateSession(sessionId: string): Promise<void> {
 	} catch (err: unknown) {
 		throw new Error(`Failed to invalidate session in database: ${(err as Error).message}`);
 	}
+}
+
+// Invalidate sessions that exceed the maximum number of sessions
+export async function invalidateExcessSessions(userId: number): Promise<number> {
+	// Assert that userId is valid
+	if (userId === null || userId === undefined) {
+		throw new Error('Invalid userId');
+	}
+
+	const newestSessions = await db
+		.select({
+			id: sessionTable.id
+		})
+		.from(sessionTable)
+		.where(eq(sessionTable.userId, userId))
+		.orderBy(desc(sessionTable.timestamp))
+		.limit(MAX_ACTIVE_SESSIONS);
+
+	const sessionIdsToKeep = newestSessions.map((session) => session.id);
+
+	const deletedSessions = await db
+		.delete(sessionTable)
+		.where(and(eq(sessionTable.userId, userId), notInArray(sessionTable.id, sessionIdsToKeep)));
+
+	return deletedSessions.length;
 }
 
 export type SessionValidationResult =
