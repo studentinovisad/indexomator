@@ -73,7 +73,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 			await db.delete(sessionTable).where(eq(sessionTable.id, session.id));
 			return { session: null, user: null };
 		} else {
-			session.timestamp = new Date(Date.now());
+			session.timestamp = new Date();
 			await db
 				.update(sessionTable)
 				.set({
