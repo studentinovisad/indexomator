@@ -36,10 +36,10 @@ export const actions: Actions = {
 		}
 
 		try {
-			const { email, fname, lname, department } = form.data;
+			const { identifier, fname, lname, department } = form.data;
 			const building = locals.session.building;
 			const creator = locals.user.username;
-			await createEmployee(email, fname, lname, department, building, creator);
+			await createEmployee(identifier, fname, lname, department, building, creator);
 		} catch (err: unknown) {
 			console.debug(`Failed to create employee: ${(err as Error).message}`);
 			return fail(400, {

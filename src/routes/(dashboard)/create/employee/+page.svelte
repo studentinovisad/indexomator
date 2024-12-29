@@ -65,12 +65,12 @@
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Field {form} name="email">
+			<Form.Field {form} name="identifier">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>Email</Form.Label>
+						<Form.Label>Email / Last 4 digits from ID</Form.Label>
 						<div class="flex gap-2">
-							<Input {...props} bind:value={$formData.email} />
+							<Input {...props} bind:value={$formData.identifier} />
 							<Button
 								type="button"
 								onclick={() => {
@@ -79,7 +79,7 @@
 										$formData.lname !== '' &&
 										$formData.department !== ''
 									) {
-										$formData.email = constructEmail();
+										$formData.identifier = constructEmail();
 									} else if ($formData.fname === '') {
 										toast.error('You have to fill out the "First Name" field.');
 									} else if ($formData.lname === '') {
