@@ -1,4 +1,8 @@
-import { createSession, generateSessionToken } from '$lib/server/db/session';
+import {
+	createSession,
+	generateSessionToken,
+	invalidateExcessSessions
+} from '$lib/server/db/session';
 import { checkUserRatelimit, getUserIdAndPasswordHash } from '$lib/server/db/user';
 import { verifyPasswordHash } from '$lib/server/password';
 import { setSessionTokenCookie } from '$lib/server/session';
@@ -58,7 +62,10 @@ export const actions: Actions = {
 			// Create a new session token
 			const sessionToken = generateSessionToken();
 			const session = await createSession(sessionToken, id, building);
-			setSessionTokenCookie(event, sessionToken, session.expiresAt);
+			setSessionTokenCookie(event, sessionToken, session.timestamp);
+
+			// Invalidate sessions that exceed the maximum number of sessions
+			await invalidateExcessSessions(id);
 		} catch (err: unknown) {
 			console.debug(`Failed to login: ${(err as Error).message}`);
 			return fail(401, {
