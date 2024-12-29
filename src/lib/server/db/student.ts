@@ -59,6 +59,7 @@ export async function getStudents(
 							entryBuilding: studentEntry.building,
 							exitTimestamp: max(studentExit.timestamp),
 							leastDistance: sqlLeast([
+								sqlLevenshteinDistance(sqlConcat([student.index], ' '), nonEmptySearchQuery),
 								sqlLevenshteinDistance(sqlConcat([student.fname], ' '), nonEmptySearchQuery),
 								sqlLevenshteinDistance(sqlConcat([student.lname], ' '), nonEmptySearchQuery),
 								sqlLevenshteinDistance(

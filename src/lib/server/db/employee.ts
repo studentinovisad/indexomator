@@ -59,6 +59,7 @@ export async function getEmployees(
 							entryBuilding: employeeEntry.building,
 							exitTimestamp: max(employeeExit.timestamp),
 							leastDistance: sqlLeast([
+								sqlLevenshteinDistance(sqlConcat([employee.identifier], ' '), nonEmptySearchQuery),
 								sqlLevenshteinDistance(sqlConcat([employee.fname], ' '), nonEmptySearchQuery),
 								sqlLevenshteinDistance(sqlConcat([employee.lname], ' '), nonEmptySearchQuery),
 								sqlLevenshteinDistance(
