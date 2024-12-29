@@ -45,6 +45,14 @@ export function fuzzySearchFilters(
  * Returns the sql for concatenating multiple columns with a separator using CONCAT_WS
  */
 export function sqlConcat(cols: Column[], separator?: string): SQL<Column> {
+	if (cols.length === 0) {
+		throw new Error('Passed columns length is 0');
+	}
+
+	if (cols.length === 1) {
+		return sql<Column>`${cols[0]}`;
+	}
+
 	const sqlCols = cols
 		.map((col) => sql<Column>`${col}`)
 		.reduce((prev, curr) => sql`${prev}, ${curr}`);
