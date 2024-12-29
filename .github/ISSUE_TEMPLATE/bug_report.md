@@ -25,20 +25,19 @@ If applicable, add screenshots to help explain your problem.
 
 **What's your setup? (please complete the following information):**
 
-- Using monolith or micro service setup?: [e.g. monolith]
 - Version of the software [e.g. 1.2.3]
 - Method of installation [e.g. docker]
 
 **Docker compose file if used**
 
-```docker
-Your compose goes here
+```yaml
+# Your docker-compose.prod.yml goes here
 ```
 
 **Your .env file without secrets**
 
 ```env
-Your .env goes here
+YOUR_DOT_ENV_GOES_HERE=
 ```
 
 **Additional context**
