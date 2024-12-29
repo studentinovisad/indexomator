@@ -59,8 +59,9 @@ export async function getStudents(
 							entryBuilding: studentEntry.building,
 							exitTimestamp: max(studentExit.timestamp),
 							leastDistance: sqlLeast([
-								sqlLevenshteinDistance(sqlConcat([student.fname], ' '), nonEmptySearchQuery),
-								sqlLevenshteinDistance(sqlConcat([student.lname], ' '), nonEmptySearchQuery),
+								sqlLevenshteinDistance(sqlConcat([student.index]), nonEmptySearchQuery),
+								sqlLevenshteinDistance(sqlConcat([student.fname]), nonEmptySearchQuery),
+								sqlLevenshteinDistance(sqlConcat([student.lname]), nonEmptySearchQuery),
 								sqlLevenshteinDistance(
 									sqlConcat([student.fname, student.lname], ' '),
 									nonEmptySearchQuery
@@ -69,7 +70,11 @@ export async function getStudents(
 									sqlConcat([student.lname, student.fname], ' '),
 									nonEmptySearchQuery
 								)
-							]).as('least_distance')
+							]).as('least_distance'),
+							leastDistanceIdentifier: sqlLevenshteinDistance(
+								sqlConcat([student.index]),
+								nonEmptySearchQuery
+							).as('least_distance_identifier')
 						})
 						.from(student)
 						.leftJoin(maxEntrySubquery, eq(maxEntrySubquery.studentId, student.id))
@@ -105,7 +110,11 @@ export async function getStudents(
 							maxEntrySubquery.maxEntryTimestamp,
 							studentEntry.building
 						)
-						.orderBy(({ leastDistance, index }) => [leastDistance, index])
+						.orderBy(({ leastDistance, leastDistanceIdentifier, index }) => [
+							leastDistance,
+							leastDistanceIdentifier,
+							index
+						])
 						.limit(limit)
 						.offset(offset)
 				: await db
