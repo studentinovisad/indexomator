@@ -5,7 +5,7 @@ import { userTable } from './user';
 
 export const employee = pgTable('employee', {
 	id: serial('id').primaryKey(),
-	email: text('email').notNull().unique(),
+	identifier: text('identifier').notNull().unique(),
 	fname: text('fname').notNull(),
 	lname: text('lname').notNull(),
 	department: text('department')

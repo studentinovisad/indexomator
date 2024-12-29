@@ -22,7 +22,7 @@ export async function search(query?: string): Promise<Person[]> {
 		...employees.map((e) => ({
 			id: e.id,
 			type: Employee,
-			identifier: e.email,
+			identifier: e.identifier,
 			fname: e.fname,
 			lname: e.lname,
 			department: e.department,

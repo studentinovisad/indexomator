@@ -15,7 +15,7 @@ export async function getEmployees(
 ): Promise<
 	{
 		id: number;
-		email: string;
+		identifier: string;
 		fname: string;
 		lname: string;
 		department: string;
@@ -51,7 +51,7 @@ export async function getEmployees(
 				? await db
 						.select({
 							id: employee.id,
-							email: employee.email,
+							identifier: employee.identifier,
 							fname: employee.fname,
 							lname: employee.lname,
 							department: employee.department,
@@ -84,7 +84,7 @@ export async function getEmployees(
 						.where(
 							or(
 								...[
-									...fuzzySearchFilters([employee.email], nonEmptySearchQuery, {
+									...fuzzySearchFilters([employee.identifier], nonEmptySearchQuery, {
 										substr: true
 									}),
 									...fuzzySearchFilters([employee.fname], nonEmptySearchQuery, { distance: 4 }),
@@ -100,20 +100,20 @@ export async function getEmployees(
 						)
 						.groupBy(
 							employee.id,
-							employee.email,
+							employee.identifier,
 							employee.fname,
 							employee.lname,
 							employee.department,
 							maxEntrySubquery.maxEntryTimestamp,
 							employeeEntry.building
 						)
-						.orderBy(({ leastDistance, email }) => [leastDistance, email])
+						.orderBy(({ leastDistance, identifier }) => [leastDistance, identifier])
 						.limit(limit)
 						.offset(offset)
 				: await db
 						.select({
 							id: employee.id,
-							email: employee.email,
+							identifier: employee.identifier,
 							fname: employee.fname,
 							lname: employee.lname,
 							department: employee.department,
@@ -133,21 +133,21 @@ export async function getEmployees(
 						.leftJoin(employeeExit, eq(employee.id, employeeExit.employeeId))
 						.groupBy(
 							employee.id,
-							employee.email,
+							employee.identifier,
 							employee.fname,
 							employee.lname,
 							employee.department,
 							maxEntrySubquery.maxEntryTimestamp,
 							employeeEntry.building
 						)
-						.orderBy(({ email }) => [email])
+						.orderBy(({ identifier }) => [identifier])
 						.limit(limit)
 						.offset(offset);
 
 		return employees.map((e) => {
 			return {
 				id: e.id,
-				email: e.email,
+				identifier: e.identifier,
 				fname: e.fname,
 				lname: e.lname,
 				department: e.department,
@@ -200,7 +200,7 @@ export async function getEmployeesCountPerBuilding(): Promise<
 
 // Creates an employee and the entry timestamp
 export async function createEmployee(
-	emailD: string,
+	identifierD: string,
 	fnameD: string,
 	lnameD: string,
 	department: string,
@@ -208,18 +208,18 @@ export async function createEmployee(
 	creator: string
 ): Promise<{
 	id: number;
-	email: string;
+	identifier: string;
 	fname: string;
 	lname: string;
 	department: string;
 	building: string;
 	state: State;
 }> {
-	// Assert email, fname and lname are valid
+	// Assert identifier, fname and lname are valid
 	if (
-		emailD === null ||
-		emailD === undefined ||
-		emailD === '' ||
+		identifierD === null ||
+		identifierD === undefined ||
+		identifierD === '' ||
 		fnameD === null ||
 		fnameD === undefined ||
 		fnameD === '' ||
@@ -239,7 +239,7 @@ export async function createEmployee(
 		throw new Error('Invalid employee data');
 	}
 
-	const email = sanitizeString(emailD);
+	const identifier = sanitizeString(identifierD);
 	const fname = capitalizeString(sanitizeString(fnameD));
 	const lname = capitalizeString(sanitizeString(lnameD));
 
@@ -248,7 +248,7 @@ export async function createEmployee(
 			// Create the employee
 			const [{ id }] = await tx
 				.insert(employee)
-				.values({ email, fname, lname, department })
+				.values({ identifier, fname, lname, department })
 				.returning({ id: employee.id });
 
 			// Create the employee entry
@@ -260,7 +260,7 @@ export async function createEmployee(
 
 			return {
 				id,
-				email,
+				identifier,
 				fname,
 				lname,
 				department,
