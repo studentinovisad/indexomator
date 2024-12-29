@@ -6,9 +6,8 @@ import { sessionTable, type Session } from './schema/session';
 import { DB as db } from './connect';
 import { env } from '$env/dynamic/private';
 
-
-export const INACTIVITY_TIMEOUT = Number.parseInt(env.INACTIVITY_TIMEOUT ?? '30') * 60 * 1000;
-export const MAX_ACTIVE_SESSIONS = Number.parseInt(env.MAX_ACTIVE_SESSIONS ?? '2');
+export const inactivityTimeout = Number.parseInt(env.INACTIVITY_TIMEOUT ?? '30') * 60 * 1000;
+export const maxActiveSessions = Number.parseInt(env.MAX_ACTIVE_SESSIONS ?? '2');
 
 export function generateSessionToken(): string {
 	const bytes = new Uint8Array(20);
@@ -69,7 +68,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 			return { session: null, user: null };
 		}
 		const { user, session } = result[0];
-		if (Date.now() > session.timestamp.getTime() + INACTIVITY_TIMEOUT) {
+		if (Date.now() >= session.timestamp.getTime() + inactivityTimeout) {
 			await db.delete(sessionTable).where(eq(sessionTable.id, session.id));
 			return { session: null, user: null };
 		} else {
@@ -101,7 +100,7 @@ export async function invalidateSession(sessionId: string): Promise<void> {
 }
 
 // Invalidate sessions that exceed the maximum number of sessions
-export async function invalidateExcessSessions(userId: number): Promise<number> {
+export async function invalidateExcessSessions(userId: number): Promise<void> {
 	// Assert that userId is valid
 	if (userId === null || userId === undefined) {
 		throw new Error('Invalid userId');
@@ -114,15 +113,13 @@ export async function invalidateExcessSessions(userId: number): Promise<number> 
 		.from(sessionTable)
 		.where(eq(sessionTable.userId, userId))
 		.orderBy(desc(sessionTable.timestamp))
-		.limit(MAX_ACTIVE_SESSIONS);
+		.limit(maxActiveSessions);
 
 	const sessionIdsToKeep = newestSessions.map((session) => session.id);
 
-	const deletedSessions = await db
+	await db
 		.delete(sessionTable)
 		.where(and(eq(sessionTable.userId, userId), notInArray(sessionTable.id, sessionIdsToKeep)));
-
-	return deletedSessions.length;
 }
 
 export type SessionValidationResult =
