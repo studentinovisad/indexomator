@@ -112,7 +112,7 @@ export async function invalidateExcessSessions(userId: number): Promise<void> {
 		})
 		.from(sessionTable)
 		.where(eq(sessionTable.userId, userId))
-		.orderBy(desc(sessionTable.timestamp))
+		.orderBy(sessionTable.timestamp)
 		.limit(maxActiveSessions);
 
 	const sessionIdsToKeep = newestSessions.map((session) => session.id);
