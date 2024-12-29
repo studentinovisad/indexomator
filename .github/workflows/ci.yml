@@ -11,6 +11,7 @@ jobs:
       contents: read
     env:
       PUBLIC_UI_VERSION: ${{ github.ref }}
+      STAGE: build # Ugly workaround some build bug that tries to connect to the DB while bundling
 
     steps:
       - uses: actions/checkout@v4
