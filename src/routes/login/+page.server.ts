@@ -61,7 +61,7 @@ export const actions: Actions = {
 			setSessionTokenCookie(event, sessionToken, session.timestamp);
 
 			// Invalidate sessions that exceed the maximum number of sessions
-			invalidateExcessSessions(id);
+			await invalidateExcessSessions(id);
 		} catch (err: unknown) {
 			console.debug(`Failed to login: ${(err as Error).message}`);
 			return fail(401, {
