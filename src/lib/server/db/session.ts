@@ -1,4 +1,4 @@
-import { and, desc, eq, notInArray } from 'drizzle-orm';
+import { and, eq, notInArray } from 'drizzle-orm';
 import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from '@oslojs/encoding';
 import { sha256 } from '@oslojs/crypto/sha2';
 import { userTable, type User } from './schema/user';
