@@ -59,9 +59,9 @@ export async function getEmployees(
 							entryBuilding: employeeEntry.building,
 							exitTimestamp: max(employeeExit.timestamp),
 							leastDistance: sqlLeast([
-								sqlLevenshteinDistance(sqlConcat([employee.identifier], ' '), nonEmptySearchQuery),
-								sqlLevenshteinDistance(sqlConcat([employee.fname], ' '), nonEmptySearchQuery),
-								sqlLevenshteinDistance(sqlConcat([employee.lname], ' '), nonEmptySearchQuery),
+								sqlLevenshteinDistance(sqlConcat([employee.identifier]), nonEmptySearchQuery),
+								sqlLevenshteinDistance(sqlConcat([employee.fname]), nonEmptySearchQuery),
+								sqlLevenshteinDistance(sqlConcat([employee.lname]), nonEmptySearchQuery),
 								sqlLevenshteinDistance(
 									sqlConcat([employee.fname, employee.lname], ' '),
 									nonEmptySearchQuery
@@ -70,7 +70,11 @@ export async function getEmployees(
 									sqlConcat([employee.lname, employee.fname], ' '),
 									nonEmptySearchQuery
 								)
-							]).as('least_distance')
+							]).as('least_distance'),
+							leastDistanceIdentifier: sqlLevenshteinDistance(
+								sqlConcat([employee.identifier]),
+								nonEmptySearchQuery
+							).as('least_distance_identifier')
 						})
 						.from(employee)
 						.leftJoin(maxEntrySubquery, eq(maxEntrySubquery.employeeId, employee.id))
@@ -108,7 +112,11 @@ export async function getEmployees(
 							maxEntrySubquery.maxEntryTimestamp,
 							employeeEntry.building
 						)
-						.orderBy(({ leastDistance, identifier }) => [leastDistance, identifier])
+						.orderBy(({ leastDistance, leastDistanceIdentifier, identifier }) => [
+							leastDistance,
+							leastDistanceIdentifier,
+							identifier
+						])
 						.limit(limit)
 						.offset(offset)
 				: await db
