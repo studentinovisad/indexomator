@@ -1,4 +1,4 @@
-import { and, eq, notInArray } from 'drizzle-orm';
+import { and, desc, eq, notInArray } from 'drizzle-orm';
 import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from '@oslojs/encoding';
 import { sha256 } from '@oslojs/crypto/sha2';
 import { userTable, type User } from './schema/user';
@@ -112,7 +112,7 @@ export async function invalidateExcessSessions(userId: number): Promise<void> {
 		})
 		.from(sessionTable)
 		.where(eq(sessionTable.userId, userId))
-		.orderBy(sessionTable.timestamp)
+		.orderBy(desc(sessionTable.timestamp))
 		.limit(maxActiveSessions);
 
 	const sessionIdsToKeep = newestSessions.map((session) => session.id);
