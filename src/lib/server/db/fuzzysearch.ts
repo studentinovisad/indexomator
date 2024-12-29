@@ -5,6 +5,12 @@ type FuzzySearchFiltersOptions = {
 	substr?: boolean;
 };
 
+type LevenshteinOptions = {
+	insertCost?: number;
+	deleteCost?: number;
+	substitutionCost?: number;
+};
+
 export function fuzzySearchFilters(
 	dbFields: Column[],
 	searchQuery: string,
@@ -79,6 +85,10 @@ export function sqlLevenshtein(col: SQL<Column>, input: string, distance: number
 /*
  * Returns the sql for getting the levenshtein distance
  */
-export function sqlLevenshteinDistance(col: SQL<Column>, input: string): SQL<number> {
-	return sql<number>`LEVENSHTEIN(LOWER(${col}), LOWER(${input}))`;
+export function sqlLevenshteinDistance(
+	col: SQL<Column>,
+	input: string,
+	opts: LevenshteinOptions = {}
+): SQL<number> {
+	return sql<number>`LEVENSHTEIN(LOWER(${col}), LOWER(${input}), ${opts.insertCost ?? 1}, ${opts.deleteCost ?? 3}, ${opts.substitutionCost ?? 2})`;
 }
