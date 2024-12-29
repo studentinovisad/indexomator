@@ -6,9 +6,15 @@ type FuzzySearchFiltersOptions = {
 };
 
 type LevenshteinOptions = {
-	insertCost?: number;
-	deleteCost?: number;
-	substitutionCost?: number;
+	insertCost: number;
+	deleteCost: number;
+	substitutionCost: number;
+};
+
+const defaultLevenshteinOptions: LevenshteinOptions = {
+	insertCost: 1,
+	deleteCost: 3,
+	substitutionCost: 2
 };
 
 export function fuzzySearchFilters(
@@ -78,8 +84,13 @@ export function sqlLeast(cols: SQL<number>[]): SQL<number> {
 /*
  * Returns the sql for determining if the levenshtein distance is less than or equal to the passed distance
  */
-export function sqlLevenshtein(col: SQL<Column>, input: string, distance: number): SQL<boolean> {
-	return sql<boolean>`LEVENSHTEIN(LOWER(${col}), LOWER(${input})) <= ${distance}`;
+export function sqlLevenshtein(
+	col: SQL<Column>,
+	input: string,
+	distance: number,
+	opts: LevenshteinOptions = defaultLevenshteinOptions
+): SQL<boolean> {
+	return sql<boolean>`LEVENSHTEIN(LOWER(${input}), LOWER(${col}), ${opts.insertCost}, ${opts.deleteCost}, ${opts.substitutionCost}) <= ${distance}`;
 }
 
 /*
@@ -88,7 +99,7 @@ export function sqlLevenshtein(col: SQL<Column>, input: string, distance: number
 export function sqlLevenshteinDistance(
 	col: SQL<Column>,
 	input: string,
-	opts: LevenshteinOptions = {}
+	opts: LevenshteinOptions = defaultLevenshteinOptions
 ): SQL<number> {
-	return sql<number>`LEVENSHTEIN(LOWER(${col}), LOWER(${input}), ${opts.insertCost ?? 1}, ${opts.deleteCost ?? 3}, ${opts.substitutionCost ?? 2})`;
+	return sql<number>`LEVENSHTEIN(LOWER(${input}), LOWER(${col}), ${opts.insertCost}, ${opts.deleteCost}, ${opts.substitutionCost})`;
 }
