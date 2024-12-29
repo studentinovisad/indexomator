@@ -1,4 +1,8 @@
-import { createSession, generateSessionToken, invalidateExcessSessions } from '$lib/server/db/session';
+import {
+	createSession,
+	generateSessionToken,
+	invalidateExcessSessions
+} from '$lib/server/db/session';
 import { checkUserRatelimit, getUserIdAndPasswordHash } from '$lib/server/db/user';
 import { verifyPasswordHash } from '$lib/server/password';
 import { setSessionTokenCookie } from '$lib/server/session';

@@ -6,7 +6,6 @@ import { sessionTable, type Session } from './schema/session';
 import { DB as db } from './connect';
 import { env } from '$env/dynamic/private';
 
-
 export const inactivityTimeout = Number.parseInt(env.INACTIVITY_TIMEOUT ?? '30') * 60 * 1000;
 export const maxActiveSessions = Number.parseInt(env.MAX_ACTIVE_SESSIONS ?? '2');
 
@@ -121,7 +120,6 @@ export async function invalidateExcessSessions(userId: number): Promise<void> {
 	await db
 		.delete(sessionTable)
 		.where(and(eq(sessionTable.userId, userId), notInArray(sessionTable.id, sessionIdsToKeep)));
-
 }
 
 export type SessionValidationResult =
