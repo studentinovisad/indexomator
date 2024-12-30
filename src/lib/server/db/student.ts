@@ -1,7 +1,8 @@
 import { or, eq, and, max, gt, count, isNull } from 'drizzle-orm';
 import { student, studentEntry, studentExit } from './schema/student';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
-import { fuzzySearchFilters, sqlConcat, sqlLeast, sqlLevenshteinDistance } from './fuzzysearch';
+import { fuzzySearchFilters } from './fuzzysearch';
+import { sqlConcat, sqlLeast, sqlLevenshteinDistance } from './utils';
 import { isInside } from '../isInside';
 import { DB as db } from './connect';
 import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
@@ -90,13 +91,13 @@ export async function getStudents(
 							or(
 								...[
 									...fuzzySearchFilters([student.index], nonEmptySearchQuery),
-									...fuzzySearchFilters([student.fname], nonEmptySearchQuery, { distance: 4 }),
-									...fuzzySearchFilters([student.lname], nonEmptySearchQuery, { distance: 4 }),
+									...fuzzySearchFilters([student.fname], nonEmptySearchQuery, { distance: 5 }),
+									...fuzzySearchFilters([student.lname], nonEmptySearchQuery, { distance: 5 }),
 									...fuzzySearchFilters([student.fname, student.lname], nonEmptySearchQuery, {
-										distance: 5
+										distance: 6
 									}),
 									...fuzzySearchFilters([student.lname, student.fname], nonEmptySearchQuery, {
-										distance: 5
+										distance: 6
 									})
 								]
 							)
