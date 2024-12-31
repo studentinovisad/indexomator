@@ -29,6 +29,27 @@
 			"when": 1735490914685,
 			"tag": "0003_bumpy_hardball",
 			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1735611551493,
+			"tag": "0004_lush_miss_america",
+			"breakpoints": true
+		},
+		{
+			"idx": 5,
+			"version": "7",
+			"when": 1735611722346,
+			"tag": "0005_lucky_madame_web",
+			"breakpoints": true
+		},
+		{
+			"idx": 6,
+			"version": "7",
+			"when": 1735613817511,
+			"tag": "0006_fearless_photon",
+			"breakpoints": true
 		}
 	]
 }

@@ -30,8 +30,7 @@
 
 	let searchQuery = $state('');
 	const persons = $derived(actionData?.persons ?? data.persons ?? []);
-	const studentsInside = $derived(data.studentsInside ?? []);
-	const employeesInside = $derived(data.employeesInside ?? []);
+	const personsInside = $derived(data.personsInside ?? []);
 </script>
 
 <form
@@ -76,7 +75,7 @@
 			</Dialog.Header>
 			<Dialog.Description>Check how many people are currently inside.</Dialog.Description>
 			<div class="flex w-full">
-				<InsideCountPerBuilding dataStudents={studentsInside} dataEmployees={employeesInside} />
+				<InsideCountPerBuilding data={personsInside} />
 			</div>
 		</Dialog.Content>
 	</Dialog.Root>
