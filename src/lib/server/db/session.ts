@@ -113,8 +113,7 @@ export async function invalidateExcessSessions(userId: number): Promise<void> {
 		.from(sessionTable)
 		.where(eq(sessionTable.userId, userId))
 		.orderBy(desc(sessionTable.timestamp))
-		.limit(maxActiveSessions)
-		.as('newest_sessions');
+		.limit(maxActiveSessions);
 
 	await db
 		.delete(sessionTable)
