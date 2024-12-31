@@ -16,7 +16,7 @@ export function removeDiacritics(input: string): string {
 		.join('');
 }
 
-const diacriticsMap = new Map([
+export const diacriticsMap = new Map([
 	['č', 'c'],
 	['Č', 'C'],
 	['ć', 'c'],
