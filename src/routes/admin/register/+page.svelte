@@ -66,9 +66,9 @@
 								size="icon"
 							>
 								{#if showPassword}
-									<Invisible />
-								{:else}
 									<Visible />
+								{:else}
+									<Invisible />
 								{/if}
 								<span class="sr-only">Show/Hide Pass</span>
 							</Button>

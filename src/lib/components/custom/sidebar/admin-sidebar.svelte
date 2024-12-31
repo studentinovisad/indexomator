@@ -68,7 +68,7 @@
 		</Sidebar.Group>
 	</Sidebar.Content>
 	<SidebarFooter>
-		<Button variant="link" href="https://github.com/aleksasiriski/indexomator">
+		<Button variant="link" href="https://github.com/studentinovisad/indexomator">
 			<Github /> <span>Contribute</span>
 		</Button>
 	</SidebarFooter>
