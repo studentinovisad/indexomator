@@ -68,8 +68,7 @@ export function sqlLevenshteinDistance(
  * Returns the input string with diacritics removed
  */
 export function sqlRemoveDiacritics(input: string | Column | SQL<Column>): SQL<Column> {
-	const diacritics = Array.from(diacriticsMap);
-	return diacritics.reduce(
+	return Array.from(diacriticsMap).reduce(
 		(acc, [diacritic, sanitized]) => sql`REGEXP_REPLACE(${acc}, ${diacritic}, ${sanitized}, 'g')`,
 		sql<Column>`${input}`
 	);
