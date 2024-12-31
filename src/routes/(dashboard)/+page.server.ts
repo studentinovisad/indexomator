@@ -1,8 +1,6 @@
-import { toggleStudentState, getStudentsCountPerBuilding } from '$lib/server/db/student';
+import { togglePersonState, getPersonsCountPerBuilding } from '$lib/server/db/person';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { toggleEmployeeState, getEmployeesCountPerBuilding } from '$lib/server/db/employee';
-import { Employee, Student } from '$lib/types/person';
 import { invalidateSession } from '$lib/server/db/session';
 import { deleteSessionTokenCookie } from '$lib/server/session';
 import { search } from '$lib/utils/search';
@@ -10,17 +8,14 @@ import { search } from '$lib/utils/search';
 export const load: PageServerLoad = async () => {
 	try {
 		const personsP = search();
-		const studentsInsideP = getStudentsCountPerBuilding();
-		const employeesInsideP = getEmployeesCountPerBuilding();
+		const personsInsideP = getPersonsCountPerBuilding();
 
 		const persons = await personsP;
-		const studentsInside = await studentsInsideP;
-		const employeesInside = await employeesInsideP;
+		const personsInside = await personsInsideP;
 
 		return {
 			persons,
-			studentsInside,
-			employeesInside
+			personsInside
 		};
 	} catch (err: unknown) {
 		console.debug(`Failed to get students and employees: ${(err as Error).message}`);
@@ -90,15 +85,7 @@ export const actions: Actions = {
 			const { username } = locals.user;
 
 			const id = Number.parseInt(idS);
-			if (type === Student) {
-				await toggleStudentState(id, building, username);
-			} else if (type === Employee) {
-				await toggleEmployeeState(id, building, username);
-			} else {
-				return fail(500, {
-					message: 'Invalid type (neither student nor employee)'
-				});
-			}
+			await togglePersonState(id, building, username);
 
 			const persons = await search(searchQuery);
 			return {

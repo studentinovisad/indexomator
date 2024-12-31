@@ -2,11 +2,12 @@ import { fail, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 
-import { createEmployee } from '$lib/server/db/employee';
+import { createPerson } from '$lib/server/db/person';
 import { getDepartments } from '$lib/server/db/department';
 
 import { formSchema } from './schema';
 import type { PageServerLoad } from './$types';
+import { Employee } from '$lib/types/person';
 
 export const load: PageServerLoad = async () => {
 	const form = await superValidate(zod(formSchema));
@@ -37,9 +38,10 @@ export const actions: Actions = {
 
 		try {
 			const { identifier, fname, lname, department } = form.data;
+			const type = Employee;
 			const building = locals.session.building;
 			const creator = locals.user.username;
-			await createEmployee(identifier, fname, lname, department, building, creator);
+			await createPerson(identifier, type, fname, lname, department, building, creator);
 		} catch (err: unknown) {
 			console.debug(`Failed to create employee: ${(err as Error).message}`);
 			return fail(400, {

@@ -36,6 +36,20 @@
 			"when": 1735611551493,
 			"tag": "0004_lush_miss_america",
 			"breakpoints": true
+		},
+		{
+			"idx": 5,
+			"version": "7",
+			"when": 1735611722346,
+			"tag": "0005_lucky_madame_web",
+			"breakpoints": true
+		},
+		{
+			"idx": 6,
+			"version": "7",
+			"when": 1735611863223,
+			"tag": "0006_true_magneto",
+			"breakpoints": true
 		}
 	]
 }
