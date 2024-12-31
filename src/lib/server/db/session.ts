@@ -106,7 +106,7 @@ export async function invalidateExcessSessions(userId: number): Promise<void> {
 		throw new Error('Invalid userId');
 	}
 
-	const newestSessions = await db
+	const newestSessions = db
 		.select({
 			id: sessionTable.id
 		})
@@ -115,11 +115,9 @@ export async function invalidateExcessSessions(userId: number): Promise<void> {
 		.orderBy(desc(sessionTable.timestamp))
 		.limit(maxActiveSessions);
 
-	const sessionIdsToKeep = newestSessions.map((session) => session.id);
-
 	await db
 		.delete(sessionTable)
-		.where(and(eq(sessionTable.userId, userId), notInArray(sessionTable.id, sessionIdsToKeep)));
+		.where(and(eq(sessionTable.userId, userId), notInArray(sessionTable.id, newestSessions)));
 }
 
 export type SessionValidationResult =
