@@ -55,7 +55,7 @@
 	});
 </script>
 
-<div class="mx-auto my-5 max-w-[90vw] rounded-md border">
+<div class="mx-auto my-5 w-full rounded-md border">
 	<Table.Root>
 		<Table.Header>
 			{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
@@ -69,11 +69,11 @@
 										role="button"
 										tabindex="0"
 										onclick={() => {
-											header.column.toggleSorting(header.column.getIsSorted() === 'asc');
+											header.column.toggleSorting();
 										}}
 										onkeydown={(e) => {
 											if (e.key === 'Enter' || e.key === ' ') {
-												header.column.toggleSorting(header.column.getIsSorted() === 'asc');
+												header.column.toggleSorting();
 											}
 										}}
 									>
@@ -82,9 +82,11 @@
 											context={header.getContext()}
 										/>
 										{#if header.column.getIsSorted() === 'asc'}
-											<span>↑</span>
+											<span class="m-1">↑</span>
 										{:else if header.column.getIsSorted() === 'desc'}
-											<span>↓</span>
+											<span class="m-1">↓</span>
+										{:else}
+											<span></span>
 										{/if}
 									</div>
 								{/if}

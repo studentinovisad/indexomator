@@ -74,9 +74,9 @@
 									size="icon"
 								>
 									{#if showPassword}
-										<Invisible />
-									{:else}
 										<Visible />
+									{:else}
+										<Invisible />
 									{/if}
 									<span class="sr-only">Show/Hide Pass</span>
 								</Button>
@@ -108,7 +108,7 @@
 			<Card.Footer>
 				<p class="w-full px-2 text-center text-sm text-muted-foreground">
 					This software is licensed under the <a
-						href="https://raw.githubusercontent.com/aleksasiriski/indexomator/refs/heads/main/LICENSE"
+						href="https://raw.githubusercontent.com/studentinovisad/indexomator/refs/heads/main/LICENSE"
 						class="underline underline-offset-4 hover:text-primary"
 					>
 						MIT

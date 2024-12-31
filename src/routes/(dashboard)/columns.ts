@@ -44,6 +44,7 @@ export const columns: ColumnDef<Person>[] = [
 				id: row.getVisibleCells()[0].getValue() as number,
 				type: row.getVisibleCells()[1].getValue() as PersonType
 			});
-		}
+		},
+		enableSorting: false
 	}
 ];
