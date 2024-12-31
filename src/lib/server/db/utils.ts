@@ -1,3 +1,4 @@
+import { diacriticsMap } from '$lib/utils/sanitize';
 import { sql, type Column, type SQL } from 'drizzle-orm';
 
 type LevenshteinOptions = {
@@ -67,25 +68,9 @@ export function sqlLevenshteinDistance(
  * Returns the input string with diacritics removed
  */
 export function sqlRemoveDiacritics(input: string | Column | SQL<Column>): SQL<Column> {
-	return sql`REGEXP_REPLACE(
-		REGEXP_REPLACE(
-			REGEXP_REPLACE(
-				REGEXP_REPLACE(
-					REGEXP_REPLACE(
-						REGEXP_REPLACE(
-							REGEXP_REPLACE(
-								REGEXP_REPLACE(
-									REGEXP_REPLACE(
-										REGEXP_REPLACE(
-											${input}, 'č', 'c', 'g'
-										), 'Č', 'C', 'g'
-									), 'ć', 'c', 'g'
-								), 'Ć', 'C', 'g'
-							), 'ǆ', 'dz', 'g'
-						), 'Ǆ', 'Dz', 'g'
-					), 'đ', 'dj', 'g'
-				), 'Đ', 'Dj', 'g'
-			), 'š', 's', 'g'
-		), 'Š', 'S', 'g'
-	)`;
+	const diacritics = Array.from(diacriticsMap);
+	return diacritics.reduce(
+		(acc, [diacritic, sanitized]) => sql`REGEXP_REPLACE(${acc}, ${diacritic}, ${sanitized}, 'g')`,
+		sql<Column>`${input}`
+	);
 }
