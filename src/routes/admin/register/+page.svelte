@@ -7,6 +7,9 @@
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { formSchema } from './schema';
 	import { page } from '$app/stores';
+	import { Button } from '$lib/components/ui/button';
+	import Visible from 'lucide-svelte/icons/eye';
+	import Invisible from 'lucide-svelte/icons/eye-closed';
 
 	let { data, form: actionData } = $props();
 
@@ -24,6 +27,7 @@
 	});
 
 	const { form: formData, enhance } = form;
+	let showPassword = $state(false);
 </script>
 
 <form method="POST" class="flex h-[90dvh] w-full items-center justify-center px-4" use:enhance>
@@ -46,7 +50,29 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Password</Form.Label>
-						<Input type="password" {...props} bind:value={$formData.password} />
+						<div class="flex gap-2">
+							<Input
+								type={showPassword ? 'text' : 'password'}
+								{...props}
+								bind:value={$formData.password}
+							/>
+							<Button
+								type="button"
+								onclick={() => {
+									showPassword = !showPassword;
+								}}
+								data-sidebar="trigger"
+								variant="outline"
+								size="icon"
+							>
+								{#if showPassword}
+									<Invisible />
+								{:else}
+									<Visible />
+								{/if}
+								<span class="sr-only">Show/Hide Pass</span>
+							</Button>
+						</div>
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
