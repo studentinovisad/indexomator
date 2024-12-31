@@ -5,7 +5,7 @@ import { userTable } from './user';
 
 export const student = pgTable('student', {
 	id: serial('id').primaryKey(),
-	index: text('index').notNull().unique(),
+	identifier: text('identifier').notNull().unique(),
 	fname: text('fname').notNull(),
 	lname: text('lname').notNull(),
 	department: text('department')

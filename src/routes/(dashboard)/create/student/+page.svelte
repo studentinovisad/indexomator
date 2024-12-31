@@ -54,11 +54,11 @@
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Field {form} name="index">
+			<Form.Field {form} name="identifier">
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Index</Form.Label>
-						<Input {...props} bind:value={$formData.index} />
+						<Input {...props} bind:value={$formData.identifier} />
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />

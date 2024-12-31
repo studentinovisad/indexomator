@@ -16,7 +16,7 @@ export async function getStudents(
 ): Promise<
 	{
 		id: number;
-		index: string;
+		identifier: string;
 		fname: string;
 		lname: string;
 		department: string;
@@ -52,7 +52,7 @@ export async function getStudents(
 				? await db
 						.select({
 							id: student.id,
-							index: student.index,
+							identifier: student.identifier,
 							fname: student.fname,
 							lname: student.lname,
 							department: student.department,
@@ -60,7 +60,7 @@ export async function getStudents(
 							entryBuilding: studentEntry.building,
 							exitTimestamp: max(studentExit.timestamp),
 							leastDistance: sqlLeast([
-								sqlLevenshteinDistance(sqlConcat([student.index]), nonEmptySearchQuery),
+								sqlLevenshteinDistance(sqlConcat([student.identifier]), nonEmptySearchQuery),
 								sqlLevenshteinDistance(sqlConcat([student.fname]), nonEmptySearchQuery),
 								sqlLevenshteinDistance(sqlConcat([student.lname]), nonEmptySearchQuery),
 								sqlLevenshteinDistance(
@@ -73,7 +73,7 @@ export async function getStudents(
 								)
 							]).as('least_distance'),
 							leastDistanceIdentifier: sqlLevenshteinDistance(
-								sqlConcat([student.index]),
+								sqlConcat([student.identifier]),
 								nonEmptySearchQuery
 							).as('least_distance_identifier')
 						})
@@ -90,7 +90,7 @@ export async function getStudents(
 						.where(
 							or(
 								...[
-									...fuzzySearchFilters([student.index], nonEmptySearchQuery),
+									...fuzzySearchFilters([student.identifier], nonEmptySearchQuery),
 									...fuzzySearchFilters([student.fname], nonEmptySearchQuery, { distance: 5 }),
 									...fuzzySearchFilters([student.lname], nonEmptySearchQuery, { distance: 5 }),
 									...fuzzySearchFilters([student.fname, student.lname], nonEmptySearchQuery, {
@@ -104,24 +104,24 @@ export async function getStudents(
 						)
 						.groupBy(
 							student.id,
-							student.index,
+							student.identifier,
 							student.fname,
 							student.lname,
 							student.department,
 							maxEntrySubquery.maxEntryTimestamp,
 							studentEntry.building
 						)
-						.orderBy(({ leastDistance, leastDistanceIdentifier, index }) => [
+						.orderBy(({ leastDistance, leastDistanceIdentifier, identifier }) => [
 							leastDistance,
 							leastDistanceIdentifier,
-							index
+							identifier
 						])
 						.limit(limit)
 						.offset(offset)
 				: await db
 						.select({
 							id: student.id,
-							index: student.index,
+							identifier: student.identifier,
 							fname: student.fname,
 							lname: student.lname,
 							department: student.department,
@@ -141,21 +141,21 @@ export async function getStudents(
 						.leftJoin(studentExit, eq(student.id, studentExit.studentId))
 						.groupBy(
 							student.id,
-							student.index,
+							student.identifier,
 							student.fname,
 							student.lname,
 							student.department,
 							maxEntrySubquery.maxEntryTimestamp,
 							studentEntry.building
 						)
-						.orderBy(({ index }) => [index])
+						.orderBy(({ identifier }) => [identifier])
 						.limit(limit)
 						.offset(offset);
 
 		return students.map((s) => {
 			return {
 				id: s.id,
-				index: s.index,
+				identifier: s.identifier,
 				fname: s.fname,
 				lname: s.lname,
 				department: s.department,
@@ -208,7 +208,7 @@ export async function getStudentsCountPerBuilding(): Promise<
 
 // Creates a student and the entry timestamp
 export async function createStudent(
-	indexD: string,
+	identifierD: string,
 	fnameD: string,
 	lnameD: string,
 	department: string,
@@ -216,18 +216,18 @@ export async function createStudent(
 	creator: string
 ): Promise<{
 	id: number;
-	index: string;
+	identifier: string;
 	fname: string;
 	lname: string;
 	department: string;
 	building: string;
 	state: State;
 }> {
-	// Assert fname, lname and index are valid
+	// Assert fname, lname and identifier are valid
 	if (
-		indexD === null ||
-		indexD === undefined ||
-		indexD === '' ||
+		identifierD === null ||
+		identifierD === undefined ||
+		identifierD === '' ||
 		fnameD === null ||
 		fnameD === undefined ||
 		fnameD === '' ||
@@ -247,7 +247,7 @@ export async function createStudent(
 		throw new Error('Invalid student data');
 	}
 
-	const index = sanitizeString(indexD);
+	const identifier = sanitizeString(identifierD);
 	const fname = capitalizeString(sanitizeString(fnameD));
 	const lname = capitalizeString(sanitizeString(lnameD));
 
@@ -256,7 +256,7 @@ export async function createStudent(
 			// Create the student
 			const [{ id }] = await tx
 				.insert(student)
-				.values({ index, fname, lname, department })
+				.values({ identifier, fname, lname, department })
 				.returning({ id: student.id });
 
 			// Create the student entry
@@ -268,7 +268,7 @@ export async function createStudent(
 
 			return {
 				id,
-				index,
+				identifier,
 				fname,
 				lname,
 				department,
