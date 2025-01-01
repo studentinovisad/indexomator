@@ -7,7 +7,7 @@ import { isInside } from '../isInside';
 import { DB as db } from './connect';
 import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
 import { building } from './schema/building';
-import type { PersonType } from '$lib/types/person';
+import { isPersonType, type PersonType } from '$lib/types/person';
 
 // Gets all persons using optional filters
 export async function getPersons(
@@ -178,6 +178,7 @@ export async function getPersons(
 // Gets the count of all persons that are inside, per building
 export async function getPersonsCountPerBuilding(): Promise<
 	{
+		type: PersonType | null;
 		building: string;
 		insideCount: number;
 	}[]
@@ -185,27 +186,41 @@ export async function getPersonsCountPerBuilding(): Promise<
 	try {
 		const personInsideSubquery = db
 			.select({
-				personId: personEntry.personId,
+				personId: person.id,
+				type: person.type,
 				entryBuilding: personEntry.building,
 				maxEntryTimestamp: max(personEntry.timestamp),
 				maxExitTimestamp: max(personExit.timestamp)
 			})
-			.from(personEntry)
-			.leftJoin(personExit, eq(personEntry.personId, personExit.personId))
-			.groupBy(personEntry.personId, personEntry.building)
+			.from(person)
+			.leftJoin(personEntry, eq(personEntry.personId, person.id))
+			.leftJoin(personExit, eq(personExit.personId, person.id))
+			.groupBy(person.id, person.type, personEntry.building)
 			.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
 				or(isNull(maxExitTimestamp), gt(maxEntryTimestamp, maxExitTimestamp))
 			)
 			.as('person_inside');
 
-		return await db
+		const persons = await db
 			.select({
+				type: personInsideSubquery.type,
 				building: building.name,
 				insideCount: count(personInsideSubquery.personId)
 			})
 			.from(building)
 			.leftJoin(personInsideSubquery, eq(building.name, personInsideSubquery.entryBuilding))
-			.groupBy(building.name);
+			.groupBy(personInsideSubquery.type, building.name);
+
+		return persons.map((p) => {
+			if (p.type !== null && !isPersonType(p.type)) {
+				throw new Error('Invalid type from DB (not PersonType)');
+			}
+			return {
+				type: p.type,
+				building: p.building,
+				insideCount: p.insideCount
+			};
+		});
 	} catch (err: unknown) {
 		throw new Error(
 			`Failed to get inside count of persons from database: ${(err as Error).message}}`
