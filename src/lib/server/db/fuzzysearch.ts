@@ -1,5 +1,5 @@
 import { ilike, type Column, type SQL } from 'drizzle-orm';
-import { sqlConcat, sqlLevenshtein } from './utils';
+import { sqlConcat, sqlLevenshtein, sqlRemoveDiacritics } from './utils';
 
 type FuzzySearchFiltersOptions = {
 	distance?: number;
@@ -33,8 +33,8 @@ export function fuzzySearchFilters(
 
 	const concatFields = sqlConcat(dbFields, ' ');
 	const ilikeFilter = ilike(
-		concatFields as unknown as Column, // WARN: There is no typedef for sql as first param in ilike function
-		`${opts.substr === true ? '%' : ''}${searchQuery}%`
+		sqlRemoveDiacritics(concatFields) as unknown as Column, // WARN: There is no typedef for sql as first param in ilike function
+		sqlRemoveDiacritics(`${opts.substr === true ? '%' : ''}${searchQuery}%`)
 	) as SQL<boolean>;
 	const levenshteinFilter =
 		opts.distance !== undefined ? [sqlLevenshtein(concatFields, searchQuery, opts.distance)] : [];
