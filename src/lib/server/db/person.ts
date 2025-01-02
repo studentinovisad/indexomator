@@ -367,3 +367,35 @@ export async function togglePersonState(
 		throw new Error(`Failed to toggle person state in database: ${(err as Error).message}`);
 	}
 }
+
+export async function nukeBuilding(building: string): Promise<void> {
+	try {
+		return await db.transaction(async (tx) => {
+			const personsInsideData = await tx
+				.select({
+					personId: person.id,
+					building: personEntry.building,
+					maxEntryTimestamp: max(personEntry.timestamp),
+					maxExitTimestamp: max(personExit.timestamp)
+				})
+				.from(person)
+				.leftJoin(personEntry, eq(personEntry.personId, person.id))
+				.leftJoin(personExit, eq(personExit.personId, person.id))
+				.where(eq(personEntry.building, building))
+				.groupBy(person.id, personEntry.building)
+				.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
+					or(isNull(maxExitTimestamp), gt(maxEntryTimestamp, maxExitTimestamp))
+				);
+			if (personsInsideData.length === 0) return;
+
+			const exitValuesMap = personsInsideData.map(({ personId }) => ({
+				personId,
+				building
+			}));
+
+			await tx.insert(personExit).values(exitValuesMap);
+		});
+	} catch (err) {
+		throw new Error(`Failed to nuke building in database: ${(err as Error).message}`);
+	}
+}
