@@ -30,6 +30,8 @@
 
 	let searchForm: HTMLFormElement | null = $state(null);
 	let inputFocus: boolean = $state(false);
+	/* eslint-disable no-undef */
+	let postTimeout: NodeJS.Timeout | undefined = $state(undefined);
 
 	let searchQuery = $state('');
 	const persons = $derived(actionData?.persons ?? data.persons ?? []);
@@ -61,7 +63,10 @@
 	}}
 >
 	<Input
-		oninput={() => searchForm?.requestSubmit()}
+		oninput={() => {
+			clearTimeout(postTimeout);
+			postTimeout = setTimeout(() => searchForm?.requestSubmit(), 200);
+		}}
 		onfocusin={() => {
 			inputFocus = true;
 		}}
