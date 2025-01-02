@@ -28,12 +28,16 @@
 		}
 	});
 
+	let searchForm: HTMLFormElement | null = $state(null);
+	let inputFocus: boolean = $state(false);
+
 	let searchQuery = $state('');
 	const persons = $derived(actionData?.persons ?? data.persons ?? []);
 	const personsInside = $derived(data.personsInside ?? []);
 </script>
 
 <form
+	bind:this={searchForm}
 	method="POST"
 	action="?/search"
 	class="flex gap-2 px-4 py-2"
@@ -56,7 +60,20 @@
 		};
 	}}
 >
-	<Input id="search" class="max-w-xs" placeholder="Search..." name="q" bind:value={searchQuery} />
+	<Input
+		oninput={() => searchForm?.requestSubmit()}
+		onfocusin={() => {
+			inputFocus = true;
+		}}
+		onfocusout={() => {
+			inputFocus = false;
+		}}
+		autofocus={inputFocus}
+		class="max-w-xs"
+		placeholder="Search..."
+		name="q"
+		bind:value={searchQuery}
+	/>
 	<Button type="submit" size="icon" class="flex-shrink-0">
 		<Search />
 	</Button>
