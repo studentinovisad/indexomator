@@ -4,6 +4,8 @@
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import Search from 'lucide-svelte/icons/search';
 	import Reset from 'lucide-svelte/icons/list-restart';
+	import Zap from 'lucide-svelte/icons/zap';
+	import ZapOff from 'lucide-svelte/icons/zap-off';
 	import Chart from 'lucide-svelte/icons/chart-no-axes-combined';
 	import DataTable from './data-table.svelte';
 	import { toast } from 'svelte-sonner';
@@ -32,6 +34,7 @@
 	let inputFocus: boolean = $state(false);
 	/* eslint-disable no-undef */
 	let postTimeout: NodeJS.Timeout | undefined = $state(undefined);
+	let liveSearch: boolean = $state(true);
 
 	let searchQuery = $state('');
 	const persons = $derived(actionData?.persons ?? data.persons ?? []);
@@ -64,6 +67,7 @@
 >
 	<Input
 		oninput={() => {
+			if (!liveSearch) return;
 			clearTimeout(postTimeout);
 			postTimeout = setTimeout(() => searchForm?.requestSubmit(), 200);
 		}}
@@ -84,6 +88,21 @@
 	</Button>
 	<Button type="reset" variant="destructive" size="icon" class="flex-shrink-0">
 		<Reset />
+	</Button>
+	<Button
+		onclick={() => {
+			liveSearch = !liveSearch;
+		}}
+		variant={liveSearch ? 'secondary' : 'outline'}
+		type="button"
+		size="icon"
+		class="flex-shrink-0"
+	>
+		{#if liveSearch}
+			<Zap />
+		{:else}
+			<ZapOff />
+		{/if}
 	</Button>
 	<Dialog.Root>
 		<Dialog.Trigger
