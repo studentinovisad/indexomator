@@ -405,7 +405,7 @@ export async function removePersonsFromBuilding(building: string, type: string):
 					or(isNull(maxExitTimestamp), gt(maxEntryTimestamp, maxExitTimestamp))
 				);
 
-			// Return if noone is found inside the building
+			// Return if no one is found inside the building
 			if (personsInside.length === 0) return;
 
 			await tx.insert(personExit).values(
