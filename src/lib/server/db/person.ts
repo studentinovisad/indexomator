@@ -368,7 +368,7 @@ export async function togglePersonState(
 	}
 }
 
-export async function getPersonTypes() {
+export async function getPersonTypes(): Promise<PersonType[]> {
 	try {
 		const types = await db
 			.selectDistinctOn([person.type], { type: person.type })
