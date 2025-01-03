@@ -3,7 +3,7 @@ import { DB as db } from './connect';
 import { building } from './schema/building';
 
 export async function getBuildings(): Promise<Building[]> {
-	return await db.select().from(building);
+	return await db.select().from(building).orderBy(building.name);
 }
 
 export async function createBuilding(name: string): Promise<void> {

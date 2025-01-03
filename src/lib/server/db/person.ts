@@ -368,12 +368,30 @@ export async function togglePersonState(
 	}
 }
 
-export async function nukeBuilding(building: string): Promise<void> {
+export async function getPersonTypes() {
+	try {
+		const types = await db
+			.selectDistinctOn([person.type], { type: person.type })
+			.from(person)
+			.orderBy(person.type);
+		return types.reduce((acc, { type }) => {
+			if (!isPersonType(type)) {
+				throw new Error('Invalid type from DB (not PersonType)');
+			}
+			return [...acc, type];
+		}, [] as PersonType[]);
+	} catch (err) {
+		throw new Error(`Failed to get persons types from database: ${(err as Error).message}`);
+	}
+}
+
+export async function removePersonsFromBuilding(building: string, type: string): Promise<void> {
 	try {
 		return await db.transaction(async (tx) => {
-			const personsInsideData = await tx
+			const personsInside = await tx
 				.select({
 					personId: person.id,
+					personType: person.type,
 					building: personEntry.building,
 					maxEntryTimestamp: max(personEntry.timestamp),
 					maxExitTimestamp: max(personExit.timestamp)
@@ -381,19 +399,21 @@ export async function nukeBuilding(building: string): Promise<void> {
 				.from(person)
 				.leftJoin(personEntry, eq(personEntry.personId, person.id))
 				.leftJoin(personExit, eq(personExit.personId, person.id))
-				.where(eq(personEntry.building, building))
-				.groupBy(person.id, personEntry.building)
+				.where(and(eq(personEntry.building, building), eq(person.type, type)))
+				.groupBy(person.id, person.type, personEntry.building)
 				.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
 					or(isNull(maxExitTimestamp), gt(maxEntryTimestamp, maxExitTimestamp))
 				);
-			if (personsInsideData.length === 0) return;
 
-			const exitValuesMap = personsInsideData.map(({ personId }) => ({
-				personId,
-				building
-			}));
+			// Return if noone is found inside the building
+			if (personsInside.length === 0) return;
 
-			await tx.insert(personExit).values(exitValuesMap);
+			await tx.insert(personExit).values(
+				personsInside.map(({ personId }) => ({
+					personId,
+					building
+				}))
+			);
 		});
 	} catch (err) {
 		throw new Error(`Failed to nuke building in database: ${(err as Error).message}`);

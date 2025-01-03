@@ -5,15 +5,19 @@ import { formSchema } from './schema';
 import type { PageServerLoad } from './$types';
 import { getBuildings } from '$lib/server/db/building';
 import { validateSecret } from '$lib/server/secret';
-import { nukeBuilding } from '$lib/server/db/person';
+import { getPersonTypes, removePersonsFromBuilding } from '$lib/server/db/person';
 
 export const load: PageServerLoad = async () => {
 	const form = await superValidate(zod(formSchema));
-	const buildings = await getBuildings();
+	const buildingsP = getBuildings();
+	const personTypesP = getPersonTypes();
+	const buildings = await buildingsP;
+	const personTypes = await personTypesP;
 
 	return {
 		form,
-		buildings
+		buildings,
+		personTypes
 	};
 };
 
@@ -37,8 +41,8 @@ export const actions: Actions = {
 		}
 
 		try {
-			const { building } = form.data;
-			await nukeBuilding(building);
+			const { building, personType } = form.data;
+			await removePersonsFromBuilding(building, personType);
 		} catch (err: unknown) {
 			console.debug(`Failed to nuke building: ${(err as Error).message}`);
 			return fail(400, {
