@@ -3,6 +3,7 @@
 	import Building from 'lucide-svelte/icons/building';
 	import Cuboid from 'lucide-svelte/icons/cuboid';
 	import KeyRound from 'lucide-svelte/icons/key-round';
+	import Bomb from 'lucide-svelte/icons/bomb';
 	import Github from 'lucide-svelte/icons/github';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import SidebarFooter from '$lib/components/ui/sidebar/sidebar-footer.svelte';
@@ -32,6 +33,11 @@
 			title: 'Register User',
 			url: '/admin/register',
 			icon: KeyRound
+		},
+		{
+			title: 'Nuke Building',
+			url: '/admin/nuke',
+			icon: Bomb
 		}
 	];
 
