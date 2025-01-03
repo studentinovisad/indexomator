@@ -1,4 +1,8 @@
-import { togglePersonState, getPersonsCountPerBuilding } from '$lib/server/db/person';
+import {
+	togglePersonState,
+	getPersonsCountPerBuilding,
+	getPersonsCountPerDepartment
+} from '$lib/server/db/person';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { invalidateSession } from '$lib/server/db/session';
@@ -8,14 +12,17 @@ import { search } from '$lib/utils/search';
 export const load: PageServerLoad = async () => {
 	try {
 		const personsP = search();
-		const personsInsideP = getPersonsCountPerBuilding();
+		const personsCountP = getPersonsCountPerDepartment();
+		const personsInsideCountP = getPersonsCountPerBuilding();
 
 		const persons = await personsP;
-		const personsInside = await personsInsideP;
+		const personsCount = await personsCountP;
+		const personsInsideCount = await personsInsideCountP;
 
 		return {
 			persons,
-			personsInside
+			personsCount,
+			personsInsideCount
 		};
 	} catch (err: unknown) {
 		console.debug(`Failed to get students and employees: ${(err as Error).message}`);

@@ -175,6 +175,39 @@ export async function getPersons(
 	}
 }
 
+// Gets the count of all persons per department
+export async function getPersonsCountPerDepartment(): Promise<
+	{
+		type: PersonType;
+		department: string;
+		count: number;
+	}[]
+> {
+	try {
+		const persons = await db
+			.select({
+				type: person.type,
+				department: person.department,
+				count: count()
+			})
+			.from(person)
+			.groupBy(person.type, person.department);
+
+		return persons.map((p) => {
+			if (p.type !== null && !isPersonType(p.type)) {
+				throw new Error('Invalid type from DB (not PersonType)');
+			}
+			return {
+				type: p.type,
+				department: p.department,
+				count: p.count
+			};
+		});
+	} catch (err: unknown) {
+		throw new Error(`Failed to get count of persons from database: ${(err as Error).message}}`);
+	}
+}
+
 // Gets the count of all persons that are inside, per building
 export async function getPersonsCountPerBuilding(): Promise<
 	{

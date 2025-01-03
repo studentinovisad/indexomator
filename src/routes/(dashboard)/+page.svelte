@@ -14,8 +14,9 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import InsideCountPerBuilding from '$lib/components/custom/inside_counter/insideCountPerBuilding.svelte';
 	import { searchStore } from '$lib/stores/search.svelte';
+	import CountPerDepartment from '$lib/components/custom/stats/countPerDepartment.svelte';
+	import InsideCountPerBuilding from '$lib/components/custom/stats/insideCountPerBuilding.svelte';
 
 	let { data, form: actionData } = $props();
 
@@ -38,7 +39,8 @@
 
 	let searchQuery = $state('');
 	const persons = $derived(actionData?.persons ?? data.persons ?? []);
-	const personsInside = $derived(data.personsInside ?? []);
+	const personsCount = $derived(data.personsCount ?? []);
+	const personsInsideCount = $derived(data.personsInsideCount ?? []);
 </script>
 
 <form
@@ -114,9 +116,25 @@
 			<Dialog.Header>
 				<Dialog.Title>Statistics</Dialog.Title>
 			</Dialog.Header>
+			<Dialog.Description>Check how many people are in the system.</Dialog.Description>
+			<div class="flex w-full">
+				<CountPerDepartment {personsCount} />
+			</div>
+		</Dialog.Content>
+	</Dialog.Root>
+	<Dialog.Root>
+		<Dialog.Trigger
+			class={`${buttonVariants({ variant: 'secondary', size: 'icon' })} flex-shrink-0`}
+		>
+			<Chart />
+		</Dialog.Trigger>
+		<Dialog.Content>
+			<Dialog.Header>
+				<Dialog.Title>Statistics</Dialog.Title>
+			</Dialog.Header>
 			<Dialog.Description>Check how many people are currently inside.</Dialog.Description>
 			<div class="flex w-full">
-				<InsideCountPerBuilding data={personsInside} />
+				<InsideCountPerBuilding {personsInsideCount} />
 			</div>
 		</Dialog.Content>
 	</Dialog.Root>
