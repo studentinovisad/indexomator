@@ -3,14 +3,22 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import CountPerDepartment from '$lib/components/custom/stats/countPerDepartment.svelte';
 	import InsideCountPerBuilding from '$lib/components/custom/stats/insideCountPerBuilding.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
+	import { enhance } from '$app/forms';
 
-	let { data } = $props();
+	let { data, form: actionData } = $props();
 
-	const personsCount = $derived(data.personsCount ?? []);
-	const personsInsideCount = $derived(data.personsInsideCount ?? []);
+	const personsCount = $derived(actionData?.personsCount ?? data.personsCount ?? []);
+	const personsInsideCount = $derived(
+		actionData?.personsInsideCount ?? data.personsInsideCount ?? []
+	);
 </script>
 
-<div class="flex w-full items-center justify-center px-4 pt-[5dvh] sm:pt-[10dvh]">
+<form
+	method="POST"
+	class="flex w-full items-center justify-center px-4 pt-[5dvh] sm:pt-[10dvh]"
+	use:enhance
+>
 	<Tabs.Root value="general" class="mx-auto w-full max-w-sm">
 		<Tabs.List class="grid w-full grid-cols-2">
 			<Tabs.Trigger value="general">General</Tabs.Trigger>
@@ -25,6 +33,9 @@
 				<Card.Content>
 					<CountPerDepartment {personsCount} />
 				</Card.Content>
+				<Card.Footer>
+					<Button type="submit" class="mx-auto">Refresh</Button>
+				</Card.Footer>
 			</Card.Root>
 		</Tabs.Content>
 		<Tabs.Content value="inside">
@@ -36,7 +47,10 @@
 				<Card.Content>
 					<InsideCountPerBuilding {personsInsideCount} />
 				</Card.Content>
+				<Card.Footer>
+					<Button type="submit" class="mx-auto">Refresh</Button>
+				</Card.Footer>
 			</Card.Root>
 		</Tabs.Content>
 	</Tabs.Root>
-</div>
+</form>
