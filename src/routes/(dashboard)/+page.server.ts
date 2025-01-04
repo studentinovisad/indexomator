@@ -25,9 +25,9 @@ export const load: PageServerLoad = async () => {
 			personsInsideCount
 		};
 	} catch (err: unknown) {
-		console.debug(`Failed to get students and employees: ${(err as Error).message}`);
+		console.debug(`Failed to get persons: ${(err as Error).message}`);
 		return fail(500, {
-			message: 'Failed to get students and employees'
+			message: 'Failed to get persons'
 		});
 	}
 };
