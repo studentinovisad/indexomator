@@ -10,7 +10,7 @@
 	const personsInsideCount = $derived(data.personsInsideCount ?? []);
 </script>
 
-<div class="flex h-[90dvh] w-full items-center justify-center px-4 pb-[30dvh]">
+<div class="flex w-full items-center justify-center px-4 pt-[5dvh] sm:pt-[10dvh]">
 	<Tabs.Root value="general" class="mx-auto w-full max-w-sm">
 		<Tabs.List class="grid w-full grid-cols-2">
 			<Tabs.Trigger value="general">General</Tabs.Trigger>
