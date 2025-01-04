@@ -22,7 +22,7 @@
 					<Card.Title>General Statistics</Card.Title>
 					<Card.Description>Check how many people are in the system.</Card.Description>
 				</Card.Header>
-				<Card.Content class="flex w-full">
+				<Card.Content>
 					<CountPerDepartment {personsCount} />
 				</Card.Content>
 			</Card.Root>
@@ -33,7 +33,7 @@
 					<Card.Title>Inside Statistics</Card.Title>
 					<Card.Description>Check how many people are currently inside.</Card.Description>
 				</Card.Header>
-				<Card.Content class="flex w-full">
+				<Card.Content>
 					<InsideCountPerBuilding {personsInsideCount} />
 				</Card.Content>
 			</Card.Root>

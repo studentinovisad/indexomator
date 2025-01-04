@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import type { PersonType } from '$lib/types/person';
 
 	let {
@@ -47,6 +48,26 @@
 			}))
 			.sort((d1, d2) => d1.department.localeCompare(d2.department));
 	});
+
+	const totalCountPerType = $derived(
+		departments
+			.flatMap((d) => d.types)
+			.reduce(
+				(acc, curr) => {
+					const existingType = acc.find((item) => item.type === curr.type);
+					if (!existingType) {
+						return [...acc, curr];
+					}
+					existingType.count += curr.count;
+					return acc;
+				},
+				[] as {
+					type: PersonType;
+					count: number;
+				}[]
+			)
+			.sort((t1, t2) => t1.type.localeCompare(t2.type))
+	);
 </script>
 
 <table class="w-full">
@@ -65,6 +86,25 @@
 				{#each types as { count }}
 					<td>{count}</td>
 				{/each}
+			</tr>
+		{/each}
+	</tbody>
+</table>
+
+<Separator class="my-3" />
+
+<table class="w-full">
+	<thead>
+		<tr>
+			<th class="w-1/3">Type</th>
+			<th class="w-1/3">Total</th>
+		</tr>
+	</thead>
+	<tbody class="text-center">
+		{#each totalCountPerType as { type, count }}
+			<tr>
+				<td>{type}</td>
+				<td>{count}</td>
 			</tr>
 		{/each}
 	</tbody>
