@@ -4,9 +4,22 @@
 	import CountPerDepartment from '$lib/components/custom/stats/countPerDepartment.svelte';
 	import InsideCountPerBuilding from '$lib/components/custom/stats/insideCountPerBuilding.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
+	import { toast } from 'svelte-sonner';
+	import { page } from '$app/stores';
 	import { enhance } from '$app/forms';
 
 	let { data, form: actionData } = $props();
+
+	$effect(() => {
+		const msg = actionData?.message;
+		if (msg !== undefined) {
+			if ($page.status === 200) {
+				toast.success(msg);
+			} else {
+				toast.error(msg);
+			}
+		}
+	});
 
 	const personsCount = $derived(actionData?.personsCount ?? data.personsCount ?? []);
 	const personsInsideCount = $derived(
