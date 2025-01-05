@@ -2,9 +2,9 @@
 	import type { PersonType } from '$lib/types/person';
 
 	let {
-		data
+		personsInsideCount
 	}: {
-		data: {
+		personsInsideCount: {
 			type: PersonType | null;
 			building: string;
 			insideCount: number;
@@ -12,7 +12,7 @@
 	} = $props();
 
 	const allTypes = $derived(
-		data
+		personsInsideCount
 			.filter(
 				(
 					d
@@ -30,7 +30,7 @@
 			.sort((t1, t2) => t1.type.localeCompare(t2.type))
 	);
 	const buildings = $derived.by(() => {
-		const dataMap = data.reduce(
+		const dataMap = personsInsideCount.reduce(
 			(acc, { building, type, insideCount }) => {
 				if (!acc[building]) acc[building] = {} as Record<PersonType, number>;
 				if (type !== null) acc[building][type] = insideCount;
