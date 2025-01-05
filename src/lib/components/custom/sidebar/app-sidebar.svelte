@@ -1,13 +1,4 @@
 <script lang="ts">
-<<<<<<< HEAD
-	import House from 'lucide-svelte/icons/house';
-	import OpenBook from 'lucide-svelte/icons/book-open-text';
-	import Briefcase from 'lucide-svelte/icons/briefcase-business';
-	import Clipboard from 'lucide-svelte/icons/clipboard-list';
-	import Handshake from 'lucide-svelte/icons/handshake';
-	import Github from 'lucide-svelte/icons/github';
-=======
->>>>>>> main
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import SidebarFooter from '$lib/components/ui/sidebar/sidebar-footer.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
@@ -20,6 +11,7 @@
 		ChartNoAxesCombined,
 		ClipboardList,
 		Github,
+		Handshake,
 		House
 	} from 'lucide-svelte';
 
@@ -41,15 +33,14 @@
 			icon: Briefcase
 		},
 		{
-<<<<<<< HEAD
 			title: 'Create Guest',
 			url: '/create/guest',
 			icon: Handshake
-=======
+		},
+		{
 			title: 'Statistics',
 			url: '/statistics',
 			icon: ChartNoAxesCombined
->>>>>>> main
 		},
 		{
 			title: 'Instructions',
