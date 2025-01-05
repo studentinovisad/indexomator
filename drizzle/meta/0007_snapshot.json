@@ -1,5 +1,5 @@
 {
-	"id": "bcf6fa39-7ebc-4761-bd35-47cb8debf6d6",
+	"id": "81ee13a7-fe6d-4b61-828e-edba465e15b5",
 	"prevId": "00e93b06-d2d6-4901-80b0-a270695dd02b",
 	"version": "7",
 	"dialect": "postgresql",
@@ -99,12 +99,6 @@
 					"type": "text",
 					"primaryKey": false,
 					"notNull": true
-				},
-				"guarantor_id": {
-					"name": "guarantor_id",
-					"type": "integer",
-					"primaryKey": false,
-					"notNull": false
 				}
 			},
 			"indexes": {},
@@ -115,15 +109,6 @@
 					"tableTo": "department",
 					"columnsFrom": ["department"],
 					"columnsTo": ["name"],
-					"onDelete": "restrict",
-					"onUpdate": "cascade"
-				},
-				"person_guarantor_id_person_id_fk": {
-					"name": "person_guarantor_id_person_id_fk",
-					"tableFrom": "person",
-					"tableTo": "person",
-					"columnsFrom": ["guarantor_id"],
-					"columnsTo": ["id"],
 					"onDelete": "restrict",
 					"onUpdate": "cascade"
 				}
@@ -164,7 +149,7 @@
 					"name": "creator",
 					"type": "text",
 					"primaryKey": false,
-					"notNull": true
+					"notNull": false
 				}
 			},
 			"indexes": {},
@@ -232,7 +217,7 @@
 					"name": "creator",
 					"type": "text",
 					"primaryKey": false,
-					"notNull": true
+					"notNull": false
 				}
 			},
 			"indexes": {},

@@ -1,16 +1,27 @@
 <script lang="ts">
+<<<<<<< HEAD
 	import House from 'lucide-svelte/icons/house';
 	import OpenBook from 'lucide-svelte/icons/book-open-text';
 	import Briefcase from 'lucide-svelte/icons/briefcase-business';
 	import Clipboard from 'lucide-svelte/icons/clipboard-list';
 	import Handshake from 'lucide-svelte/icons/handshake';
 	import Github from 'lucide-svelte/icons/github';
+=======
+>>>>>>> main
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import SidebarFooter from '$lib/components/ui/sidebar/sidebar-footer.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
 	import LogoLight from '$lib/assets/images/light.svg';
 	import LogoDark from '$lib/assets/images/dark.svg';
+	import {
+		BookOpenText,
+		Briefcase,
+		ChartNoAxesCombined,
+		ClipboardList,
+		Github,
+		House
+	} from 'lucide-svelte';
 
 	// Menu items.
 	const items = [
@@ -22,7 +33,7 @@
 		{
 			title: 'Create Student',
 			url: '/create/student',
-			icon: OpenBook
+			icon: BookOpenText
 		},
 		{
 			title: 'Create Employee',
@@ -30,14 +41,20 @@
 			icon: Briefcase
 		},
 		{
+<<<<<<< HEAD
 			title: 'Create Guest',
 			url: '/create/guest',
 			icon: Handshake
+=======
+			title: 'Statistics',
+			url: '/statistics',
+			icon: ChartNoAxesCombined
+>>>>>>> main
 		},
 		{
 			title: 'Instructions',
 			url: '/instructions',
-			icon: Clipboard
+			icon: ClipboardList
 		}
 	];
 

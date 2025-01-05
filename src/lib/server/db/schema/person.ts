@@ -36,9 +36,10 @@ export const personEntry = pgTable(
 		building: text('building')
 			.notNull()
 			.references(() => building.name, { onDelete: 'restrict', onUpdate: 'cascade' }),
-		creator: text('creator')
-			.notNull()
-			.references(() => userTable.username, { onDelete: 'no action', onUpdate: 'cascade' })
+		creator: text('creator').references(() => userTable.username, {
+			onDelete: 'no action',
+			onUpdate: 'cascade'
+		})
 	},
 	(table) => {
 		return {
@@ -57,9 +58,10 @@ export const personExit = pgTable(
 		building: text('building')
 			.notNull()
 			.references(() => building.name, { onDelete: 'restrict', onUpdate: 'cascade' }),
-		creator: text('creator')
-			.notNull()
-			.references(() => userTable.username, { onDelete: 'no action', onUpdate: 'cascade' })
+		creator: text('creator').references(() => userTable.username, {
+			onDelete: 'no action',
+			onUpdate: 'cascade'
+		})
 	},
 	(table) => {
 		return {

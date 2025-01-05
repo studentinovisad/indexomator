@@ -1,20 +1,17 @@
 <script lang="ts">
-	import Button, { buttonVariants } from '$lib/components/ui/button/button.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import Search from 'lucide-svelte/icons/search';
 	import Reset from 'lucide-svelte/icons/list-restart';
 	import Zap from 'lucide-svelte/icons/zap';
 	import ZapOff from 'lucide-svelte/icons/zap-off';
-	import Chart from 'lucide-svelte/icons/chart-no-axes-combined';
 	import DataTable from './data-table.svelte';
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/stores';
 	import { columns } from './columns';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import InsideCountPerBuilding from '$lib/components/custom/inside_counter/insideCountPerBuilding.svelte';
 	import { searchStore } from '$lib/stores/search.svelte';
 
 	let { data, form: actionData } = $props();
@@ -38,7 +35,6 @@
 
 	let searchQuery = $state('');
 	const persons = $derived(actionData?.persons ?? data.persons ?? []);
-	const personsInside = $derived(data.personsInside ?? []);
 </script>
 
 <form
@@ -104,22 +100,6 @@
 			<ZapOff />
 		{/if}
 	</Button>
-	<Dialog.Root>
-		<Dialog.Trigger
-			class={`${buttonVariants({ variant: 'secondary', size: 'icon' })} flex-shrink-0`}
-		>
-			<Chart />
-		</Dialog.Trigger>
-		<Dialog.Content>
-			<Dialog.Header>
-				<Dialog.Title>Statistics</Dialog.Title>
-			</Dialog.Header>
-			<Dialog.Description>Check how many people are currently inside.</Dialog.Description>
-			<div class="flex w-full">
-				<InsideCountPerBuilding data={personsInside} />
-			</div>
-		</Dialog.Content>
-	</Dialog.Root>
 </form>
 
 <Separator />

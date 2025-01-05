@@ -181,6 +181,39 @@ export async function getPersons(
 	}
 }
 
+// Gets the count of all persons per department
+export async function getPersonsCountPerDepartment(): Promise<
+	{
+		type: PersonType;
+		department: string;
+		count: number;
+	}[]
+> {
+	try {
+		const persons = await db
+			.select({
+				type: person.type,
+				department: person.department,
+				count: count()
+			})
+			.from(person)
+			.groupBy(person.type, person.department);
+
+		return persons.map((p) => {
+			if (p.type !== null && !isPersonType(p.type)) {
+				throw new Error('Invalid type from DB (not PersonType)');
+			}
+			return {
+				type: p.type,
+				department: p.department,
+				count: p.count
+			};
+		});
+	} catch (err: unknown) {
+		throw new Error(`Failed to get count of persons from database: ${(err as Error).message}}`);
+	}
+}
+
 // Gets the count of all persons that are inside, per building
 export async function getPersonsCountPerBuilding(): Promise<
 	{
@@ -384,5 +417,57 @@ export async function togglePersonState(
 		});
 	} catch (err: unknown) {
 		throw new Error(`Failed to toggle person state in database: ${(err as Error).message}`);
+	}
+}
+
+export async function getPersonTypes(): Promise<PersonType[]> {
+	try {
+		const types = await db
+			.selectDistinctOn([person.type], { type: person.type })
+			.from(person)
+			.orderBy(person.type);
+		return types.reduce((acc, { type }) => {
+			if (!isPersonType(type)) {
+				throw new Error('Invalid type from DB (not PersonType)');
+			}
+			return [...acc, type];
+		}, [] as PersonType[]);
+	} catch (err) {
+		throw new Error(`Failed to get persons types from database: ${(err as Error).message}`);
+	}
+}
+
+export async function removePersonsFromBuilding(building: string, type: string): Promise<void> {
+	try {
+		return await db.transaction(async (tx) => {
+			const personsInside = await tx
+				.select({
+					personId: person.id,
+					personType: person.type,
+					building: personEntry.building,
+					maxEntryTimestamp: max(personEntry.timestamp),
+					maxExitTimestamp: max(personExit.timestamp)
+				})
+				.from(person)
+				.leftJoin(personEntry, eq(personEntry.personId, person.id))
+				.leftJoin(personExit, eq(personExit.personId, person.id))
+				.where(and(eq(personEntry.building, building), eq(person.type, type)))
+				.groupBy(person.id, person.type, personEntry.building)
+				.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
+					or(isNull(maxExitTimestamp), gt(maxEntryTimestamp, maxExitTimestamp))
+				);
+
+			// Return if no one is found inside the building
+			if (personsInside.length === 0) return;
+
+			await tx.insert(personExit).values(
+				personsInside.map(({ personId }) => ({
+					personId,
+					building
+				}))
+			);
+		});
+	} catch (err) {
+		throw new Error(`Failed to nuke building in database: ${(err as Error).message}`);
 	}
 }
