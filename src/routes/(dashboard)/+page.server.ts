@@ -1,8 +1,4 @@
-import {
-	togglePersonState,
-	getPersonsCountPerBuilding,
-	getPersonsCountPerDepartment
-} from '$lib/server/db/person';
+import { togglePersonState } from '$lib/server/db/person';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { invalidateSession } from '$lib/server/db/session';
@@ -11,18 +7,9 @@ import { search } from '$lib/utils/search';
 
 export const load: PageServerLoad = async () => {
 	try {
-		const personsP = search();
-		const personsCountP = getPersonsCountPerDepartment();
-		const personsInsideCountP = getPersonsCountPerBuilding();
-
-		const persons = await personsP;
-		const personsCount = await personsCountP;
-		const personsInsideCount = await personsInsideCountP;
-
+		const persons = await search();
 		return {
-			persons,
-			personsCount,
-			personsInsideCount
+			persons
 		};
 	} catch (err: unknown) {
 		console.debug(`Failed to get persons: ${(err as Error).message}`);
