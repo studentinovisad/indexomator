@@ -1,69 +1,69 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1734108654159,
-      "tag": "0000_early_jimmy_woo",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1734543952685,
-      "tag": "0001_steady_luke_cage",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1735346155508,
-      "tag": "0002_known_marvel_apes",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1735490914685,
-      "tag": "0003_bumpy_hardball",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1735611551493,
-      "tag": "0004_lush_miss_america",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1735611722346,
-      "tag": "0005_lucky_madame_web",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1735613817511,
-      "tag": "0006_fearless_photon",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1735856957839,
-      "tag": "0007_aspiring_zombie",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1736077257254,
-      "tag": "0008_glossy_dragon_man",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "postgresql",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "7",
+			"when": 1734108654159,
+			"tag": "0000_early_jimmy_woo",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1734543952685,
+			"tag": "0001_steady_luke_cage",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1735346155508,
+			"tag": "0002_known_marvel_apes",
+			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1735490914685,
+			"tag": "0003_bumpy_hardball",
+			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1735611551493,
+			"tag": "0004_lush_miss_america",
+			"breakpoints": true
+		},
+		{
+			"idx": 5,
+			"version": "7",
+			"when": 1735611722346,
+			"tag": "0005_lucky_madame_web",
+			"breakpoints": true
+		},
+		{
+			"idx": 6,
+			"version": "7",
+			"when": 1735613817511,
+			"tag": "0006_fearless_photon",
+			"breakpoints": true
+		},
+		{
+			"idx": 7,
+			"version": "7",
+			"when": 1735856957839,
+			"tag": "0007_aspiring_zombie",
+			"breakpoints": true
+		},
+		{
+			"idx": 8,
+			"version": "7",
+			"when": 1736077257254,
+			"tag": "0008_glossy_dragon_man",
+			"breakpoints": true
+		}
+	]
 }
