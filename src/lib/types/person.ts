@@ -1,6 +1,6 @@
 import type { State } from './state';
 
-export type PersonType = 'Student' | 'Employee' | 'Guest';
+export type PersonType = 'Employee' | 'Guest' | 'Student';
 export const Employee: PersonType = 'Employee';
 export const Guest: PersonType = 'Guest';
 export const Student: PersonType = 'Student';
