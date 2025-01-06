@@ -16,7 +16,9 @@ export const load: PageServerLoad = async () => {
 
 export const actions: Actions = {
 	default: async (event) => {
-		const form = await superValidate(event.request, zod(formSchema));
+		const { locals, request } = event;
+		const { database } = locals;
+		const form = await superValidate(request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {
 				form,
@@ -36,7 +38,7 @@ export const actions: Actions = {
 		try {
 			const { username, password } = form.data;
 			// Create the new user
-			await createUser(username, password);
+			await createUser(database, username, password);
 		} catch (err: unknown) {
 			console.debug(`Failed to register: ${(err as Error).message}`);
 			return fail(400, {

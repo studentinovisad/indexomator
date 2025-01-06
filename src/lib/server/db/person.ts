@@ -1,16 +1,17 @@
+import type { Database } from './connect';
 import { or, eq, and, max, gt, count, isNull } from 'drizzle-orm';
 import { person, personEntry, personExit } from './schema/person';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
 import { sqlConcat, sqlLeast, sqlLevenshteinDistance } from './utils';
 import { isInside } from '../isInside';
-import { DB as db } from './connect';
 import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
 import { building } from './schema/building';
 import { isPersonType, type PersonType } from '$lib/types/person';
 
 // Gets all persons using optional filters
 export async function getPersons(
+	db: Database,
 	limit: number,
 	offset: number,
 	searchQuery?: string
@@ -176,7 +177,7 @@ export async function getPersons(
 }
 
 // Gets the count of all persons per department
-export async function getPersonsCountPerDepartment(): Promise<
+export async function getPersonsCountPerDepartment(db: Database): Promise<
 	{
 		type: PersonType;
 		department: string;
@@ -209,7 +210,7 @@ export async function getPersonsCountPerDepartment(): Promise<
 }
 
 // Gets the count of all persons that are inside, per building
-export async function getPersonsCountPerBuilding(): Promise<
+export async function getPersonsCountPerBuilding(db: Database): Promise<
 	{
 		type: PersonType | null;
 		building: string;
@@ -263,6 +264,7 @@ export async function getPersonsCountPerBuilding(): Promise<
 
 // Creates a person and the entry timestamp
 export async function createPerson(
+	db: Database,
 	identifierD: string,
 	type: PersonType,
 	fnameD: string,
@@ -344,6 +346,7 @@ export async function createPerson(
 
 // Toggles the state of a person (inside to outside and vice versa)
 export async function togglePersonState(
+	db: Database,
 	id: number,
 	building: string,
 	creator: string
@@ -401,7 +404,7 @@ export async function togglePersonState(
 	}
 }
 
-export async function getPersonTypes(): Promise<PersonType[]> {
+export async function getPersonTypes(db: Database): Promise<PersonType[]> {
 	try {
 		const types = await db
 			.selectDistinctOn([person.type], { type: person.type })
@@ -418,7 +421,11 @@ export async function getPersonTypes(): Promise<PersonType[]> {
 	}
 }
 
-export async function removePersonsFromBuilding(building: string, type: string): Promise<void> {
+export async function removePersonsFromBuilding(
+	db: Database,
+	building: string,
+	type: string
+): Promise<void> {
 	try {
 		return await db.transaction(async (tx) => {
 			const personsInside = await tx

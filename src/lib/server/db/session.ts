@@ -1,22 +1,16 @@
+import type { Database } from './connect';
 import { and, desc, eq, notInArray } from 'drizzle-orm';
-import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from '@oslojs/encoding';
+import { encodeHexLowerCase } from '@oslojs/encoding';
 import { sha256 } from '@oslojs/crypto/sha2';
 import { userTable, type User } from './schema/user';
 import { sessionTable, type Session } from './schema/session';
-import { DB as db } from './connect';
 import { env } from '$env/dynamic/private';
 
 export const inactivityTimeout = Number.parseInt(env.INACTIVITY_TIMEOUT ?? '120') * 60 * 1000;
 export const maxActiveSessions = Number.parseInt(env.MAX_ACTIVE_SESSIONS ?? '3');
 
-export function generateSessionToken(): string {
-	const bytes = new Uint8Array(20);
-	crypto.getRandomValues(bytes);
-	const token = encodeBase32LowerCaseNoPadding(bytes);
-	return token;
-}
-
 export async function createSession(
+	db: Database,
 	token: string,
 	userId: number,
 	building: string
@@ -51,7 +45,10 @@ export async function createSession(
 	}
 }
 
-export async function validateSessionToken(token: string): Promise<SessionValidationResult> {
+export async function validateSessionToken(
+	db: Database,
+	token: string
+): Promise<SessionValidationResult> {
 	// Assert that token is valid
 	if (token === null || token === undefined || token === '') {
 		throw new Error('Invalid token');
@@ -86,7 +83,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 	}
 }
 
-export async function invalidateSession(sessionId: string): Promise<void> {
+export async function invalidateSession(db: Database, sessionId: string): Promise<void> {
 	// Assert that sessionId is valid
 	if (sessionId === null || sessionId === undefined || sessionId === '') {
 		throw new Error('Invalid sessionId');
@@ -100,7 +97,7 @@ export async function invalidateSession(sessionId: string): Promise<void> {
 }
 
 // Invalidate sessions that exceed the maximum number of sessions
-export async function invalidateExcessSessions(userId: number): Promise<void> {
+export async function invalidateExcessSessions(db: Database, userId: number): Promise<void> {
 	// Assert that userId is valid
 	if (userId === null || userId === undefined) {
 		throw new Error('Invalid userId');
