@@ -9,9 +9,10 @@ import { formSchema } from './schema';
 import type { PageServerLoad } from './$types';
 import { Employee } from '$lib/types/person';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
+	const { database } = locals;
 	const form = await superValidate(zod(formSchema));
-	const departments = await getDepartments();
+	const departments = await getDepartments(database);
 
 	return {
 		form,
@@ -20,7 +21,8 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, locals }) => {
+	default: async ({ locals, request }) => {
+		const { database } = locals;
 		const form = await superValidate(request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {
@@ -41,7 +43,7 @@ export const actions: Actions = {
 			const type = Employee;
 			const building = locals.session.building;
 			const creator = locals.user.username;
-			await createPerson(identifier, type, fname, lname, department, building, creator);
+			await createPerson(database, identifier, type, fname, lname, department, building, creator);
 		} catch (err: unknown) {
 			console.debug(`Failed to create employee: ${(err as Error).message}`);
 			return fail(400, {

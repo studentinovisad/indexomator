@@ -1,13 +1,13 @@
-import { togglePersonState } from '$lib/server/db/person';
+import { getPersons, togglePersonState } from '$lib/server/db/person';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { invalidateSession } from '$lib/server/db/session';
 import { deleteSessionTokenCookie } from '$lib/server/session';
-import { search } from '$lib/utils/search';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
+	const { database } = locals;
 	try {
-		const persons = await search();
+		const persons = await getPersons(database, 1000, 0);
 		return {
 			persons
 		};
@@ -20,7 +20,8 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	search: async ({ request }) => {
+	search: async ({ locals, request }) => {
+		const { database } = locals;
 		try {
 			const formData = await request.formData();
 			const searchQuery = formData.get('q');
@@ -32,7 +33,7 @@ export const actions: Actions = {
 				});
 			}
 
-			const persons = await search(searchQuery);
+			const persons = await getPersons(database, 1000, 0, searchQuery);
 			return {
 				searchQuery,
 				persons
@@ -44,7 +45,8 @@ export const actions: Actions = {
 			});
 		}
 	},
-	togglestate: async ({ request, locals }) => {
+	togglestate: async ({ locals, request }) => {
+		const { database } = locals;
 		try {
 			const formData = await request.formData();
 			const idS = formData.get('id');
@@ -79,9 +81,9 @@ export const actions: Actions = {
 			const { username } = locals.user;
 
 			const id = Number.parseInt(idS);
-			await togglePersonState(id, building, username);
+			await togglePersonState(database, id, building, username);
 
-			const persons = await search(searchQuery);
+			const persons = await getPersons(database, 1000, 0, searchQuery);
 			return {
 				searchQuery,
 				persons,
@@ -95,8 +97,10 @@ export const actions: Actions = {
 		}
 	},
 	logout: async (event) => {
+		const { locals, request } = event;
+		const { database } = locals;
 		try {
-			const formData = await event.request.formData();
+			const formData = await request.formData();
 			const idS = formData.get('id_session');
 			if (idS === null || idS === undefined || typeof idS !== 'string' || idS === '') {
 				return fail(400, {
@@ -104,7 +108,7 @@ export const actions: Actions = {
 				});
 			}
 
-			await invalidateSession(idS);
+			await invalidateSession(database, idS);
 			deleteSessionTokenCookie(event);
 		} catch (err: unknown) {
 			console.debug(`Failed to logout: ${(err as Error).message}`);

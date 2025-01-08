@@ -2,10 +2,11 @@ import { getPersonsCountPerBuilding, getPersonsCountPerDepartment } from '$lib/s
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
+	const { database } = locals;
 	try {
-		const personsCountP = getPersonsCountPerDepartment();
-		const personsInsideCountP = getPersonsCountPerBuilding();
+		const personsCountP = getPersonsCountPerDepartment(database);
+		const personsInsideCountP = getPersonsCountPerBuilding(database);
 
 		const personsCount = await personsCountP;
 		const personsInsideCount = await personsInsideCountP;
@@ -23,10 +24,11 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	default: async () => {
+	default: async ({ locals }) => {
+		const { database } = locals;
 		try {
-			const personsCountP = getPersonsCountPerDepartment();
-			const personsInsideCountP = getPersonsCountPerBuilding();
+			const personsCountP = getPersonsCountPerDepartment(database);
+			const personsInsideCountP = getPersonsCountPerBuilding(database);
 
 			const personsCount = await personsCountP;
 			const personsInsideCount = await personsInsideCountP;
