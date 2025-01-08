@@ -5,18 +5,19 @@
 	import { Input } from '$lib/components/ui/input';
 	import { searchStore } from '$lib/stores/search.svelte';
 	import type { Table } from '@tanstack/table-core';
+	import type { Person } from '$lib/types/person';
 
-	let { id, type, table }: { id: number; type: string; table?: Table<any> } = $props();
+	let { id, type, table }: { id: number; type: string; table: Table<Person> } = $props();
 
 	function onEditButtonClick() {
-		if (table != null && table.options != null) {
+		if (table.options !== null) {
 			let status = table.options.meta?.getEditStatus(id) ?? false;
 			table.options.meta?.setEditStatus(id, !status);
 		}
 	}
 
 	function isSaveButton(): boolean {
-		return table != null && table.options != null
+		return table.options !== null
 			? table.options.meta?.getEditStatus(id) == true
 			: false;
 	}
