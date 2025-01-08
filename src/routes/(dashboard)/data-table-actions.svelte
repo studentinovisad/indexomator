@@ -11,7 +11,7 @@
 
 	function onEditButtonClick() {
 		if (table.options !== null) {
-			let status = table.options.meta?.getEditStatus(id) ?? false;
+			const status = table.options.meta?.getEditStatus(id) ?? false;
 			table.options.meta?.setEditStatus(id, !status);
 		}
 	}
