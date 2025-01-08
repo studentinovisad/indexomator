@@ -5,10 +5,6 @@ import DataTableActions from './data-table-actions.svelte';
 
 export const columns: ColumnDef<Person>[] = [
 	{
-		accessorKey: 'id',
-		header: 'internal_id'
-	},
-	{
 		accessorKey: 'type',
 		header: 'Type'
 	},
@@ -41,8 +37,8 @@ export const columns: ColumnDef<Person>[] = [
 		header: 'Toggle State',
 		cell: ({ row }) => {
 			return renderComponent(DataTableActions, {
-				id: row.getVisibleCells()[0].getValue() as number,
-				type: row.getVisibleCells()[1].getValue() as PersonType
+				id: row.original.id,
+				type: row.original.type
 			});
 		},
 		enableSorting: false
