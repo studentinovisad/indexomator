@@ -1,11 +1,25 @@
 <script lang="ts">
-	import { ArrowLeftRight, Pencil } from 'lucide-svelte';
+	import { ArrowLeftRight, Pencil, Check } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { Input } from '$lib/components/ui/input';
 	import { searchStore } from '$lib/stores/search.svelte';
+	import type { Table } from '@tanstack/table-core';
 
-	let { id, type }: { id: number; type: string } = $props();
+	let { id, type, table }: { id: number; type: string; table?: Table<any> } = $props();
+
+	function onEditButtonClick() {
+		if (table != null && table.options != null) {
+			let status = table.options.meta?.getEditStatus(id) ?? false;
+			table.options.meta?.setEditStatus(id, !status);
+		}
+	}
+
+	function isSaveButton(): boolean {
+		return table != null && table.options != null
+			? table.options.meta?.getEditStatus(id) == true
+			: false;
+	}
 </script>
 
 <div class="flex gap-2">
@@ -16,7 +30,17 @@
 			<ArrowLeftRight /> <span class="hidden sm:block">Toggle State</span>
 		</Button>
 	</form>
-	<Button variant="outline" class="w-full">
-		<Pencil /> <span class="hidden sm:block">Edit</span>
-	</Button>
+	{#if table}
+		<Button
+			variant={isSaveButton() ? 'default' : 'outline'}
+			onclick={onEditButtonClick}
+			class="w-full"
+		>
+			{#if isSaveButton()}
+				<Check /> <span class="hidden sm:block">Save</span>
+			{:else}
+				<Pencil /> <span class="hidden sm:block">Edit</span>
+			{/if}
+		</Button>
+	{/if}
 </div>

@@ -7,10 +7,16 @@
 		type PaginationState,
 		type SortingState
 	} from '@tanstack/table-core';
-	import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js';
+	import {
+		createSvelteTable,
+		FlexRender,
+		renderComponent
+	} from '$lib/components/ui/data-table/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import type { Person } from '$lib/types/person';
+	import { SvelteSet } from 'svelte/reactivity';
+	import DataTableEditable from './data-table-editable.svelte';
 
 	type DataTableProps<Person> = {
 		columns: ColumnDef<Person>[];
@@ -21,6 +27,7 @@
 
 	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 });
 	let sorting = $state<SortingState>([]);
+	let editables = new SvelteSet();
 
 	const table = createSvelteTable({
 		get data() {
@@ -33,6 +40,9 @@
 			},
 			get sorting() {
 				return sorting;
+			},
+			get editables() {
+				return editables;
 			}
 		},
 		onPaginationChange: (updater) => {
@@ -51,7 +61,24 @@
 		},
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
-		getSortedRowModel: getSortedRowModel()
+		getSortedRowModel: getSortedRowModel(),
+		meta: {
+			setEditStatus: (id: number, status: boolean) => {
+				status ? editables.add(id) : editables.delete(id);
+			},
+			getEditStatus: (id: number) => {
+				return editables.has(id);
+			}
+		},
+		defaultColumn: {
+			cell: ({ row, table, column: { columnDef }, cell }) =>
+				renderComponent(DataTableEditable, {
+					id: row.original.id,
+					value: cell.getValue() as string,
+					enabled: columnDef.meta?.editable,
+					table: table
+				})
+		}
 	});
 </script>
 
