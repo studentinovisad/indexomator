@@ -10,11 +10,17 @@ export const columns: ColumnDef<Person>[] = [
 	},
 	{
 		accessorKey: 'fname',
-		header: 'First name'
+		header: 'First name',
+		meta: {
+			editable: true,
+		}
 	},
 	{
 		accessorKey: 'lname',
-		header: 'Last name'
+		header: 'Last name',
+		meta: {
+			editable: true,
+		}
 	},
 	{
 		accessorKey: 'identifier',
@@ -22,7 +28,10 @@ export const columns: ColumnDef<Person>[] = [
 	},
 	{
 		accessorKey: 'department',
-		header: 'Department'
+		header: 'Department',
+		meta: {
+			editable: true,
+		}
 	},
 	{
 		accessorKey: 'building',
@@ -34,7 +43,7 @@ export const columns: ColumnDef<Person>[] = [
 	},
 	{
 		id: 'actions',
-		header: 'Toggle State',
+		header: 'Actions',
 		cell: ({ row }) => {
 			return renderComponent(DataTableActions, {
 				id: row.original.id,
