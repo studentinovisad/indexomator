@@ -27,24 +27,22 @@
 			<ArrowLeftRight /> <span class="hidden sm:block">Toggle State</span>
 		</Button>
 	</form>
-	{#if table}
-		{#if isSaveButton()}
-			<form method="POST" action="?/edit" class="w-full" use:enhance in:fly>
-				{#each table._getColumnDefs() as def }
-					{#if def.meta?.editable === true}
-						<Input type="hidden" name={def.accessorKey} value="" />
-					{/if}
-				{/each}
-				<Button variant="default" class="w-full" type="submit" name="id" value={id} >
-					<Check /> <span class="hidden sm:block">Save</span>
-				</Button>
-			</form>
-		{:else}
-			<div class="w-full" in:fly>
-				<Button variant="outline" onclick={onEditButtonClick} class="w-full">
-					<Pencil /> <span class="hidden sm:block">Edit</span>
-				</Button>
-			</div>
-		{/if}
+	{#if isSaveButton()}
+		<form method="POST" action="?/edit" class="w-full" use:enhance in:fly>
+			{#each table._getColumnDefs() as def}
+				{#if def.meta?.editable === true}
+					<Input type="hidden" name={def.accessorKey} value="" />
+				{/if}
+			{/each}
+			<Button variant="default" class="w-full" type="submit" name="id" value={id}>
+				<Check /> <span class="hidden sm:block">Save</span>
+			</Button>
+		</form>
+	{:else}
+		<div class="w-full" in:fly>
+			<Button variant="outline" onclick={onEditButtonClick} class="w-full">
+				<Pencil /> <span class="hidden sm:block">Edit</span>
+			</Button>
+		</div>
 	{/if}
 </div>

@@ -469,7 +469,6 @@ export async function updatePerson(
 	fnameD: string,
 	lnameD: string,
 	department: string,
-	creator: string
 ): Promise<{
 	id: number;
 	fname: string;
@@ -488,10 +487,7 @@ export async function updatePerson(
 		lnameD === '' ||
 		department === null ||
 		department === undefined ||
-		department === '' ||
-		creator === null ||
-		creator === undefined ||
-		creator === ''
+		department === ''
 	) {
 		throw new Error('Invalid person data');
 	}
@@ -500,19 +496,17 @@ export async function updatePerson(
 	const lname = capitalizeString(sanitizeString(lnameD));
 
 	try {
-		return await db.transaction(async (tx) => {
-			await tx
-				.update(person)
-				.set({fname: fname, lname: lname, department: department})
-				.where(eq(person.id, id));
-			
-			return {
-				id,
-				fname,
-				lname,
-				department,
-			}
-		});
+		await db
+			.update(person)
+			.set({fname: fname, lname: lname, department: department})
+			.where(eq(person.id, id));
+		
+		return {
+			id,
+			fname,
+			lname,
+			department,
+		}
 	} catch (err: unknown) {
 		throw new Error(`Failed to update person in database: ${(err as Error).message}`);
 	}
