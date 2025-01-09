@@ -6,13 +6,35 @@
 	let {
 		id,
 		value,
+		name,
 		enabled = false,
 		table
-	}: { id: number; value: string; enabled?: boolean; table: Table<Person> } = $props();
+	}: {
+		id: number;
+		value: string;
+		name: string;
+		enabled?: boolean;
+		table: Table<Person>;
+	} = $props();
+
+	function updateChangesMap(v: string) {
+		if (table.options !== null) {
+			let changes = table.options.meta?.getEditChanges(id);
+			if (changes !== null) {
+				changes[name] = v;
+				table.options.meta?.setEditChanges(id, { ...changes });
+			}
+		}
+	}
+
+	function getChangesMap() {
+		const changes = table.options.meta?.getEditChanges(id);
+		return changes === null ? value : changes[name];
+	}
 </script>
 
-{#if enabled && table.options !== null && table.options.meta?.getEditStatus(id)}
-	<Input {value} class="field-sizing-content w-min" />
+{#if enabled && table.options !== null && table.options.meta?.getEditChanges(id)}
+	<Input class="w-min field-sizing-content" bind:value={getChangesMap, updateChangesMap} />
 {:else}
 	{value}
 {/if}

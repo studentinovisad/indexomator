@@ -46,11 +46,17 @@ export const columns: ColumnDef<Person>[] = [
 		header: 'Actions',
 		cell: ({ row, table }) => {
 			return renderComponent(DataTableActions, {
-				id: row.original.id,
-				type: row.original.type,
+				row,
 				table,
 			});
 		},
 		enableSorting: false
 	}
 ];
+
+
+export type PersonEditable = {
+	fname: string,
+	lname: string,
+	department: string,
+};

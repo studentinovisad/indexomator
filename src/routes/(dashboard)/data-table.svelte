@@ -15,8 +15,9 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import type { Person } from '$lib/types/person';
-	import { SvelteSet } from 'svelte/reactivity';
+	import { SvelteMap } from 'svelte/reactivity';
 	import DataTableEditable from './data-table-editable.svelte';
+	import type { PersonEditable } from './columns';
 
 	type DataTableProps<Person> = {
 		columns: ColumnDef<Person>[];
@@ -27,7 +28,7 @@
 
 	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 });
 	let sorting = $state<SortingState>([]);
-	let editables = new SvelteSet();
+	let editables = new SvelteMap<number, PersonEditable>();
 
 	const table = createSvelteTable({
 		get data() {
@@ -63,10 +64,15 @@
 		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		meta: {
-			setEditStatus: (id: number, status: boolean) => {
-				status ? editables.add(id) : editables.delete(id);
+			setEditChanges: (id: number, changes?: PersonEditable) => {
+				changes === null || changes === undefined
+					? editables.delete(id)
+					: editables.set(id, changes);
 			},
-			getEditStatus: (id: number) => {
+			getEditChanges: (id: number): PersonEditable | null => {
+				return editables.get(id) ?? null;
+			},
+			hasEditChanges: (id: number): boolean => {
 				return editables.has(id);
 			}
 		},
@@ -75,6 +81,7 @@
 				renderComponent(DataTableEditable, {
 					id: row.original.id,
 					value: cell.getValue() as string,
+					name: columnDef.accessorKey,
 					enabled: columnDef.meta?.editable,
 					table: table
 				})
