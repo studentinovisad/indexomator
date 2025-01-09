@@ -6,18 +6,21 @@ import { deleteSessionTokenCookie } from '$lib/server/session';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { formSchema } from './schema';
+import { getDepartments } from '$lib/server/db/department';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const { database } = locals;
 	try {
 		const persons = await getPersons(database, 1000, 0);
+		const departments = await getDepartments(database);
 		return {
-			persons
+			persons,
+			departments
 		};
 	} catch (err: unknown) {
-		console.debug(`Failed to get persons: ${(err as Error).message}`);
+		console.debug(`Failed to get persons or departments: ${(err as Error).message}`);
 		return fail(500, {
-			message: 'Failed to get persons'
+			message: 'Failed to get persons or departments'
 		});
 	}
 };

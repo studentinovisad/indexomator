@@ -18,6 +18,7 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import DataTableEditable from './data-table-editable.svelte';
 	import type { PersonEditable } from './columns';
+	import { page } from '$app/stores';
 
 	type DataTableProps<Person> = {
 		columns: ColumnDef<Person>[];
@@ -81,6 +82,11 @@
 				renderComponent(DataTableEditable, {
 					id: row.original.id,
 					value: cell.getValue() as string,
+					choices:
+						columnDef.meta?.editableChoices === undefined ||
+						columnDef.meta?.editableChoices === null
+							? null
+							: columnDef.meta?.editableChoices($page.data),
 					name: columnDef.accessorKey,
 					enabled: columnDef.meta?.editable,
 					table: table

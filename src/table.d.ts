@@ -5,7 +5,8 @@ declare module '@tanstack/table-core' {
         editables?: SvelteMap;
     }
     interface ColumnMeta<TData extends RowData, TValue> {
-        editable?: boolean
+        editable?: boolean,
+        editableChoices?: (data: any) => string[]
     }
     interface TableMeta<TData extends RowData> {
         setEditChanges: (id: number, changes?: PersonEditable) => void,

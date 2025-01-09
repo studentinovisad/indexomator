@@ -31,6 +31,9 @@ export const columns: ColumnDef<Person>[] = [
 		header: 'Department',
 		meta: {
 			editable: true,
+			editableChoices: (data) => {
+				return data.departments.map((val) => val.name);
+			}
 		}
 	},
 	{
