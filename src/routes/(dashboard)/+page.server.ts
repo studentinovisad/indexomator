@@ -1,8 +1,11 @@
-import { getPersons, togglePersonState } from '$lib/server/db/person';
+import { getPersons, togglePersonState, updatePerson } from '$lib/server/db/person';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { invalidateSession } from '$lib/server/db/session';
 import { deleteSessionTokenCookie } from '$lib/server/session';
+import { superValidate } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
+import { formSchema } from './schema';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const { database } = locals;
@@ -42,6 +45,35 @@ export const actions: Actions = {
 			console.debug(`Failed to search: ${(err as Error).message}`);
 			return fail(500, {
 				message: 'Failed to search'
+			});
+		}
+	},
+	edit: async ({ locals, request }) => {
+		const { database } = locals;
+		const form = await superValidate(request, zod(formSchema));
+		if (!form.valid) {
+			return fail(400, {
+				form,
+				message: 'Invalid form inputs'
+			});
+		}
+
+		if (locals.session === null || locals.user === null) {
+			return fail(401, {
+				form,
+				message: 'Invalid session'
+			});
+		}
+
+		try {
+			const { id, fname, lname, department } = form.data;
+			const creator = locals.user.username;
+
+			await updatePerson(database, id, fname, lname, department, creator);
+		} catch (err: unknown) {
+			console.debug(`Failed to edit: ${(err as Error).message}`);
+			return fail(400, {
+				message: 'Failed to edit'
 			});
 		}
 	},
