@@ -2,6 +2,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import type { Person } from '$lib/types/person';
 	import type { Table } from '@tanstack/table-core';
+	import { fly } from 'svelte/transition';
 
 	let {
 		id,
@@ -34,7 +35,11 @@
 </script>
 
 {#if enabled && table.options !== null && table.options.meta?.getEditChanges(id)}
-	<Input class="w-min field-sizing-content" bind:value={getChangesMap, updateChangesMap} />
+	<div in:fly>
+		<Input class="w-min field-sizing-content" bind:value={getChangesMap, updateChangesMap} />
+	</div>
 {:else}
-	{value}
+	<div in:fly>
+		{value}
+	</div>
 {/if}
