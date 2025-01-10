@@ -11,8 +11,10 @@ import { getDepartments } from '$lib/server/db/department';
 export const load: PageServerLoad = async ({ locals }) => {
 	const { database } = locals;
 	try {
-		const persons = await getPersons(database, 1000, 0);
-		const departments = await getDepartments(database);
+		const personsP = getPersons(database, 1000, 0);
+		const departmentsP = getDepartments(database);
+		const persons = await personsP;
+		const departments = await departmentsP;
 		return {
 			persons,
 			departments
@@ -58,13 +60,6 @@ export const actions: Actions = {
 			return fail(400, {
 				form,
 				message: 'Invalid form inputs'
-			});
-		}
-
-		if (locals.session === null || locals.user === null) {
-			return fail(401, {
-				form,
-				message: 'Invalid session'
 			});
 		}
 
