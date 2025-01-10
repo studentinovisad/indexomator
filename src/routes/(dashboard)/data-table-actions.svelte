@@ -39,6 +39,10 @@
 		}
 		return null;
 	}
+
+	function onCancelButtonClick() {
+		table.options?.meta?.setEditChanges(row.original.id);
+	}
 </script>
 
 <div class="flex gap-2">
@@ -50,29 +54,34 @@
 		</Button>
 	</form>
 	{#if isSaveButton()}
-		<form
-			method="POST"
-			action="?/edit"
-			class="w-full"
-			use:enhance={() => {
-				return async ({ update, result }) => {
-					update();
-					if (result.type === 'success'){
-						table.options?.meta?.setEditChanges(row.original.id);
-					}
-				};
-			}}
-			in:fly
-		>
-			{#each columnDefs as def}
-				{#if def.meta?.editable === true}
-					<Input type="hidden" name={def.accessorKey} value={getValueFromKey(def.accessorKey)} />
-				{/if}
-			{/each}
-			<Button variant="default" class="w-full" type="submit" name="id" value={row.original.id}>
-				<Check /> <span class="hidden sm:block">Save</span>
+		<div class="flex w-full gap-2">
+			<form
+				method="POST"
+				action="?/edit"
+				class="w-full"
+				use:enhance={() => {
+					return async ({ update, result }) => {
+						update();
+						if (result.type === 'success') {
+							table.options?.meta?.setEditChanges(row.original.id);
+						}
+					};
+				}}
+				in:fly
+			>
+				{#each columnDefs as def}
+					{#if def.meta?.editable === true}
+						<Input type="hidden" name={def.accessorKey} value={getValueFromKey(def.accessorKey)} />
+					{/if}
+				{/each}
+				<Button variant="default" class="w-full" type="submit" name="id" value={row.original.id}>
+					<Check /> <span class="hidden sm:block">Save</span>
+				</Button>
+			</form>
+			<Button variant="destructive" class="w-full" onclick={onCancelButtonClick}>
+				<Check /> <span class="hidden sm:block">Cancel</span>
 			</Button>
-		</form>
+		</div>
 	{:else}
 		<div class="w-full" in:fly>
 			<Button variant="outline" onclick={onEditButtonClick} class="w-full">
