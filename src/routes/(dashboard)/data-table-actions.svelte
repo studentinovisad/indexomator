@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ArrowLeftRight, Pencil, Check } from 'lucide-svelte';
+	import { ArrowLeftRight, Pencil, Check, X } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { Input } from '$lib/components/ui/input';
@@ -66,7 +66,7 @@
 				</Button>
 			</form>
 			<Button variant="destructive" class="w-full" onclick={onCancelButtonClick}>
-				<Check /> <span class="hidden sm:block">Cancel</span>
+				<X /> <span class="hidden sm:block">Cancel</span>
 			</Button>
 		</div>
 	{:else}
