@@ -89,6 +89,7 @@
 							: columnDef.meta?.editableChoices($page.data),
 					name: columnDef.accessorKey,
 					enabled: columnDef.meta?.editable,
+					row: row,
 					table: table
 				})
 		}

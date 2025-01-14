@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { Input } from '$lib/components/ui/input';
 	import type { Person } from '$lib/types/person';
-	import type { Table } from '@tanstack/table-core';
+	import type { Row, Table } from '@tanstack/table-core';
 	import { fly } from 'svelte/transition';
 	import * as Select from '$lib/components/ui/select';
+	import { enhance } from '$app/forms';
+	import DataTableHidden from './data-table-hidden.svelte';
 
 	let {
 		id,
@@ -11,6 +13,7 @@
 		choices = null,
 		name,
 		enabled = false,
+		row,
 		table
 	}: {
 		id: number;
@@ -18,6 +21,7 @@
 		choices?: string[] | null;
 		name: string;
 		enabled?: boolean;
+		row: Row<Person>,
 		table: Table<Person>;
 	} = $props();
 
@@ -39,9 +43,18 @@
 
 {#if enabled && table.options !== null && table.options.meta?.getEditChanges(id)}
 	{#if choices === null}
-		<div in:fly>
+		<form method="POST" action="?/edit" in:fly use:enhance={() => {
+			return async ({ update, result }) => {
+				update();
+				if (result.type === 'success') {
+					table.options?.meta?.setEditChanges(row.original.id);
+				}
+			};
+		}}>
+			<Input type="hidden" name="id" value={row.original.id} />
+			<DataTableHidden {table} {row} />
 			<Input class="w-min field-sizing-content" bind:value={getChangesMap, updateChangesMap} />
-		</div>
+		</form>
 	{:else}
 		<div in:fly>
 			<Select.Root type="single" bind:value={getChangesMap, updateChangesMap}>
