@@ -7,6 +7,7 @@
 	import type { Row, Table } from '@tanstack/table-core';
 	import type { Person } from '$lib/types/person';
 	import { fly } from 'svelte/transition';
+	import DataTableHidden from './data-table-hidden.svelte';
 
 	let { row, table }: { row: Row<Person>; table: Table<Person> } = $props();
 
@@ -28,16 +29,6 @@
 		return table.options !== null
 			? table.options.meta?.hasEditChanges(row.original.id) === true
 			: false;
-	}
-
-	function getValueFromKey(key: string): any | null {
-		if (table.options !== null) {
-			const changes = table.options.meta?.getEditChanges(row.original.id);
-			if (changes !== null) {
-				return changes[key] === undefined ? null : changes[key];
-			}
-		}
-		return null;
 	}
 
 	function onCancelButtonClick() {
@@ -69,11 +60,7 @@
 				}}
 				in:fly
 			>
-				{#each columnDefs as def}
-					{#if def.meta?.editable === true}
-						<Input type="hidden" name={def.accessorKey} value={getValueFromKey(def.accessorKey)} />
-					{/if}
-				{/each}
+				<DataTableHidden {table} {row} />
 				<Button variant="default" class="w-full" type="submit" name="id" value={row.original.id}>
 					<Check /> <span class="hidden sm:block">Save</span>
 				</Button>
