@@ -67,6 +67,9 @@ export const actions: Actions = {
 			const { id, fname, lname, department } = form.data;
 
 			await updatePerson(database, id, fname, lname, department);
+			return {
+				message: 'Successfully made changes'
+			};
 		} catch (err: unknown) {
 			console.debug(`Failed to edit: ${(err as Error).message}`);
 			return fail(400, {
