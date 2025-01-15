@@ -7,8 +7,6 @@ RUN corepack enable
 FROM base AS build
 RUN pnpm i --frozen-lockfile
 COPY . .
-# Ugly workaround some build bug that tries to connect to the DB while bundling
-ENV STAGE build
 RUN pnpm run build
 
 FROM base AS deps

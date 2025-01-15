@@ -15,8 +15,9 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	default: async (event) => {
-		const form = await superValidate(event.request, zod(formSchema));
+	default: async ({ locals, request }) => {
+		const { database } = locals;
+		const form = await superValidate(request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {
 				form,
@@ -35,7 +36,7 @@ export const actions: Actions = {
 
 		try {
 			const { department } = form.data;
-			await createDepartment(department);
+			await createDepartment(database, department);
 		} catch (err: unknown) {
 			console.debug(`Failed to create department: ${(err as Error).message}`);
 			return fail(400, {

@@ -60,38 +60,36 @@
 		<Table.Header>
 			{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
 				<Table.Row>
-					{#each headerGroup.headers as header, idx (header.id)}
-						{#if idx !== 0}
-							<Table.Head>
-								{#if !header.isPlaceholder}
-									<div
-										class="flex cursor-pointer items-center"
-										role="button"
-										tabindex="0"
-										onclick={() => {
+					{#each headerGroup.headers as header (header.id)}
+						<Table.Head>
+							{#if !header.isPlaceholder}
+								<div
+									class="flex cursor-pointer items-center"
+									role="button"
+									tabindex="0"
+									onclick={() => {
+										header.column.toggleSorting();
+									}}
+									onkeydown={(e) => {
+										if (e.key === 'Enter' || e.key === ' ') {
 											header.column.toggleSorting();
-										}}
-										onkeydown={(e) => {
-											if (e.key === 'Enter' || e.key === ' ') {
-												header.column.toggleSorting();
-											}
-										}}
-									>
-										<FlexRender
-											content={header.column.columnDef.header}
-											context={header.getContext()}
-										/>
-										{#if header.column.getIsSorted() === 'asc'}
-											<span class="m-1">↑</span>
-										{:else if header.column.getIsSorted() === 'desc'}
-											<span class="m-1">↓</span>
-										{:else}
-											<span></span>
-										{/if}
-									</div>
-								{/if}
-							</Table.Head>
-						{/if}
+										}
+									}}
+								>
+									<FlexRender
+										content={header.column.columnDef.header}
+										context={header.getContext()}
+									/>
+									{#if header.column.getIsSorted() === 'asc'}
+										<span class="m-1">↑</span>
+									{:else if header.column.getIsSorted() === 'desc'}
+										<span class="m-1">↓</span>
+									{:else}
+										<span></span>
+									{/if}
+								</div>
+							{/if}
+						</Table.Head>
 					{/each}
 				</Table.Row>
 			{/each}
@@ -99,12 +97,10 @@
 		<Table.Body>
 			{#each table.getRowModel().rows as row (row.id)}
 				<Table.Row data-state={row.getIsSelected() && 'selected'}>
-					{#each row.getVisibleCells() as cell, idx (cell.id)}
-						{#if idx !== 0}
-							<Table.Cell>
-								<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
-							</Table.Cell>
-						{/if}
+					{#each row.getVisibleCells() as cell (cell.id)}
+						<Table.Cell>
+							<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+						</Table.Cell>
 					{/each}
 				</Table.Row>
 			{:else}

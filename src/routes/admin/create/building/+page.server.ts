@@ -15,8 +15,9 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	default: async (event) => {
-		const form = await superValidate(event.request, zod(formSchema));
+	default: async ({ locals, request }) => {
+		const { database } = locals;
+		const form = await superValidate(request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {
 				form,
@@ -35,7 +36,7 @@ export const actions: Actions = {
 
 		try {
 			const { building } = form.data;
-			await createBuilding(building);
+			await createBuilding(database, building);
 		} catch (err: unknown) {
 			console.debug(`Failed to create building: ${(err as Error).message}`);
 			return fail(400, {

@@ -1,9 +1,9 @@
+import type { Database } from './connect';
 import { and, desc, eq, gt } from 'drizzle-orm';
 import { ratelimitTable, userTable } from './schema/user';
 import { hashPassword, verifyPasswordStrength } from '../password';
-import { DB as db } from './connect';
 
-export async function createUser(username: string, password: string): Promise<void> {
+export async function createUser(db: Database, username: string, password: string): Promise<void> {
 	// Assert that username is valid
 	if (username === undefined || username === null || username === '') {
 		throw new Error('Invalid username');
@@ -32,6 +32,7 @@ export async function createUser(username: string, password: string): Promise<vo
 }
 
 export async function getUserIdAndPasswordHash(
+	db: Database,
 	username: string
 ): Promise<{ id: number; passwordHash: string }> {
 	// Assert that username is valid
@@ -61,6 +62,7 @@ export async function getUserIdAndPasswordHash(
 
 // Returns true if the user is ratelimited, otherwise false.
 export async function checkUserRatelimit(
+	db: Database,
 	userId: number,
 	ratelimitMaxAttempts: number,
 	ratelimitTimeout: number
