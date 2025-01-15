@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/public';
 
-export const nameRegExp = /^[a-zA-ZčČćĆǆǄđĐšŠžŽ]+(?:(?:\s|-)[a-zA-ZčČćĆǆǄđĐšŠžŽ]+)?$/;
+export const nameRegExp = /^[a-zA-ZčČćĆǆǄđĐšŠžŽ]+(?:(?:\s|-)[a-zA-ZčČćĆǆǄđĐšŠžŽ]+)?\s*$/;
 export const nameRegExpMsg = 'String must be 1-2 word(s) seperated by space or dash (-)';
 
 export const indexRegExp = new RegExp(
