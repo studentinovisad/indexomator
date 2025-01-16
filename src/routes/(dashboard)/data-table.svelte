@@ -7,10 +7,18 @@
 		type PaginationState,
 		type SortingState
 	} from '@tanstack/table-core';
-	import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js';
+	import {
+		createSvelteTable,
+		FlexRender,
+		renderComponent
+	} from '$lib/components/ui/data-table/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import type { Person } from '$lib/types/person';
+	import { SvelteMap } from 'svelte/reactivity';
+	import DataTableEditable from './data-table-editable.svelte';
+	import type { PersonEditable } from './columns';
+	import { page } from '$app/stores';
 
 	type DataTableProps<Person> = {
 		columns: ColumnDef<Person>[];
@@ -21,6 +29,7 @@
 
 	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 });
 	let sorting = $state<SortingState>([]);
+	let editables = new SvelteMap<number, PersonEditable>();
 
 	const table = createSvelteTable({
 		get data() {
@@ -33,6 +42,9 @@
 			},
 			get sorting() {
 				return sorting;
+			},
+			get editables() {
+				return editables;
 			}
 		},
 		onPaginationChange: (updater) => {
@@ -51,7 +63,36 @@
 		},
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
-		getSortedRowModel: getSortedRowModel()
+		getSortedRowModel: getSortedRowModel(),
+		meta: {
+			setEditChanges: (id: number, changes?: PersonEditable) => {
+				changes === null || changes === undefined
+					? editables.delete(id)
+					: editables.set(id, changes);
+			},
+			getEditChanges: (id: number): PersonEditable | null => {
+				return editables.get(id) ?? null;
+			},
+			hasEditChanges: (id: number): boolean => {
+				return editables.has(id);
+			}
+		},
+		defaultColumn: {
+			cell: ({ row, table, column: { columnDef }, cell }) =>
+				renderComponent(DataTableEditable, {
+					id: row.original.id,
+					value: cell.getValue() as string,
+					choices:
+						columnDef.meta?.editableChoices === undefined ||
+						columnDef.meta?.editableChoices === null
+							? null
+							: columnDef.meta?.editableChoices($page.data),
+					name: columnDef.accessorKey,
+					enabled: columnDef.meta?.editable,
+					row: row,
+					table: table
+				})
+		}
 	});
 </script>
 

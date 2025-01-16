@@ -1,9 +1,22 @@
 import { fontFamily } from 'tailwindcss/defaultTheme';
 import type { Config } from 'tailwindcss';
+import plugin from "tailwindcss/plugin";
 
 const config: Config = {
 	darkMode: ['class'],
 	content: ['./src/**/*.{html,js,svelte,ts}'],
+	plugins: [
+		// Workaround until tailwind adds this new CSS feature
+		// Also this CSS feature isn't supported on Firefox and I didn't want to use JS
+		// https://github.com/tailwindlabs/tailwindcss/discussions/13812
+		plugin(({ addUtilities }) => {
+			addUtilities({
+				".field-sizing-content": {
+					"field-sizing": "content",
+				},
+			});
+		}),
+	],
 	safelist: ['dark'],
 	theme: {
 		container: {

@@ -10,11 +10,17 @@ export const columns: ColumnDef<Person>[] = [
 	},
 	{
 		accessorKey: 'fname',
-		header: 'First name'
+		header: 'First name',
+		meta: {
+			editable: true,
+		}
 	},
 	{
 		accessorKey: 'lname',
-		header: 'Last name'
+		header: 'Last name',
+		meta: {
+			editable: true,
+		}
 	},
 	{
 		accessorKey: 'identifier',
@@ -22,7 +28,13 @@ export const columns: ColumnDef<Person>[] = [
 	},
 	{
 		accessorKey: 'department',
-		header: 'Department'
+		header: 'Department',
+		meta: {
+			editable: true,
+			editableChoices: (data) => {
+				return data.departments.map((val) => val.name);
+			}
+		}
 	},
 	{
 		accessorKey: 'building',
@@ -34,13 +46,20 @@ export const columns: ColumnDef<Person>[] = [
 	},
 	{
 		id: 'actions',
-		header: 'Toggle State',
-		cell: ({ row }) => {
+		header: 'Actions',
+		cell: ({ row, table }) => {
 			return renderComponent(DataTableActions, {
-				id: row.original.id,
-				type: row.original.type
+				row,
+				table,
 			});
 		},
 		enableSorting: false
 	}
 ];
+
+
+export type PersonEditable = {
+	fname: string,
+	lname: string,
+	department: string,
+};

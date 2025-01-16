@@ -1,20 +1,28 @@
-import { getPersons, togglePersonState } from '$lib/server/db/person';
+import { getPersons, togglePersonState, updatePerson } from '$lib/server/db/person';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { invalidateSession } from '$lib/server/db/session';
 import { deleteSessionTokenCookie } from '$lib/server/session';
+import { superValidate } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
+import { formSchema } from './schema';
+import { getDepartments } from '$lib/server/db/department';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const { database } = locals;
 	try {
-		const persons = await getPersons(database, 1000, 0);
+		const personsP = getPersons(database, 1000, 0);
+		const departmentsP = getDepartments(database);
+		const persons = await personsP;
+		const departments = await departmentsP;
 		return {
-			persons
+			persons,
+			departments
 		};
 	} catch (err: unknown) {
-		console.debug(`Failed to get persons: ${(err as Error).message}`);
+		console.debug(`Failed to get persons or departments: ${(err as Error).message}`);
 		return fail(500, {
-			message: 'Failed to get persons'
+			message: 'Failed to get persons or departments'
 		});
 	}
 };
@@ -42,6 +50,30 @@ export const actions: Actions = {
 			console.debug(`Failed to search: ${(err as Error).message}`);
 			return fail(500, {
 				message: 'Failed to search'
+			});
+		}
+	},
+	edit: async ({ locals, request }) => {
+		const { database } = locals;
+		const form = await superValidate(request, zod(formSchema));
+		if (!form.valid) {
+			return fail(400, {
+				form,
+				message: 'Invalid form inputs'
+			});
+		}
+
+		try {
+			const { id, fname, lname, department } = form.data;
+
+			await updatePerson(database, id, fname, lname, department);
+			return {
+				message: 'Successfully made changes'
+			};
+		} catch (err: unknown) {
+			console.debug(`Failed to edit: ${(err as Error).message}`);
+			return fail(400, {
+				message: 'Failed to edit'
 			});
 		}
 	},

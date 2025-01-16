@@ -459,3 +459,55 @@ export async function removePersonsFromBuilding(
 		throw new Error(`Failed to nuke building in database: ${(err as Error).message}`);
 	}
 }
+
+
+
+// Updates a person
+export async function updatePerson(
+	db: Database,
+	id: number,
+	fnameD: string,
+	lnameD: string,
+	department: string,
+): Promise<{
+	id: number;
+	fname: string;
+	lname: string;
+	department: string;
+}> {
+	// Assert fname, lname, creator, id and deparment are valid
+	if (
+		id === null ||
+		id === undefined ||
+		fnameD === null ||
+		fnameD === undefined ||
+		fnameD === '' ||
+		lnameD === null ||
+		lnameD === undefined ||
+		lnameD === '' ||
+		department === null ||
+		department === undefined ||
+		department === ''
+	) {
+		throw new Error('Invalid person data');
+	}
+
+	const fname = capitalizeString(sanitizeString(fnameD));
+	const lname = capitalizeString(sanitizeString(lnameD));
+
+	try {
+		await db
+			.update(person)
+			.set({fname: fname, lname: lname, department: department})
+			.where(eq(person.id, id));
+		
+		return {
+			id,
+			fname,
+			lname,
+			department,
+		}
+	} catch (err: unknown) {
+		throw new Error(`Failed to update person in database: ${(err as Error).message}`);
+	}
+}
