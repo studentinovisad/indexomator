@@ -3,24 +3,14 @@ import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { formSchema } from './schema';
 import type { PageServerLoad } from './$types';
-import { getBuildings } from '$lib/server/db/building';
+import { createUniversity } from '$lib/server/db/university';
 import { validateSecret } from '$lib/server/secret';
-import { getPersonTypes, removePersonsFromBuilding } from '$lib/server/db/person';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	const { database } = locals;
+export const load: PageServerLoad = async () => {
 	const form = await superValidate(zod(formSchema));
 
-	const buildingsP = getBuildings(database);
-	const personTypesP = getPersonTypes(database);
-
-	const buildings = await buildingsP;
-	const personTypes = await personTypesP;
-
 	return {
-		form,
-		buildings,
-		personTypes
+		form
 	};
 };
 
@@ -45,19 +35,19 @@ export const actions: Actions = {
 		}
 
 		try {
-			const { building, personType } = form.data;
-			await removePersonsFromBuilding(database, building, personType);
+			const { university } = form.data;
+			await createUniversity(database, university);
 		} catch (err: unknown) {
-			console.debug(`Failed to nuke building: ${(err as Error).message}`);
+			console.debug(`Failed to create university: ${(err as Error).message}`);
 			return fail(400, {
 				form,
-				message: `Failed to nuke building: ${(err as Error).message}`
+				message: 'University already exists'
 			});
 		}
 
 		return {
 			form,
-			message: 'Building nuked successfully! 💥'
+			message: 'University created successfully!'
 		};
 	}
 };

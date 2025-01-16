@@ -1,8 +1,8 @@
 <script lang="ts">
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import CountPerDepartment from '$lib/components/custom/stats/countPerDepartment.svelte';
-	import InsideCountPerBuilding from '$lib/components/custom/stats/insideCountPerBuilding.svelte';
+	import Count from './count.svelte';
+	import InsideCount from './insideCount.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/stores';
@@ -21,7 +21,15 @@
 		}
 	});
 
-	const personsCount = $derived(actionData?.personsCount ?? data.personsCount ?? []);
+	const personsCountPerType = $derived(
+		actionData?.personsCountPerType ?? data.personsCountPerType ?? []
+	);
+	const personsCountPerDepartment = $derived(
+		actionData?.personsCountPerDepartment ?? data.personsCountPerDepartment ?? []
+	);
+	const personsCountPerUniversity = $derived(
+		actionData?.personsCountPerUniversity ?? data.personsCountPerUniversity ?? []
+	);
 	const personsInsideCount = $derived(
 		actionData?.personsInsideCount ?? data.personsInsideCount ?? []
 	);
@@ -44,7 +52,7 @@
 					<Card.Description>Check how many people are in the system.</Card.Description>
 				</Card.Header>
 				<Card.Content>
-					<CountPerDepartment {personsCount} />
+					<Count {personsCountPerType} {personsCountPerDepartment} {personsCountPerUniversity} />
 				</Card.Content>
 				<Card.Footer>
 					<Button type="submit" class="mx-auto">Refresh</Button>
@@ -58,7 +66,7 @@
 					<Card.Description>Check how many people are currently inside.</Card.Description>
 				</Card.Header>
 				<Card.Content>
-					<InsideCountPerBuilding {personsInsideCount} />
+					<InsideCount {personsInsideCount} />
 				</Card.Content>
 				<Card.Footer>
 					<Button type="submit" class="mx-auto">Refresh</Button>

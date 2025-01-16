@@ -32,7 +32,9 @@
 	function constructEmail(): string {
 		const fname = removeDiacritics($formData.fname).toLowerCase();
 		const lname = removeDiacritics($formData.lname).toLowerCase();
-		const department = removeDiacritics($formData.department).toLowerCase();
+		const department = $formData.department
+			? removeDiacritics($formData.department).toLowerCase()
+			: 'none';
 
 		return `${fname}.${lname}@${department}.uns.ac.rs`;
 	}

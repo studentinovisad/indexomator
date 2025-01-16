@@ -22,7 +22,8 @@ export type Person = {
 	identifier: string;
 	fname: string;
 	lname: string;
-	department: string;
+	department: string | null;
+	university: string | null;
 	building: string | null;
 	state: State;
 };

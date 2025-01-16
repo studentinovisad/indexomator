@@ -35,7 +35,6 @@ export const actions: Actions = {
 
 			const persons = await getPersons(database, 1000, 0, searchQuery);
 			return {
-				searchQuery,
 				persons
 			};
 		} catch (err: unknown) {

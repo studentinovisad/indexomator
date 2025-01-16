@@ -2,25 +2,32 @@ import { fail, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 
-import { createPerson } from '$lib/server/db/person';
-import { getDepartments } from '$lib/server/db/department';
+import { createGuest, createPerson, getPersons } from '$lib/server/db/person';
+import { getUniversities } from '$lib/server/db/university';
 
 import { formSchema } from './schema';
 import type { PageServerLoad } from './$types';
-import { Guest } from '$lib/types/person';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
+	const { database } = locals;
 	const form = await superValidate(zod(formSchema));
-	const departments = await getDepartments();
+
+	const universitiesP = getUniversities(database);
+	const personsP = getPersons(database, 10, 0);
+
+	const universities = await universitiesP;
+	const persons = await personsP;
 
 	return {
 		form,
-		departments
+		universities,
+		persons
 	};
 };
 
 export const actions: Actions = {
-	default: async ({ request, locals }) => {
+	create: async ({ locals, request }) => {
+		const { database } = locals;
 		const form = await superValidate(request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {
@@ -37,19 +44,18 @@ export const actions: Actions = {
 		}
 
 		try {
-			const { identifier, fname, lname, department, guarantorIdentifier } = form.data;
-			const type = Guest;
+			const { identifier, fname, lname, university, guarantorId } = form.data;
 			const building = locals.session.building;
 			const creator = locals.user.username;
-			await createPerson(
+			await createGuest(
+				database,
 				identifier,
-				type,
 				fname,
 				lname,
-				department,
+				university,
 				building,
 				creator,
-				guarantorIdentifier
+				guarantorId
 			);
 		} catch (err: unknown) {
 			console.debug(`Failed to create guest: ${(err as Error).message}`);
@@ -63,5 +69,29 @@ export const actions: Actions = {
 			form,
 			message: 'Guest created successfully!'
 		};
+	},
+	search: async ({ locals, request }) => {
+		const { database } = locals;
+		try {
+			const formData = await request.formData();
+			const searchQuery = formData.get('q');
+
+			// Check if the searchQuery is valid
+			if (searchQuery === null || searchQuery === undefined || typeof searchQuery !== 'string') {
+				return fail(400, {
+					message: 'Invalid search query'
+				});
+			}
+
+			const persons = await getPersons(database, 10, 0, searchQuery);
+			return {
+				persons
+			};
+		} catch (err: unknown) {
+			console.debug(`Failed to search: ${(err as Error).message}`);
+			return fail(500, {
+				message: 'Failed to search'
+			});
+		}
 	}
 };

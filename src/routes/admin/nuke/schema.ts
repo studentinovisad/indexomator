@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 export const formSchema = z.object({
-	building: z.string().min(2).max(50),
-	personType: z.string().min(2).max(50),
+	building: z.string(),
+	personType: z.string(),
 	secret: z.string().min(32).max(255)
 });
 

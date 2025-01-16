@@ -5,26 +5,41 @@ import {
 	text,
 	timestamp,
 	primaryKey,
-	type AnyPgColumn
+	type AnyPgColumn,
+	unique
 } from 'drizzle-orm/pg-core';
-import { building } from './building';
 import { department } from './department';
+import { university } from './university';
+import { building } from './building';
 import { userTable } from './user';
 
-export const person = pgTable('person', {
-	id: serial('id').primaryKey(),
-	identifier: text('identifier').notNull().unique(),
-	type: text('type').notNull(),
-	fname: text('fname').notNull(),
-	lname: text('lname').notNull(),
-	department: text('department')
-		.notNull()
-		.references(() => department.name, { onDelete: 'restrict', onUpdate: 'cascade' }),
-	guarantorId: integer('guarantor_id').references((): AnyPgColumn => person.id, {
-		onDelete: 'restrict',
-		onUpdate: 'cascade'
+export const person = pgTable(
+	'person',
+	{
+		id: serial('id').primaryKey(),
+		identifier: text('identifier').notNull(),
+		type: text('type').notNull(),
+		fname: text('fname').notNull(),
+		lname: text('lname').notNull(),
+		department: text('department').references(() => department.name, {
+			onDelete: 'restrict',
+			onUpdate: 'cascade'
+		}),
+		university: text('university').references(() => university.name, {
+			onDelete: 'restrict',
+			onUpdate: 'cascade'
+		}),
+		guarantorId: integer('guarantor_id').references((): AnyPgColumn => person.id, {
+			onDelete: 'restrict',
+			onUpdate: 'cascade'
+		})
+	},
+	(table) => ({
+		identifierUniversity: unique('person_identifier_university_id_unique')
+			.on(table.identifier, table.university)
+			.nullsNotDistinct()
 	})
-});
+);
 
 export const personEntry = pgTable(
 	'person_entry',
@@ -41,11 +56,9 @@ export const personEntry = pgTable(
 			onUpdate: 'cascade'
 		})
 	},
-	(table) => {
-		return {
-			pk: primaryKey({ columns: [table.personId, table.timestamp] })
-		};
-	}
+	(table) => ({
+		pk: primaryKey({ columns: [table.personId, table.timestamp] })
+	})
 );
 
 export const personExit = pgTable(
@@ -63,9 +76,7 @@ export const personExit = pgTable(
 			onUpdate: 'cascade'
 		})
 	},
-	(table) => {
-		return {
-			pk: primaryKey({ columns: [table.personId, table.timestamp] })
-		};
-	}
+	(table) => ({
+		pk: primaryKey({ columns: [table.personId, table.timestamp] })
+	})
 );

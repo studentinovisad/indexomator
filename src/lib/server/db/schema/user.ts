@@ -1,4 +1,3 @@
-import type { InferSelectModel } from 'drizzle-orm';
 import { boolean, integer, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
 
 export const userTable = pgTable('user', {
@@ -14,5 +13,3 @@ export const ratelimitTable = pgTable('ratelimit', {
 	timestamp: timestamp('timestamp').defaultNow().notNull(),
 	lock: boolean('lock').notNull()
 });
-
-export type User = InferSelectModel<typeof userTable>;

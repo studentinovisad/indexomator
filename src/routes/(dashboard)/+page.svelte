@@ -46,16 +46,7 @@
 		searchStore.query = '';
 		goto('/');
 	}}
-	use:enhance={({ formData }) => {
-		const input = formData.get('q');
-
-		// Check if the input is valid
-		if (input === null || input === undefined || typeof input !== 'string') {
-			toast.error('Invalid search query');
-		} else {
-			searchStore.query = input;
-		}
-
+	use:enhance={() => {
 		return async ({ update }) => {
 			await update({ reset: false });
 		};
