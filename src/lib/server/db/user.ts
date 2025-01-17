@@ -3,16 +3,23 @@ import { and, desc, eq, gt } from 'drizzle-orm';
 import { ratelimitTable, userTable } from './schema/user';
 import { hashPassword, verifyPasswordStrength } from '../password';
 
-export async function createUser(db: Database, username: string, password: string): Promise<void> {
-	// Assert that username is valid
-	if (username === undefined || username === null || username === '') {
-		throw new Error('Invalid username');
+// If more files make checks like this
+// move it to util and export.
+function assertValidString(it: string, msg: string): void {
+	if (it === undefined || it === null || it === '') {
+		throw new Error(msg);
 	}
+}
 
-	// Assert that password is valid
-	if (password === undefined || password === null || password === '') {
-		throw new Error('Invalid password');
+function assertValidUserId(id: number): void {
+	if (id === undefined || id === null) {
+		throw new Error('Invalid user id');
 	}
+}
+
+export async function createUser(db: Database, username: string, password: string): Promise<void> {
+	assertValidString(username, 'Invalid username');
+	assertValidString(password, 'Invalid password');
 
 	// Check the strength of the password
 	const strong = await verifyPasswordStrength(password);
@@ -35,10 +42,7 @@ export async function getUserIdAndPasswordHash(
 	db: Database,
 	username: string
 ): Promise<{ id: number; passwordHash: string }> {
-	// Assert that username is valid
-	if (username === null || username === undefined || username === '') {
-		throw new Error('Invalid username');
-	}
+	assertValidString(username, 'Invalid username');
 
 	try {
 		const [{ id, passwordHash }] = await db
@@ -67,10 +71,7 @@ export async function checkUserRatelimit(
 	ratelimitMaxAttempts: number,
 	ratelimitTimeout: number
 ): Promise<boolean> {
-	// Assert that id is valid
-	if (userId === null || userId === undefined) {
-		throw new Error('Invalid userId');
-	}
+	assertValidUserId(userId);
 
 	// Assert that ratelimitMaxAttempts is valid
 	if (
@@ -114,4 +115,17 @@ export async function checkUserRatelimit(
 
 		return false;
 	});
+}
+
+export async function isUserActive(db: Database, userId: number): Promise<boolean> {
+	assertValidUserId(userId);
+
+	const [{ active }] = await db
+		.select({
+			active: userTable.active
+		})
+		.from(userTable)
+		.where(eq(userTable.id, userId));
+
+	return active;
 }
