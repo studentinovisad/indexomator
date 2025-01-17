@@ -2,7 +2,7 @@ import { fail, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 
-import { createGuest, createPerson, getPersons } from '$lib/server/db/person';
+import { createGuest, getPersons } from '$lib/server/db/person';
 import { getUniversities } from '$lib/server/db/university';
 
 import { formSchema } from './schema';
