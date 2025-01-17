@@ -1,5 +1,5 @@
 import type { Database } from './connect';
-import { or, eq, and, max, gt, count, isNull } from 'drizzle-orm';
+import { or, eq, and, max, gt, count, isNull, not } from 'drizzle-orm';
 import { person, personEntry, personExit } from './schema/person';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
@@ -242,6 +242,7 @@ export async function getPersonsCountPerDepartment(db: Database): Promise<
 				count: count()
 			})
 			.from(person)
+			.where(not(eq(person.type, Guest)))
 			.groupBy(person.type, person.department);
 
 		return persons.map((p) => {
