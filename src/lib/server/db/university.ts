@@ -3,7 +3,7 @@ import type { University } from '$lib/types/db';
 import { university } from './schema/university';
 
 export async function getUniversities(db: Database): Promise<University[]> {
-	return await db.select().from(university);
+	return await db.select().from(university).orderBy(university.name);
 }
 
 export async function createUniversity(db: Database, name: string): Promise<void> {
