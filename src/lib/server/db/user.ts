@@ -120,12 +120,16 @@ export async function checkUserRatelimit(
 export async function isUserActive(db: Database, userId: number): Promise<boolean> {
 	assertValidUserId(userId);
 
-	const [{ active }] = await db
-		.select({
-			active: userTable.active
-		})
-		.from(userTable)
-		.where(eq(userTable.id, userId));
+	try {
+		const [{ active }] = await db
+			.select({
+				active: userTable.active
+			})
+			.from(userTable)
+			.where(eq(userTable.id, userId));
 
-	return active;
+		return active;
+	} catch (err: unknown) {
+		throw new Error(`failed getting user status: ${(err as Error).message}`);
+	}
 }
