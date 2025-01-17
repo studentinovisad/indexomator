@@ -165,25 +165,22 @@
 							/>
 							<Command.List>
 								<Command.Group>
-									{#each persons as person (person.id)}
-										{@const label = `${person.fname} ${person.lname} ${person.identifier}`}
+									{#each persons as { id, fname, lname, identifier } (id)}
+										{@const label = `${fname} ${lname} ${identifier}`}
 										<Command.Item
 											value={label}
 											onSelect={() => {
-												if ($formData.guarantorId == person.id) {
+												if ($formData.guarantorId === id) {
 													$formData.guarantorId = undefined;
 												} else {
-													$formData.guarantorId = person.id;
+													$formData.guarantorId = id;
 													closeAndFocusTrigger(triggerId);
 												}
 											}}
 										>
 											{label}
 											<Check
-												class={cn(
-													'ml-auto',
-													person.id !== $formData.guarantorId && 'text-transparent'
-												)}
+												class={cn('ml-auto', id !== $formData.guarantorId && 'text-transparent')}
 											/>
 										</Command.Item>
 									{/each}
