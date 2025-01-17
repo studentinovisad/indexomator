@@ -278,6 +278,7 @@ export async function getPersonsCountPerUniversity(db: Database): Promise<
 				count: count()
 			})
 			.from(person)
+			.where(eq(person.type, Guest))
 			.groupBy(person.type, person.university);
 
 		return persons.map((p) => {
