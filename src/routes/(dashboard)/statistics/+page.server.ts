@@ -10,21 +10,21 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals }) => {
 	const { database } = locals;
 	try {
+		const personsInsideCountP = getPersonsCountPerBuilding(database);
 		const personsCountPerTypeP = getPersonsCountPerType(database);
 		const personsCountPerDepartmentP = getPersonsCountPerDepartment(database);
 		const personsCountPerUniversityP = getPersonsCountPerUniversity(database);
-		const personsInsideCountP = getPersonsCountPerBuilding(database);
 
+		const personsInsideCount = await personsInsideCountP;
 		const personsCountPerType = await personsCountPerTypeP;
 		const personsCountPerDepartment = await personsCountPerDepartmentP;
 		const personsCountPerUniversity = await personsCountPerUniversityP;
-		const personsInsideCount = await personsInsideCountP;
 
 		return {
+			personsInsideCount,
 			personsCountPerType,
 			personsCountPerDepartment,
-			personsCountPerUniversity,
-			personsInsideCount
+			personsCountPerUniversity
 		};
 	} catch (err: unknown) {
 		console.debug(`Failed to get statistics: ${(err as Error).message}`);
@@ -38,21 +38,21 @@ export const actions: Actions = {
 	default: async ({ locals }) => {
 		const { database } = locals;
 		try {
+			const personsInsideCountP = getPersonsCountPerBuilding(database);
 			const personsCountPerTypeP = getPersonsCountPerType(database);
 			const personsCountPerDepartmentP = getPersonsCountPerDepartment(database);
 			const personsCountPerUniversityP = getPersonsCountPerUniversity(database);
-			const personsInsideCountP = getPersonsCountPerBuilding(database);
 
+			const personsInsideCount = await personsInsideCountP;
 			const personsCountPerType = await personsCountPerTypeP;
 			const personsCountPerDepartment = await personsCountPerDepartmentP;
 			const personsCountPerUniversity = await personsCountPerUniversityP;
-			const personsInsideCount = await personsInsideCountP;
 
 			return {
+				personsInsideCount,
 				personsCountPerType,
 				personsCountPerDepartment,
 				personsCountPerUniversity,
-				personsInsideCount,
 				message: 'Successfully refreshed statistics'
 			};
 		} catch (err: unknown) {

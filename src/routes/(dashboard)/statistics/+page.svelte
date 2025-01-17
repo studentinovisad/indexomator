@@ -23,6 +23,9 @@
 		}
 	});
 
+	const personsInsideCount = $derived(
+		actionData?.personsInsideCount ?? data.personsInsideCount ?? []
+	);
 	const personsCountPerType = $derived(
 		actionData?.personsCountPerType ?? data.personsCountPerType ?? []
 	);
@@ -32,9 +35,6 @@
 	const personsCountPerUniversity = $derived(
 		actionData?.personsCountPerUniversity ?? data.personsCountPerUniversity ?? []
 	);
-	const personsInsideCount = $derived(
-		actionData?.personsInsideCount ?? data.personsInsideCount ?? []
-	);
 </script>
 
 <form
@@ -42,13 +42,27 @@
 	class="flex w-full items-center justify-center px-4 pt-[5dvh] sm:pt-[10dvh]"
 	use:enhance
 >
-	<Tabs.Root value="general" class="mx-auto w-full max-w-sm">
+	<Tabs.Root value="inside" class="mx-auto w-full max-w-sm">
 		<Tabs.List class="grid w-full grid-cols-4">
+			<Tabs.Trigger value="inside">Inside</Tabs.Trigger>
 			<Tabs.Trigger value="general">General</Tabs.Trigger>
 			<Tabs.Trigger value="department">Department</Tabs.Trigger>
 			<Tabs.Trigger value="university">University</Tabs.Trigger>
-			<Tabs.Trigger value="inside">Inside</Tabs.Trigger>
 		</Tabs.List>
+		<Tabs.Content value="inside">
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>Inside Statistics</Card.Title>
+					<Card.Description>Check how many people are currently inside.</Card.Description>
+				</Card.Header>
+				<Card.Content>
+					<CountInside {personsInsideCount} />
+				</Card.Content>
+				<Card.Footer>
+					<Button type="submit" class="mx-auto">Refresh</Button>
+				</Card.Footer>
+			</Card.Root>
+		</Tabs.Content>
 		<Tabs.Content value="general">
 			<Card.Root>
 				<Card.Header>
@@ -89,20 +103,6 @@
 				</Card.Header>
 				<Card.Content>
 					<CountUniversity {personsCountPerUniversity} />
-				</Card.Content>
-				<Card.Footer>
-					<Button type="submit" class="mx-auto">Refresh</Button>
-				</Card.Footer>
-			</Card.Root>
-		</Tabs.Content>
-		<Tabs.Content value="inside">
-			<Card.Root>
-				<Card.Header>
-					<Card.Title>Inside Statistics</Card.Title>
-					<Card.Description>Check how many people are currently inside.</Card.Description>
-				</Card.Header>
-				<Card.Content>
-					<CountInside {personsInsideCount} />
 				</Card.Content>
 				<Card.Footer>
 					<Button type="submit" class="mx-auto">Refresh</Button>
