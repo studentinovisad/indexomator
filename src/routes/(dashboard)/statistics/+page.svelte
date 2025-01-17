@@ -1,8 +1,10 @@
 <script lang="ts">
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import Count from './count.svelte';
-	import InsideCount from './insideCount.svelte';
+	import CountType from './countType.svelte';
+	import CountDepartment from './countDepartment.svelte';
+	import CountUniversity from './countUniversity.svelte';
+	import CountInside from './countInside.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/stores';
@@ -41,18 +43,52 @@
 	use:enhance
 >
 	<Tabs.Root value="general" class="mx-auto w-full max-w-sm">
-		<Tabs.List class="grid w-full grid-cols-2">
+		<Tabs.List class="grid w-full grid-cols-4">
 			<Tabs.Trigger value="general">General</Tabs.Trigger>
+			<Tabs.Trigger value="department">Department</Tabs.Trigger>
+			<Tabs.Trigger value="university">University</Tabs.Trigger>
 			<Tabs.Trigger value="inside">Inside</Tabs.Trigger>
 		</Tabs.List>
 		<Tabs.Content value="general">
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>General Statistics</Card.Title>
-					<Card.Description>Check how many people are in the system.</Card.Description>
+					<Card.Description>Check how many people are in the system per type.</Card.Description>
 				</Card.Header>
 				<Card.Content>
-					<Count {personsCountPerType} {personsCountPerDepartment} {personsCountPerUniversity} />
+					<CountType {personsCountPerType} />
+				</Card.Content>
+				<Card.Footer>
+					<Button type="submit" class="mx-auto">Refresh</Button>
+				</Card.Footer>
+			</Card.Root>
+		</Tabs.Content>
+		<Tabs.Content value="department">
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>Department Statistics</Card.Title>
+					<Card.Description>
+						Check how many people are in the system per department.
+					</Card.Description>
+				</Card.Header>
+				<Card.Content>
+					<CountDepartment {personsCountPerDepartment} />
+				</Card.Content>
+				<Card.Footer>
+					<Button type="submit" class="mx-auto">Refresh</Button>
+				</Card.Footer>
+			</Card.Root>
+		</Tabs.Content>
+		<Tabs.Content value="university">
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>University Statistics</Card.Title>
+					<Card.Description>
+						Check how many people are in the system per university.
+					</Card.Description>
+				</Card.Header>
+				<Card.Content>
+					<CountUniversity {personsCountPerUniversity} />
 				</Card.Content>
 				<Card.Footer>
 					<Button type="submit" class="mx-auto">Refresh</Button>
@@ -66,7 +102,7 @@
 					<Card.Description>Check how many people are currently inside.</Card.Description>
 				</Card.Header>
 				<Card.Content>
-					<InsideCount {personsInsideCount} />
+					<CountInside {personsInsideCount} />
 				</Card.Content>
 				<Card.Footer>
 					<Button type="submit" class="mx-auto">Refresh</Button>
