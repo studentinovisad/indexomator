@@ -133,3 +133,21 @@ export async function isUserActive(db: Database, userId: number): Promise<boolea
 		throw new Error(`failed getting user status: ${(err as Error).message}`);
 	}
 }
+
+export async function updateUserActive(
+	db: Database,
+	userId: number,
+	newActive: boolean
+): Promise<void> {
+	assertValidUserId(userId);
+
+	try {
+		db.update(userTable)
+			.set({
+				active: newActive
+			})
+			.where(eq(userTable.id, userId));
+	} catch (err: unknown) {
+		throw new Error(`Couldn't update user.active: ${(err as Error).message}`);
+	}
+}
