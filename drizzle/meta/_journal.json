@@ -57,6 +57,13 @@
 			"when": 1735856957839,
 			"tag": "0007_aspiring_zombie",
 			"breakpoints": true
+		},
+		{
+			"idx": 8,
+			"version": "7",
+			"when": 1737144488824,
+			"tag": "0008_real_stark_industries",
+			"breakpoints": true
 		}
 	]
 }
