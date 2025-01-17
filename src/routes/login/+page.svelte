@@ -94,8 +94,8 @@
 									{$formData.building ?? 'Select Building'}
 								</Select.Trigger>
 								<Select.Content>
-									{#each data.buildings as building (building.id)}
-										<Select.Item value={building.name} label={building.name} />
+									{#each data.buildings as { id, name } (id)}
+										<Select.Item value={name} label={name} />
 									{/each}
 								</Select.Content>
 							</Select.Root>

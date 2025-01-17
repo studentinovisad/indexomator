@@ -111,8 +111,8 @@
 								{$formData.department ?? 'Select the department for the employee'}
 							</Select.Trigger>
 							<Select.Content>
-								{#each data.departments as department (department.id)}
-									<Select.Item value={department.name} label={department.name} />
+								{#each data.departments as { id, name } (id)}
+									<Select.Item value={name} label={name} />
 								{/each}
 							</Select.Content>
 						</Select.Root>
