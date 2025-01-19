@@ -41,8 +41,7 @@ export const columns: ColumnDef<Person>[] = [
 		header: 'Toggle State',
 		cell: ({ row }) => {
 			return renderComponent(DataTableActions, {
-				id: row.original.id,
-				type: row.original.type
+				id: row.original.id
 			});
 		},
 		enableSorting: false

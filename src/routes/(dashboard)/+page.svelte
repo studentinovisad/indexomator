@@ -11,7 +11,6 @@
 	import { page } from '$app/stores';
 	import { columns } from './columns';
 	import { enhance } from '$app/forms';
-	import { goto } from '$app/navigation';
 	import { searchStore } from '$lib/stores/search.svelte';
 
 	let { data, form: actionData } = $props();
@@ -34,6 +33,10 @@
 	let liveSearch: boolean = $state(true);
 
 	let searchQuery = $state('');
+	$effect(() => {
+		searchStore.query = searchQuery;
+	});
+
 	const persons = $derived(actionData?.persons ?? data.persons ?? []);
 </script>
 
@@ -43,8 +46,8 @@
 	action="?/search"
 	class="flex gap-2 px-4 py-2"
 	onreset={() => {
-		searchStore.query = '';
-		goto('/');
+		searchQuery = '';
+		searchForm?.requestSubmit();
 	}}
 	use:enhance={() => {
 		return async ({ update }) => {

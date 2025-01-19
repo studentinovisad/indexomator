@@ -49,7 +49,6 @@ export const actions: Actions = {
 		try {
 			const formData = await request.formData();
 			const idS = formData.get('id');
-			const type = formData.get('type');
 			const searchQuery = formData.get('q');
 
 			// Check if the id, type and searchQuery are valid
@@ -58,10 +57,6 @@ export const actions: Actions = {
 				idS === undefined ||
 				typeof idS !== 'string' ||
 				idS === '' ||
-				type === null ||
-				type === undefined ||
-				typeof type !== 'string' ||
-				type === '' ||
 				searchQuery === null ||
 				searchQuery === undefined ||
 				typeof searchQuery !== 'string'

@@ -5,12 +5,11 @@
 	import { Input } from '$lib/components/ui/input';
 	import { searchStore } from '$lib/stores/search.svelte';
 
-	let { id, type }: { id: number; type: string } = $props();
+	let { id }: { id: number } = $props();
 </script>
 
 <form method="POST" action="?/togglestate" class="w-full" use:enhance>
 	<Input type="hidden" name="q" value={searchStore.query} />
-	<Input type="hidden" name="type" value={type} />
 	<Button variant="outline" type="submit" name="id" value={id} class="w-full">
 		<ArrowLeftRight /> <span class="hidden sm:block">Toggle State</span>
 	</Button>
