@@ -412,6 +412,20 @@ export async function createGuest(
 	});
 }
 
+// Checks if a guarantor exists in the database and is not a guest
+async function validGuarantor(db: Database, guarantorId: number): Promise<boolean> {
+	const [{ type }] = await db
+		.select({ type: person.type })
+		.from(person)
+		.where(eq(person.id, guarantorId));
+
+	if (!isPersonType(type)) {
+		throw new Error('Invalid type from DB (not PersonType)');
+	}
+
+	return type !== Guest;
+}
+
 // Creates a person and the entry timestamp
 export async function createPerson(
 	db: Database,
@@ -477,6 +491,10 @@ export async function createPerson(
 
 	try {
 		return await db.transaction(async (tx) => {
+			if (guarantorId && !validGuarantor(tx, guarantorId)) {
+				throw new Error('Guarantor not valid or is a guest');
+			}
+
 			// Create the person
 			const [{ id }] = await tx
 				.insert(person)
@@ -529,6 +547,10 @@ export async function togglePersonState(
 
 	try {
 		return await db.transaction(async (tx) => {
+			if (guarantorId && !validGuarantor(tx, guarantorId)) {
+				throw new Error('Guarantor not valid or is a guest');
+			}
+
 			// Get the person entry and exit timestamps
 			const [{ entryTimestamp, exitTimestamp }] = await tx
 				.select({
