@@ -33,7 +33,7 @@ export const actions: Actions = {
 				});
 			}
 
-			const persons = await getPersons(database, 1000, 0, searchQuery);
+			const persons = await getPersons(database, 1000, 0, { searchQuery });
 			return {
 				persons
 			};
@@ -77,7 +77,7 @@ export const actions: Actions = {
 			const id = Number.parseInt(idS);
 			await togglePersonState(database, id, building, username);
 
-			const persons = await getPersons(database, 1000, 0, searchQuery);
+			const persons = await getPersons(database, 1000, 0, { searchQuery });
 			return {
 				searchQuery,
 				persons,

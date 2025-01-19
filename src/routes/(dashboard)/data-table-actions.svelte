@@ -5,7 +5,13 @@
 	import { Input } from '$lib/components/ui/input';
 	import { searchStore } from '$lib/stores/search.svelte';
 
-	let { id }: { id: number } = $props();
+	let {
+		id,
+		guarantorId
+	}: {
+		id: number;
+		guarantorId: number | null;
+	} = $props();
 </script>
 
 <form method="POST" action="?/togglestate" class="w-full" use:enhance>

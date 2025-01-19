@@ -19,12 +19,17 @@ import { env } from '$env/dynamic/private';
 
 const hostUniversity = env.HOST_UNIVERSITY ?? 'Host';
 
+type searchOptions = {
+	searchQuery?: string;
+	nonGuestsOnly?: boolean;
+};
+
 // Gets all persons using optional filters
 export async function getPersons(
 	db: Database,
 	limit: number,
 	offset: number,
-	searchQuery?: string
+	opts: searchOptions = {}
 ): Promise<Person[]> {
 	// Assert limit is valid
 	if (limit <= 0) {
@@ -37,12 +42,15 @@ export async function getPersons(
 	}
 
 	// Don't search if the search query is empty when trimmed
-	const sanitizedSearchQuery = searchQuery ? sanitizeString(searchQuery) : undefined;
+	const sanitizedSearchQuery = opts.searchQuery ? sanitizeString(opts.searchQuery) : undefined;
 	const nonEmptySearchQuery = sanitizedSearchQuery
 		? sanitizedSearchQuery !== ''
 			? sanitizedSearchQuery
 			: undefined
 		: undefined;
+
+	// Wether to search for persons that aren't of type "Guest"
+	const nonGuestsOnly = opts.nonGuestsOnly ?? false;
 
 	try {
 		const maxEntrySubquery = db
@@ -98,18 +106,21 @@ export async function getPersons(
 						)
 						.leftJoin(personExit, eq(person.id, personExit.personId))
 						.where(
-							or(
-								...[
-									...fuzzySearchFilters([person.identifier], nonEmptySearchQuery),
-									...fuzzySearchFilters([person.fname], nonEmptySearchQuery, { distance: 5 }),
-									...fuzzySearchFilters([person.lname], nonEmptySearchQuery, { distance: 5 }),
-									...fuzzySearchFilters([person.fname, person.lname], nonEmptySearchQuery, {
-										distance: 6
-									}),
-									...fuzzySearchFilters([person.lname, person.fname], nonEmptySearchQuery, {
-										distance: 6
-									})
-								]
+							and(
+								nonGuestsOnly ? not(eq(person.type, Guest)) : undefined,
+								or(
+									...[
+										...fuzzySearchFilters([person.identifier], nonEmptySearchQuery),
+										...fuzzySearchFilters([person.fname], nonEmptySearchQuery, { distance: 5 }),
+										...fuzzySearchFilters([person.lname], nonEmptySearchQuery, { distance: 5 }),
+										...fuzzySearchFilters([person.fname, person.lname], nonEmptySearchQuery, {
+											distance: 6
+										}),
+										...fuzzySearchFilters([person.lname, person.fname], nonEmptySearchQuery, {
+											distance: 6
+										})
+									]
+								)
 							)
 						)
 						.groupBy(
@@ -155,6 +166,7 @@ export async function getPersons(
 							)
 						)
 						.leftJoin(personExit, eq(person.id, personExit.personId))
+						.where(nonGuestsOnly ? not(eq(person.type, Guest)) : undefined)
 						.groupBy(
 							person.id,
 							person.identifier,
