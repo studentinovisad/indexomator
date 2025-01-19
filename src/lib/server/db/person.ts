@@ -15,9 +15,6 @@ import {
 	type Person,
 	type PersonType
 } from '$lib/types/person';
-import { env } from '$env/dynamic/private';
-
-const hostUniversity = env.HOST_UNIVERSITY ?? 'Host';
 
 type searchOptions = {
 	searchQuery?: string;
@@ -379,8 +376,7 @@ export async function createEmployee(
 	creator: string
 ): Promise<Person> {
 	return await createPerson(db, identifier, Employee, fname, lname, building, creator, {
-		department,
-		university: hostUniversity
+		department
 	});
 }
 
@@ -395,8 +391,7 @@ export async function createStudent(
 	creator: string
 ): Promise<Person> {
 	return await createPerson(db, identifier, Student, fname, lname, building, creator, {
-		department,
-		university: hostUniversity
+		department
 	});
 }
 
