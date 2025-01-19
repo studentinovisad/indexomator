@@ -166,7 +166,7 @@
 							<Command.List>
 								<Command.Group>
 									{#each persons as { id, fname, lname, identifier } (id)}
-										{@const label = `${fname} ${lname} ${identifier}`}
+										{@const label = `${fname} ${lname} (${identifier})`}
 										<Command.Item
 											value={label}
 											onSelect={() => {
