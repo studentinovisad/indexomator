@@ -25,8 +25,6 @@ export const actions: Actions = {
 	default: async (event) => {
 		const { locals, request } = event;
 		const { database } = locals;
-		const ratelimitMaxAttempts = Number.parseInt(env.RATELIMIT_MAX_ATTEMPTS ?? '5');
-		const ratelimitTimeout = Number.parseInt(env.RATELIMIT_TIMEOUT ?? '60');
 
 		const form = await superValidate(request, zod(formSchema));
 		if (!form.valid) {
@@ -38,6 +36,8 @@ export const actions: Actions = {
 
 		try {
 			const { username, password, building } = form.data;
+			const ratelimitMaxAttempts = Number.parseInt(env.RATELIMIT_MAX_ATTEMPTS ?? '5');
+			const ratelimitTimeout = Number.parseInt(env.RATELIMIT_TIMEOUT ?? '60');
 
 			// Check if the username exists
 			const { id, passwordHash } = await getUserIdAndPasswordHash(database, username);
