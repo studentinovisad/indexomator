@@ -491,8 +491,9 @@ export async function createPerson(
 
 	try {
 		return await db.transaction(async (tx) => {
+			// Check if the guarantor is valid
 			if (guarantorId && !validGuarantor(tx, guarantorId)) {
-				throw new Error('Guarantor not valid or is a guest');
+				throw new Error('Guarantor not valid');
 			}
 
 			// Create the person
@@ -547,8 +548,9 @@ export async function togglePersonState(
 
 	try {
 		return await db.transaction(async (tx) => {
+			// Check if the guarantor is valid
 			if (guarantorId && !validGuarantor(tx, guarantorId)) {
-				throw new Error('Guarantor not valid or is a guest');
+				throw new Error('Guarantor not valid');
 			}
 
 			// Get the person entry and exit timestamps
