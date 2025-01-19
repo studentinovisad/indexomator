@@ -482,6 +482,17 @@ export async function createPerson(
 
 	try {
 		return await db.transaction(async (tx) => {
+			// Check if guarantor exists and if guarantor is not a guest
+			if (guarantorId) {
+				const [guarantor] = await tx
+					.select()
+					.from(person)
+					.where(and(eq(person.id, guarantorId), not(eq(person.type, Guest))));
+				if (!guarantor) {
+					throw new Error('Guarantor not found!');
+				}
+			}
+
 			// Create the person
 			const [{ id }] = await tx
 				.insert(person)
@@ -534,6 +545,17 @@ export async function togglePersonState(
 
 	try {
 		return await db.transaction(async (tx) => {
+			// Check if guarantor exists and if guarantor is not a guest
+			if (guarantorId) {
+				const [guarantor] = await tx
+					.select()
+					.from(person)
+					.where(and(eq(person.id, guarantorId), not(eq(person.type, Guest))));
+				if (!guarantor) {
+					throw new Error('Guarantor not found!');
+				}
+			}
+
 			// Get the person entry and exit timestamps
 			const [{ entryTimestamp, exitTimestamp }] = await tx
 				.select({
