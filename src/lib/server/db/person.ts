@@ -209,7 +209,8 @@ export async function getPersonsCountPerType(db: Database): Promise<
 				count: count()
 			})
 			.from(person)
-			.groupBy(person.type);
+			.groupBy(person.type)
+			.orderBy(({ count }) => count);
 
 		return persons.map((p) => {
 			if (p.type !== null && !isPersonType(p.type)) {
@@ -244,7 +245,8 @@ export async function getPersonsCountPerDepartment(db: Database): Promise<
 			})
 			.from(person)
 			.where(not(eq(person.type, Guest)))
-			.groupBy(person.type, person.department);
+			.groupBy(person.type, person.department)
+			.orderBy(({ count }) => count);
 
 		return persons.map((p) => {
 			if (p.type !== null && !isPersonType(p.type)) {
@@ -280,7 +282,8 @@ export async function getPersonsCountPerUniversity(db: Database): Promise<
 			})
 			.from(person)
 			.where(eq(person.type, Guest))
-			.groupBy(person.type, person.university);
+			.groupBy(person.type, person.university)
+			.orderBy(({ count }) => count);
 
 		return persons.map((p) => {
 			if (p.type !== null && !isPersonType(p.type)) {
@@ -304,7 +307,7 @@ export async function getPersonsCountPerBuilding(db: Database): Promise<
 	{
 		type: PersonType | null;
 		building: string;
-		insideCount: number;
+		count: number;
 	}[]
 > {
 	try {
@@ -329,11 +332,12 @@ export async function getPersonsCountPerBuilding(db: Database): Promise<
 			.select({
 				type: personInsideSubquery.type,
 				building: building.name,
-				insideCount: count(personInsideSubquery.personId)
+				count: count(personInsideSubquery.personId)
 			})
 			.from(building)
 			.leftJoin(personInsideSubquery, eq(building.name, personInsideSubquery.entryBuilding))
-			.groupBy(personInsideSubquery.type, building.name);
+			.groupBy(personInsideSubquery.type, building.name)
+			.orderBy(({ count }) => count);
 
 		return persons.map((p) => {
 			if (p.type !== null && !isPersonType(p.type)) {
@@ -342,7 +346,7 @@ export async function getPersonsCountPerBuilding(db: Database): Promise<
 			return {
 				type: p.type,
 				building: p.building,
-				insideCount: p.insideCount
+				count: p.count
 			};
 		});
 	} catch (err: unknown) {
