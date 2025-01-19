@@ -64,6 +64,13 @@
       "when": 1737294850034,
       "tag": "0008_fixed_pestilence",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1737296923867,
+      "tag": "0009_crazy_colossus",
+      "breakpoints": true
     }
   ]
 }
