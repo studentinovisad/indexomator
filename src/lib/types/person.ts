@@ -25,5 +25,6 @@ export type Person = {
 	department: string | null;
 	university: string | null;
 	building: string | null;
+	guarantorId: number | null;
 	state: State;
 };

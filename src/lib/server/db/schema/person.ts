@@ -1,13 +1,4 @@
-import {
-	pgTable,
-	serial,
-	integer,
-	text,
-	timestamp,
-	primaryKey,
-	type AnyPgColumn,
-	unique
-} from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, text, timestamp, primaryKey, unique } from 'drizzle-orm/pg-core';
 import { department } from './department';
 import { university } from './university';
 import { building } from './building';
@@ -26,10 +17,6 @@ export const person = pgTable(
 			onUpdate: 'cascade'
 		}),
 		university: text('university').references(() => university.name, {
-			onDelete: 'restrict',
-			onUpdate: 'cascade'
-		}),
-		guarantorId: integer('guarantor_id').references((): AnyPgColumn => person.id, {
 			onDelete: 'restrict',
 			onUpdate: 'cascade'
 		})
@@ -53,6 +40,10 @@ export const personEntry = pgTable(
 			.references(() => building.name, { onDelete: 'restrict', onUpdate: 'cascade' }),
 		creator: text('creator').references(() => userTable.username, {
 			onDelete: 'no action',
+			onUpdate: 'cascade'
+		}),
+		guarantorId: integer('guarantor_id').references(() => person.id, {
+			onDelete: 'restrict',
 			onUpdate: 'cascade'
 		})
 	},

@@ -7,7 +7,17 @@ import { sqlConcat, sqlLeast, sqlLevenshteinDistance } from './utils';
 import { isInside } from '../isInside';
 import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
 import { building } from './schema/building';
-import { Employee, Guest, isPersonType, Student, type PersonType } from '$lib/types/person';
+import {
+	Employee,
+	Guest,
+	isPersonType,
+	Student,
+	type Person,
+	type PersonType
+} from '$lib/types/person';
+import { env } from '$env/dynamic/private';
+
+const hostUniversity = env.HOST_UNIVERSITY ?? 'Host';
 
 // Gets all persons using optional filters
 export async function getPersons(
@@ -15,20 +25,7 @@ export async function getPersons(
 	limit: number,
 	offset: number,
 	searchQuery?: string
-): Promise<
-	{
-		id: number;
-		identifier: string;
-		type: PersonType;
-		fname: string;
-		lname: string;
-		department: string | null;
-		university: string | null;
-		guarantorId: number | null;
-		building: string | null;
-		state: State;
-	}[]
-> {
+): Promise<Person[]> {
 	// Assert limit is valid
 	if (limit <= 0) {
 		throw new Error('Invalid limit (negative or zero)');
@@ -68,9 +65,9 @@ export async function getPersons(
 							lname: person.lname,
 							department: person.department,
 							university: person.university,
-							guarantorId: person.guarantorId,
 							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 							entryBuilding: personEntry.building,
+							entryGuarantorId: personEntry.guarantorId,
 							exitTimestamp: max(personExit.timestamp),
 							leastDistance: sqlLeast([
 								sqlLevenshteinDistance(sqlConcat([person.identifier]), nonEmptySearchQuery),
@@ -123,9 +120,9 @@ export async function getPersons(
 							person.lname,
 							person.department,
 							person.university,
-							person.guarantorId,
 							maxEntrySubquery.maxEntryTimestamp,
-							personEntry.building
+							personEntry.building,
+							personEntry.guarantorId
 						)
 						.orderBy(({ leastDistance, leastDistanceIdentifier, identifier }) => [
 							leastDistance,
@@ -143,9 +140,9 @@ export async function getPersons(
 							lname: person.lname,
 							department: person.department,
 							university: person.university,
-							guarantorId: person.guarantorId,
 							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 							entryBuilding: personEntry.building,
+							entryGuarantorId: personEntry.guarantorId,
 							exitTimestamp: max(personExit.timestamp)
 						})
 						.from(person)
@@ -166,26 +163,30 @@ export async function getPersons(
 							person.lname,
 							person.department,
 							person.university,
-							person.guarantorId,
 							maxEntrySubquery.maxEntryTimestamp,
-							personEntry.building
+							personEntry.building,
+							personEntry.guarantorId
 						)
 						.orderBy(({ identifier }) => [identifier])
 						.limit(limit)
 						.offset(offset);
 
 		return persons.map((p) => {
+			if (!isPersonType(p.type)) {
+				throw new Error('Invalid type from DB (not PersonType)');
+			}
+
 			const inside = isInside(p.entryTimestamp, p.exitTimestamp);
 			return {
 				id: p.id,
 				identifier: p.identifier,
-				type: p.type as PersonType,
+				type: p.type,
 				fname: p.fname,
 				lname: p.lname,
 				department: p.department,
 				university: p.university,
-				guarantorId: p.guarantorId,
 				building: inside ? p.entryBuilding : null,
+				guarantorId: inside ? p.entryGuarantorId : null,
 				state: inside ? StateInside : StateOutside
 			};
 		});
@@ -360,21 +361,10 @@ export async function createEmployee(
 	department: string | undefined,
 	building: string,
 	creator: string
-): Promise<{
-	id: number;
-	identifier: string;
-	type: PersonType;
-	fname: string;
-	lname: string;
-	department: string | null;
-	university: string | null;
-	guarantorId: number | null;
-	building: string;
-	state: State;
-}> {
+): Promise<Person> {
 	return await createPerson(db, identifier, Employee, fname, lname, building, creator, {
 		department,
-		university: 'Host'
+		university: hostUniversity
 	});
 }
 
@@ -387,21 +377,10 @@ export async function createStudent(
 	department: string | undefined,
 	building: string,
 	creator: string
-): Promise<{
-	id: number;
-	identifier: string;
-	type: PersonType;
-	fname: string;
-	lname: string;
-	department: string | null;
-	university: string | null;
-	guarantorId: number | null;
-	building: string;
-	state: State;
-}> {
+): Promise<Person> {
 	return await createPerson(db, identifier, Student, fname, lname, building, creator, {
 		department,
-		university: 'Host'
+		university: hostUniversity
 	});
 }
 
@@ -415,18 +394,7 @@ export async function createGuest(
 	building: string,
 	creator: string,
 	guarantorId: number | undefined
-): Promise<{
-	id: number;
-	identifier: string;
-	type: PersonType;
-	fname: string;
-	lname: string;
-	department: string | null;
-	university: string | null;
-	guarantorId: number | null;
-	building: string;
-	state: State;
-}> {
+): Promise<Person> {
 	return await createPerson(db, identifier, Guest, fname, lname, building, creator, {
 		university,
 		guarantorId
@@ -447,18 +415,7 @@ export async function createPerson(
 		university?: string;
 		guarantorId?: number;
 	}
-): Promise<{
-	id: number;
-	identifier: string;
-	type: PersonType;
-	fname: string;
-	lname: string;
-	department: string | null;
-	university: string | null;
-	guarantorId: number | null;
-	building: string;
-	state: State;
-}> {
+): Promise<Person> {
 	const department = opts.department ?? null;
 	const university = opts.university ?? null;
 	const guarantorId = opts.guarantorId ?? null;
@@ -512,14 +469,15 @@ export async function createPerson(
 			// Create the person
 			const [{ id }] = await tx
 				.insert(person)
-				.values({ identifier, type, fname, lname, department, university, guarantorId })
+				.values({ identifier, type, fname, lname, department, university })
 				.returning({ id: person.id });
 
 			// Create the person entry
 			await tx.insert(personEntry).values({
 				personId: id,
 				building,
-				creator
+				creator,
+				guarantorId
 			});
 
 			return {
@@ -530,8 +488,8 @@ export async function createPerson(
 				lname,
 				department,
 				university,
-				guarantorId,
 				building,
+				guarantorId,
 				state: StateInside // Because the person was just created, they are inside
 			};
 		});
@@ -545,7 +503,8 @@ export async function togglePersonState(
 	db: Database,
 	id: number,
 	building: string,
-	creator: string
+	creator: string,
+	guarantorId?: number
 ): Promise<State> {
 	// Assert building is valid
 	if (building === '') {
@@ -586,7 +545,8 @@ export async function togglePersonState(
 				await tx.insert(personEntry).values({
 					personId: id,
 					building,
-					creator
+					creator,
+					guarantorId
 				});
 				return StateInside;
 			}
