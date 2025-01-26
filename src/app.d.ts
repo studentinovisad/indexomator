@@ -1,5 +1,5 @@
 import type { Database } from '$lib/server/db/connect';
-import type { User } from '$lib/server/db/schema/user';
+import type { User } from '$lib/types/db';
 import type { Session } from '$lib/types/db';
 
 declare global {

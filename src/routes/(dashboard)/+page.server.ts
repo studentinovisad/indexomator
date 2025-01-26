@@ -1,116 +1,113 @@
+import { error, fail, redirect, type Actions } from '@sveltejs/kit';
+import { superValidate } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
+
 import { getPersons, togglePersonState } from '$lib/server/db/person';
-import { fail, redirect, type Actions } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
 import { invalidateSession } from '$lib/server/db/session';
 import { deleteSessionTokenCookie } from '$lib/server/session';
 
+import { searchFormSchema, toggleStateFormSchema, logoutFormSchema } from './schema';
+import type { PageServerLoad } from './$types';
+
 export const load: PageServerLoad = async ({ locals }) => {
-	const { database } = locals;
 	try {
-		const persons = await getPersons(database, 1000, 0);
+		const { database, session } = locals;
+		if (!session) return error(401, `Invalid session`);
+		const { building: userBuilding } = session;
+
+		const searchForm = await superValidate(zod(searchFormSchema));
+		const toggleStateForm = await superValidate(zod(toggleStateFormSchema));
+
+		const persons = await getPersons(database, 1000, 0); // TODO: Pagination with limit and offset
+
 		return {
+			userBuilding,
+			searchForm,
+			toggleStateForm,
 			persons
 		};
 	} catch (err: unknown) {
-		console.debug(`Failed to get persons: ${(err as Error).message}`);
-		return fail(500, {
-			message: 'Failed to get persons'
-		});
+		return error(500, `Failed to get persons: ${(err as Error).message}`);
 	}
 };
 
 export const actions: Actions = {
 	search: async ({ locals, request }) => {
-		const { database } = locals;
 		try {
-			const formData = await request.formData();
-			const searchQuery = formData.get('q');
+			const { database } = locals;
 
-			// Check if the searchQuery is valid
-			if (searchQuery === null || searchQuery === undefined || typeof searchQuery !== 'string') {
+			const searchForm = await superValidate(request, zod(searchFormSchema));
+			if (!searchForm.valid) {
 				return fail(400, {
-					message: 'Invalid search query'
+					searchForm,
+					message: 'Invalid form inputs'
 				});
 			}
 
+			const { searchQuery } = searchForm.data;
 			const persons = await getPersons(database, 1000, 0, { searchQuery });
+
 			return {
+				searchForm,
 				persons
 			};
 		} catch (err: unknown) {
-			console.debug(`Failed to search: ${(err as Error).message}`);
-			return fail(500, {
-				message: 'Failed to search'
-			});
+			return error(500, `Failed to search: ${(err as Error).message}`);
 		}
 	},
 	togglestate: async ({ locals, request }) => {
-		const { database } = locals;
 		try {
-			const formData = await request.formData();
-			const idS = formData.get('id');
-			const searchQuery = formData.get('q');
+			const { database } = locals;
 
-			// Check if the id, type and searchQuery are valid
-			if (
-				idS === null ||
-				idS === undefined ||
-				typeof idS !== 'string' ||
-				idS === '' ||
-				searchQuery === null ||
-				searchQuery === undefined ||
-				typeof searchQuery !== 'string'
-			) {
+			const toggleStateForm = await superValidate(request, zod(toggleStateFormSchema));
+			if (!toggleStateForm.valid) {
 				return fail(400, {
-					message: 'Invalid or missing fields'
+					toggleStateForm,
+					message: 'Invalid form inputs'
 				});
 			}
 
 			if (locals.session === null || locals.user === null) {
 				return fail(401, {
+					toggleStateForm,
 					message: 'Invalid session'
 				});
 			}
+
+			const { personId } = toggleStateForm.data;
 			const { building } = locals.session;
 			const { username } = locals.user;
+			await togglePersonState(database, personId, building, username);
 
-			const id = Number.parseInt(idS);
-			await togglePersonState(database, id, building, username);
-
-			const persons = await getPersons(database, 1000, 0, { searchQuery });
 			return {
-				searchQuery,
-				persons,
+				toggleStateForm,
 				message: 'Successfully toggled state'
 			};
 		} catch (err: unknown) {
-			console.debug(`Failed to toggle state: ${(err as Error).message}`);
-			return fail(400, {
-				message: 'Failed to toggle state'
-			});
+			return error(500, `Failed to toggle state: ${(err as Error).message}`);
 		}
 	},
 	logout: async (event) => {
-		const { locals, request } = event;
-		const { database } = locals;
 		try {
-			const formData = await request.formData();
-			const idS = formData.get('id_session');
-			if (idS === null || idS === undefined || typeof idS !== 'string' || idS === '') {
+			const { locals, request } = event;
+			const { database } = locals;
+
+			const logoutForm = await superValidate(request, zod(logoutFormSchema));
+			if (!logoutForm.valid) {
 				return fail(400, {
-					message: 'Invalid or missing fields'
+					logoutForm,
+					message: 'Invalid form inputs'
 				});
 			}
 
-			await invalidateSession(database, idS);
+			const { sessionId } = logoutForm.data;
+			await invalidateSession(database, sessionId);
 			deleteSessionTokenCookie(event);
 		} catch (err: unknown) {
-			console.debug(`Failed to logout: ${(err as Error).message}`);
-			return fail(400, {
-				message: 'Failed to logout'
-			});
+			return error(500, `Failed to logout: ${(err as Error).message}`);
 		}
 
+		// Has to be outside of try-catch because it throws a redirect
 		return redirect(302, '/login');
 	}
 };

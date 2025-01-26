@@ -1,13 +1,21 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import * as Form from '$lib/components/ui/form';
 	import AppSidebar from '$lib/components/custom/sidebar/app-sidebar.svelte';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
-	import Button from '$lib/components/ui/button/button.svelte';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { Power } from 'lucide-svelte';
+	import { superForm } from 'sveltekit-superforms';
+	import { zodClient } from 'sveltekit-superforms/adapters';
+	import { logoutFormSchema } from './schema.js';
 
 	let { children, data } = $props();
+
+	const logoutForm = superForm(data.logoutForm, {
+		validators: zodClient(logoutFormSchema)
+	});
+	const { enhance: logoutEnhance } = logoutForm;
 </script>
 
 <Sidebar.Provider open={true}>
@@ -36,10 +44,17 @@
 	</main>
 </Sidebar.Provider>
 
-<form action="/?/logout" method="POST" class="absolute right-14 top-3">
-	<Input type="hidden" name="id_session" value={data.id_session} />
-	<Button type="submit" variant="outline" size="icon">
+<form method="POST" action="/?/logout" class="absolute right-14 top-3" use:logoutEnhance>
+	<Form.Field class="hidden" form={logoutForm} name="sessionId">
+		<Form.Control>
+			{#snippet children({ props })}
+				<Input {...props} type="hidden" value={data.sessionId} />
+			{/snippet}
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
+	<Form.Button variant="outline" size="icon" class="flex-shrink-0">
 		<Power class="h-[1.2rem] w-[1.2rem]" />
 		<span class="sr-only">Logout</span>
-	</Button>
+	</Form.Button>
 </form>
