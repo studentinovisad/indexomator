@@ -1,5 +1,19 @@
 import type { Database } from './connect';
-import { or, eq, and, max, gt, count, isNull, not } from 'drizzle-orm';
+import {
+	or,
+	eq,
+	and,
+	max,
+	gt,
+	count,
+	isNull,
+	not,
+	min,
+	sql,
+	isNotNull,
+	sum,
+	lte
+} from 'drizzle-orm';
 import { person, personEntry, personExit } from './schema/person';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
@@ -15,11 +29,14 @@ import {
 	type Person,
 	type PersonType
 } from '$lib/types/person';
+import { env } from '$env/dynamic/private';
 
 type searchOptions = {
 	searchQuery?: string;
-	nonGuestsOnly?: boolean;
+	guarantorSearch?: boolean;
 };
+
+const guarantorEligibilityHours = parseInt(env.GUARANTOR_ELIGIBILITY_HOURS ?? '80');
 
 // Gets all persons using optional filters
 export async function getPersons(
@@ -46,8 +63,8 @@ export async function getPersons(
 			: undefined
 		: undefined;
 
-	// Wether to search for persons that aren't of type "Guest"
-	const nonGuestsOnly = opts.nonGuestsOnly ?? false;
+	// Whether to search for persons that aren't of type "Guest"
+	const guarantorSearch = opts.guarantorSearch ?? false;
 
 	try {
 		const maxEntrySubquery = db
@@ -58,6 +75,59 @@ export async function getPersons(
 			.from(personEntry)
 			.groupBy(personEntry.personId)
 			.as('max_entry');
+
+		const timestampPairsSubquery = db
+			.select({
+				personId: person.id,
+				entryTimestamp: sql`${personEntry.timestamp}`.as('entryTimestamp'),
+				exitTimestamp: sql`${personExit.timestamp}`.as('exitTimestamp')
+			})
+			.from(person)
+			.leftJoin(personEntry, eq(personEntry.personId, person.id))
+			.leftJoin(personExit, eq(personExit.personId, person.id))
+			.where(
+				or(
+					isNull(personExit.timestamp),
+					eq(
+						personExit.timestamp,
+						db
+							.select({
+								timestamp: min(personExit.timestamp).as('min_exit_timestamp')
+							})
+							.from(personExit)
+							.where(
+								and(
+									gt(personExit.timestamp, personEntry.timestamp),
+									eq(personExit.personId, person.id)
+								)
+							)
+					)
+				)
+			)
+			.as('timestamp_pairs');
+
+		const hoursSpentSubQuery = db
+			.with(timestampPairsSubquery)
+			.select({
+				personId: timestampPairsSubquery.personId,
+				hoursSpent: sql<number>`
+					extract(epoch from (${timestampPairsSubquery.exitTimestamp} - ${timestampPairsSubquery.entryTimestamp})) / 3600`.as(
+					'hours_spent'
+				)
+			})
+			.from(timestampPairsSubquery)
+			.where(isNotNull(timestampPairsSubquery.exitTimestamp))
+			.as('hours_spent');
+
+		const totalHoursSpentSubQuery = db
+			.select({
+				personId: hoursSpentSubQuery.personId,
+				totalHoursSpent: sum(hoursSpentSubQuery.hoursSpent).mapWith(Number).as('total_hours_spent')
+			})
+			.from(hoursSpentSubQuery)
+			.where(lte(hoursSpentSubQuery.hoursSpent, 24))
+			.groupBy(hoursSpentSubQuery.personId)
+			.as('total_hours_spent');
 
 		const persons =
 			nonEmptySearchQuery !== undefined
@@ -102,9 +172,15 @@ export async function getPersons(
 							)
 						)
 						.leftJoin(personExit, eq(person.id, personExit.personId))
+						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
 						.where(
 							and(
-								nonGuestsOnly ? not(eq(person.type, Guest)) : undefined,
+								guarantorSearch
+									? and(
+											not(eq(person.type, Guest)),
+											gt(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
+										)
+									: undefined,
 								or(
 									...[
 										...fuzzySearchFilters([person.identifier], nonEmptySearchQuery),
@@ -163,7 +239,15 @@ export async function getPersons(
 							)
 						)
 						.leftJoin(personExit, eq(person.id, personExit.personId))
-						.where(nonGuestsOnly ? not(eq(person.type, Guest)) : undefined)
+						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
+						.where(
+							guarantorSearch
+								? and(
+										not(eq(person.type, Guest)),
+										gt(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
+									)
+								: undefined
+						)
 						.groupBy(
 							person.id,
 							person.identifier,
