@@ -1,7 +1,8 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/button/button.svelte';
+	import Button, { buttonVariants } from '$lib/components/ui/button/button.svelte';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Form from '$lib/components/ui/form';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import Search from 'lucide-svelte/icons/search';
 	import Reset from 'lucide-svelte/icons/list-restart';
@@ -12,9 +13,10 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
-	import { searchFormSchema, toggleStateFormSchema } from './schema';
+	import { searchFormSchema, toggleStateFormSchema, guarantorSearchFormSchema } from './schema';
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
+	import { cn } from '$lib/utils';
 
 	let { data, form: actionData } = $props();
 
@@ -46,8 +48,36 @@
 			}
 		}
 	});
-	const { enhance: toggleStateEnhance } = toggleStateForm;
-	const columns = createColumns(data.userBuilding, toggleStateForm, toggleStateEnhance);
+	const { form: toggleStateFormData, enhance: toggleStateEnhance } = toggleStateForm;
+
+	const guarantorSearchForm = superForm(data.guarantorSearchForm, {
+		invalidateAll: false,
+		resetForm: false,
+		validators: zodClient(guarantorSearchFormSchema),
+		onUpdated: ({ form: f }) => {
+			if (actionData?.message === undefined) return;
+			const msg = actionData.message;
+			if (f.valid && $page.status === 200) {
+				toast.success(msg);
+			} else {
+				toast.error(msg);
+			}
+		}
+	});
+	const { enhance: guarantorSearchEnhance } = guarantorSearchForm;
+
+	const guarantors = $derived(actionData?.guarantors ?? data.guarantors);
+	const columns = $derived(
+		createColumns(
+			data.userBuilding,
+			guarantors,
+			toggleStateForm,
+			toggleStateFormData,
+			toggleStateEnhance,
+			guarantorSearchForm,
+			guarantorSearchEnhance
+		)
+	);
 
 	let searchQuery = $state('');
 	$effect(() => {
@@ -102,21 +132,28 @@
 	<Button type="reset" variant="destructive" size="icon" class="flex-shrink-0">
 		<Reset />
 	</Button>
-	<Button
-		onclick={() => {
-			liveSearch = !liveSearch;
-		}}
-		variant={liveSearch ? 'secondary' : 'outline'}
-		type="button"
-		size="icon"
-		class="flex-shrink-0"
-	>
-		{#if liveSearch}
-			<Zap />
-		{:else}
-			<ZapOff />
-		{/if}
-	</Button>
+	<Tooltip.Provider>
+		<Tooltip.Root>
+			<Tooltip.Trigger
+				onclick={() => {
+					liveSearch = !liveSearch;
+				}}
+				class={cn(
+					'flex-shrink-0',
+					buttonVariants({ variant: liveSearch ? 'secondary' : 'outline', size: 'icon' })
+				)}
+			>
+				{#if liveSearch}
+					<Zap />
+				{:else}
+					<ZapOff />
+				{/if}
+			</Tooltip.Trigger>
+			<Tooltip.Content>
+				<span>{liveSearch ? 'Disable' : 'Enable'} live search</span>
+			</Tooltip.Content>
+		</Tooltip.Root>
+	</Tooltip.Provider>
 </form>
 
 <Separator />

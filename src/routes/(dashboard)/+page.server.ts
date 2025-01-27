@@ -6,7 +6,12 @@ import { getPersons, togglePersonState } from '$lib/server/db/person';
 import { invalidateSession } from '$lib/server/db/session';
 import { deleteSessionTokenCookie } from '$lib/server/session';
 
-import { searchFormSchema, toggleStateFormSchema, logoutFormSchema } from './schema';
+import {
+	searchFormSchema,
+	toggleStateFormSchema,
+	logoutFormSchema,
+	guarantorSearchFormSchema
+} from './schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -17,14 +22,21 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 		const searchForm = await superValidate(zod(searchFormSchema));
 		const toggleStateForm = await superValidate(zod(toggleStateFormSchema));
+		const guarantorSearchForm = await superValidate(zod(guarantorSearchFormSchema));
 
-		const persons = await getPersons(database, 1000, 0); // TODO: Pagination with limit and offset
+		const personsP = getPersons(database, 1000, 0); // TODO: Pagination with limit and offset
+		const guarantorsP = getPersons(database, 10, 0, { guarantorSearch: true });
+
+		const persons = await personsP;
+		const guarantors = await guarantorsP;
 
 		return {
 			userBuilding,
 			searchForm,
 			toggleStateForm,
-			persons
+			guarantorSearchForm,
+			persons,
+			guarantors
 		};
 	} catch (err: unknown) {
 		return error(500, `Failed to get persons: ${(err as Error).message}`);
@@ -85,6 +97,36 @@ export const actions: Actions = {
 			};
 		} catch (err: unknown) {
 			return error(500, `Failed to toggle state: ${(err as Error).message}`);
+		}
+	},
+	guarantorSearch: async ({ locals, request }) => {
+		const { database } = locals;
+
+		const guarantorSearchForm = await superValidate(request, zod(guarantorSearchFormSchema));
+		if (!guarantorSearchForm.valid) {
+			return fail(400, {
+				guarantorSearchForm,
+				message: 'Invalid form inputs'
+			});
+		}
+
+		const { guarantorSearchQuery: searchQuery } = guarantorSearchForm.data;
+
+		try {
+			const guarantors = await getPersons(database, 10, 0, {
+				searchQuery,
+				guarantorSearch: true
+			});
+
+			return {
+				guarantorSearchForm,
+				guarantors
+			};
+		} catch (err: unknown) {
+			return fail(500, {
+				guarantorSearchForm,
+				message: `Failed to search: ${(err as Error).message}`
+			});
 		}
 	},
 	logout: async (event) => {

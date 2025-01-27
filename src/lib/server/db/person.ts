@@ -31,7 +31,8 @@ import {
 	type Person,
 	type PersonType
 } from '$lib/types/person';
-import { env } from '$env/dynamic/private';
+import { guarantorEligibilityHours } from '$lib/utils/envPublic';
+import { hoursSpentCutoffHours } from '$lib/utils/envPrivate';
 
 type searchOptions = {
 	searchQuery?: string;
@@ -67,9 +68,6 @@ export async function getPersons(
 	const guarantorSearch = opts.guarantorSearch ?? false;
 
 	try {
-		const guarantorEligibilityHours = Number.parseInt(env.GUARANTOR_ELIGIBILITY_HOURS ?? '80');
-		const hoursSpentCutoffHours = Number.parseInt(env.HOURS_SPENT_CUTOFF_HOURS ?? '24');
-
 		const maxEntrySubquery = db
 			.select({
 				personId: personEntry.personId,
