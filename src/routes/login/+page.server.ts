@@ -1,5 +1,5 @@
 import { createSession, invalidateExcessSessions } from '$lib/server/db/session';
-import { checkUserRatelimit, getUserIdAndPasswordHash } from '$lib/server/db/user';
+import { checkUserRatelimit, getUserIdAndPasswordHash, isUserActive } from '$lib/server/db/user';
 import { verifyPasswordHash } from '$lib/server/password';
 import { generateSessionToken, setSessionTokenCookie } from '$lib/server/session';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
@@ -61,6 +61,10 @@ export const actions: Actions = {
 			const validPassword = await verifyPasswordHash(passwordHash, password);
 			if (!validPassword) {
 				throw new Error('Incorrect password');
+			}
+
+			if (!(await isUserActive(database, id))) {
+				throw new Error('user is deactivated: contact the administrator');
 			}
 
 			// Create a new session token
