@@ -63,7 +63,7 @@ export async function getPersons(
 			: undefined
 		: undefined;
 
-	// Whether to search for persons that aren't of type "Guest"
+	// Whether to search for persons that aren't of type "Guest" and are eligible (have enough hours spent)
 	const guarantorSearch = opts.guarantorSearch ?? false;
 
 	try {
