@@ -7,7 +7,6 @@
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { formSchema } from './schema';
 	import { page } from '$app/stores';
-	import { Button } from '$lib/components/ui/button';
 
 	let { data, form: actionData } = $props();
 
