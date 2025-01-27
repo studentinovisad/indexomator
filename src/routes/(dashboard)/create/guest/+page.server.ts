@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const guarantorSearchForm = await superValidate(zod(guarantorSearchFormSchema));
 
 	const universitiesP = getUniversities(database);
-	const guarantorsP = getPersons(database, 10, 0, { nonGuestsOnly: true });
+	const guarantorsP = getPersons(database, 10, 0, { guarantorSearch: true });
 
 	const universities = await universitiesP;
 	const guarantors = await guarantorsP;
@@ -90,7 +90,7 @@ export const actions: Actions = {
 		try {
 			const guarantors = await getPersons(database, 10, 0, {
 				searchQuery,
-				nonGuestsOnly: true
+				guarantorSearch: true
 			});
 
 			return {
