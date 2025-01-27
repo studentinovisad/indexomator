@@ -1,81 +1,100 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import * as Form from '$lib/components/ui/form';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import Search from 'lucide-svelte/icons/search';
 	import Reset from 'lucide-svelte/icons/list-restart';
 	import Zap from 'lucide-svelte/icons/zap';
 	import ZapOff from 'lucide-svelte/icons/zap-off';
 	import DataTable from './data-table.svelte';
+	import { createColumns } from './columns';
+	import { superForm } from 'sveltekit-superforms';
+	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
+	import { searchFormSchema, toggleStateFormSchema } from './schema';
 	import { page } from '$app/stores';
-	import { columns } from './columns';
-	import { enhance } from '$app/forms';
-	import { searchStore } from '$lib/stores/search.svelte';
+	import { browser } from '$app/environment';
 
 	let { data, form: actionData } = $props();
 
-	$effect(() => {
-		const msg = actionData?.message;
-		if (msg !== undefined) {
-			if ($page.status === 200) {
+	const searchForm = superForm(data.searchForm, {
+		resetForm: false,
+		validators: zodClient(searchFormSchema),
+		onUpdated: ({ form: f }) => {
+			if (actionData?.message === undefined) return;
+			const msg = actionData.message;
+			if (f.valid && $page.status === 200) {
 				toast.success(msg);
 			} else {
 				toast.error(msg);
 			}
 		}
 	});
+	const { form: searchFormData, enhance: searchEnhance } = searchForm;
 
-	let searchForm: HTMLFormElement | null = $state(null);
+	const toggleStateForm = superForm(data.toggleStateForm, {
+		validators: zodClient(toggleStateFormSchema),
+		onUpdated: ({ form: f }) => {
+			if (actionData?.message === undefined) return;
+			const msg = actionData.message;
+			if (f.valid && $page.status === 200) {
+				toast.success(msg);
+			} else {
+				toast.error(msg);
+			}
+		}
+	});
+	const { enhance: toggleStateEnhance } = toggleStateForm;
+	const columns = createColumns(data.userBuilding, toggleStateForm, toggleStateEnhance);
+
+	let searchFormElement: HTMLFormElement | null = $state(null);
 	let inputFocus: boolean = $state(false);
 	/* eslint-disable no-undef */
 	let postTimeout: NodeJS.Timeout | undefined = $state(undefined);
-	let liveSearch: boolean = $state(true);
+	let liveSearch: boolean = $state(browser);
 
-	let searchQuery = $state('');
-	$effect(() => {
-		searchStore.query = searchQuery;
-	});
-
-	const persons = $derived(actionData?.persons ?? data.persons ?? []);
+	const persons = $derived(actionData?.persons ?? data.persons);
 </script>
 
 <form
-	bind:this={searchForm}
+	bind:this={searchFormElement}
 	method="POST"
 	action="?/search"
 	class="flex gap-2 px-4 py-2"
 	onreset={() => {
-		searchQuery = '';
-		searchForm?.requestSubmit();
+		searchFormElement?.requestSubmit();
 	}}
-	use:enhance={() => {
-		return async ({ update }) => {
-			await update({ reset: false });
-		};
-	}}
+	use:searchEnhance
 >
-	<Input
-		oninput={() => {
-			if (!liveSearch) return;
-			clearTimeout(postTimeout);
-			postTimeout = setTimeout(() => searchForm?.requestSubmit(), 200);
-		}}
-		onfocusin={() => {
-			inputFocus = true;
-		}}
-		onfocusout={() => {
-			inputFocus = false;
-		}}
-		autofocus={inputFocus}
-		class="max-w-xs"
-		placeholder="Search..."
-		name="q"
-		bind:value={searchQuery}
-	/>
-	<Button type="submit" size="icon" class="flex-shrink-0">
+	<Form.Field form={searchForm} name="searchQuery">
+		<Form.Control>
+			{#snippet children({ props })}
+				<Input
+					{...props}
+					oninput={() => {
+						if (!liveSearch) return;
+						clearTimeout(postTimeout);
+						postTimeout = setTimeout(() => searchFormElement?.requestSubmit(), 200);
+					}}
+					onfocusin={() => {
+						inputFocus = true;
+					}}
+					onfocusout={() => {
+						inputFocus = false;
+					}}
+					autofocus={inputFocus}
+					class="max-w-xs"
+					placeholder="Search..."
+					bind:value={$searchFormData.searchQuery}
+				/>
+			{/snippet}
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
+	<Form.Button size="icon" class="flex-shrink-0">
 		<Search />
-	</Button>
+	</Form.Button>
 	<Button type="reset" variant="destructive" size="icon" class="flex-shrink-0">
 		<Reset />
 	</Button>

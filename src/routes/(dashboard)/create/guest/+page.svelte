@@ -8,19 +8,18 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
-	import { formSchema } from './schema';
 	import { page } from '$app/stores';
 	import { cn } from '$lib/utils';
 	import { Check, ChevronsUpDown } from 'lucide-svelte';
 	import { buttonVariants } from '$lib/components/ui/button';
 	import { tick } from 'svelte';
 	import { useId } from 'bits-ui';
-	import { enhance } from '$app/forms';
+	import { createFormSchema, guarantorSearchFormSchema } from './schema.js';
 
 	let { data, form: actionData } = $props();
 
-	const form = superForm(data.form, {
-		validators: zodClient(formSchema),
+	const createForm = superForm(data.createForm, {
+		validators: zodClient(createFormSchema),
 		onUpdated: ({ form: f }) => {
 			if (actionData?.message === undefined) return;
 			const msg = actionData.message;
@@ -31,14 +30,28 @@
 			}
 		}
 	});
+	const { form: createFormData, enhance: createFormEnhance } = createForm;
 
-	const { form: formData, enhance: enhanceF } = form;
+	const guarantorSearchForm = superForm(data.guarantorSearchForm, {
+		invalidateAll: false,
+		resetForm: false,
+		validators: zodClient(guarantorSearchFormSchema),
+		onUpdated: ({ form: f }) => {
+			if (actionData?.message === undefined) return;
+			const msg = actionData.message;
+			if (f.valid && $page.status === 200) {
+				toast.success(msg);
+			} else {
+				toast.error(msg);
+			}
+		}
+	});
+	const { enhance: guarantorSearchFormEnhance } = guarantorSearchForm;
 
-	const persons = $derived(actionData?.persons ?? data.persons);
-	const selectedPerson = $derived(persons.find((p) => p.id === $formData.guarantorId));
+	const guarantors = $derived(actionData?.guarantors ?? data.guarantors);
+	const selectedGuarantor = $derived(guarantors.find((g) => g.id === $createFormData.guarantorId));
 
-	let searchForm: HTMLFormElement | null = $state(null);
-	let searchInput = $state('');
+	let guarantorSearchInput = $state('');
 	/* eslint-disable no-undef */
 	let postTimeout: NodeJS.Timeout | undefined = $state(undefined);
 
@@ -57,23 +70,10 @@
 </script>
 
 <form
-	bind:this={searchForm}
-	action="?/search"
 	method="POST"
-	use:enhance={() => {
-		return async ({ update }) => {
-			await update({ reset: false });
-		};
-	}}
->
-	<input type="hidden" value={searchInput} name="q" />
-</form>
-
-<form
 	action="?/create"
-	method="POST"
 	class="flex h-[90dvh] w-full items-center justify-center px-4"
-	use:enhanceF
+	use:createFormEnhance
 >
 	<Card.Root class="mx-auto w-full max-w-sm">
 		<Card.Header>
@@ -83,40 +83,40 @@
 			</Card.Description>
 		</Card.Header>
 		<Card.Content class="grid gap-4">
-			<Form.Field {form} name="fname">
+			<Form.Field form={createForm} name="fname">
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>First name</Form.Label>
-						<Input {...props} bind:value={$formData.fname} />
+						<Input {...props} bind:value={$createFormData.fname} />
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Field {form} name="lname">
+			<Form.Field form={createForm} name="lname">
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Last name</Form.Label>
-						<Input {...props} bind:value={$formData.lname} />
+						<Input {...props} bind:value={$createFormData.lname} />
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Field {form} name="identifier">
+			<Form.Field form={createForm} name="identifier">
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Index / Email / Last 4 digits from ID</Form.Label>
-						<Input {...props} bind:value={$formData.identifier} />
+						<Input {...props} bind:value={$createFormData.identifier} />
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Field {form} name="university">
+			<Form.Field form={createForm} name="university">
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>University</Form.Label>
-						<Select.Root type="single" bind:value={$formData.university} name={props.name}>
+						<Select.Root type="single" bind:value={$createFormData.university} name={props.name}>
 							<Select.Trigger {...props}>
-								{$formData.university ?? 'Select the university for the guest'}
+								{$createFormData.university ?? 'Select the university for the guest'}
 							</Select.Trigger>
 							<Select.Content>
 								{#each data.universities as { id, name } (id)}
@@ -128,7 +128,7 @@
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Field {form} name="guarantorId">
+			<Form.Field form={createForm} name="guarantorId">
 				<Popover.Root bind:open>
 					<Form.Control id={triggerId}>
 						{#snippet children({ props })}
@@ -138,17 +138,17 @@
 									class={cn(
 										buttonVariants({ variant: 'outline' }),
 										'justify-between',
-										!$formData.guarantorId && 'text-muted-foreground'
+										!$createFormData.guarantorId && 'text-muted-foreground'
 									)}
 									role="combobox"
 									{...props}
 								>
-									{selectedPerson
-										? `${selectedPerson.fname} ${selectedPerson.lname} ${selectedPerson.identifier}`
+									{selectedGuarantor
+										? `${selectedGuarantor.fname} ${selectedGuarantor.lname} (${selectedGuarantor.identifier})`
 										: 'Select guarantor'}
 									<ChevronsUpDown class="opacity-50" />
 								</Popover.Trigger>
-								<input hidden value={$formData.guarantorId} name={props.name} />
+								<input hidden value={$createFormData.guarantorId} name={props.name} />
 							</div>
 						{/snippet}
 					</Form.Control>
@@ -157,30 +157,33 @@
 							<Command.Input
 								oninput={() => {
 									clearTimeout(postTimeout);
-									postTimeout = setTimeout(() => searchForm?.requestSubmit(), 200);
+									postTimeout = setTimeout(() => guarantorSearchForm.submit(), 200);
 								}}
 								placeholder="Search guarantor..."
 								class="h-9"
-								bind:value={searchInput}
+								bind:value={guarantorSearchInput}
 							/>
 							<Command.List>
+								<Command.Empty>No guarantors found.</Command.Empty>
 								<Command.Group>
-									{#each persons as { id, fname, lname, identifier } (id)}
-										{@const label = `${fname} ${lname} (${identifier})`}
+									{#each guarantors as { id, fname, lname, identifier } (id)}
 										<Command.Item
-											value={label}
+											value={`${id}`}
 											onSelect={() => {
-												if ($formData.guarantorId === id) {
-													$formData.guarantorId = undefined;
+												if ($createFormData.guarantorId === id) {
+													$createFormData.guarantorId = undefined;
 												} else {
-													$formData.guarantorId = id;
-													closeAndFocusTrigger(triggerId);
+													$createFormData.guarantorId = id;
 												}
+												closeAndFocusTrigger(triggerId);
 											}}
 										>
-											{label}
+											{`${fname} ${lname} (${identifier})`}
 											<Check
-												class={cn('ml-auto', id !== $formData.guarantorId && 'text-transparent')}
+												class={cn(
+													'ml-auto',
+													id !== $createFormData.guarantorId && 'text-transparent'
+												)}
 											/>
 										</Command.Item>
 									{/each}
@@ -191,7 +194,18 @@
 				</Popover.Root>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Button type="submit">Submit</Form.Button>
+			<Form.Button>Submit</Form.Button>
 		</Card.Content>
 	</Card.Root>
+</form>
+
+<form method="POST" action="?/guarantorSearch" use:guarantorSearchFormEnhance>
+	<Form.Field class="hidden" form={guarantorSearchForm} name="guarantorSearchQuery">
+		<Form.Control>
+			{#snippet children({ props })}
+				<Input {...props} type="hidden" value={guarantorSearchInput} />
+			{/snippet}
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
 </form>

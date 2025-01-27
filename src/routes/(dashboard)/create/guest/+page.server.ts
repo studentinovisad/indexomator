@@ -5,48 +5,53 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { createGuest, getPersons } from '$lib/server/db/person';
 import { getUniversities } from '$lib/server/db/university';
 
-import { formSchema } from './schema';
+import { createFormSchema, guarantorSearchFormSchema } from './schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const { database } = locals;
-	const form = await superValidate(zod(formSchema));
+
+	const createForm = await superValidate(zod(createFormSchema));
+	const guarantorSearchForm = await superValidate(zod(guarantorSearchFormSchema));
 
 	const universitiesP = getUniversities(database);
-	const personsP = getPersons(database, 10, 0, { guarantorSearch: true });
+	const guarantorsP = getPersons(database, 10, 0, { guarantorSearch: true });
 
 	const universities = await universitiesP;
-	const persons = await personsP;
+	const guarantors = await guarantorsP;
 
 	return {
-		form,
+		createForm,
+		guarantorSearchForm,
 		universities,
-		persons
+		guarantors
 	};
 };
 
 export const actions: Actions = {
 	create: async ({ locals, request }) => {
-		const { database } = locals;
-		const form = await superValidate(request, zod(formSchema));
-		if (!form.valid) {
+		const { database, session, user } = locals;
+
+		const createForm = await superValidate(request, zod(createFormSchema));
+		if (!createForm.valid) {
 			return fail(400, {
-				form,
+				createForm,
 				message: 'Invalid form inputs'
 			});
 		}
 
-		if (locals.session === null || locals.user === null) {
+		if (session === null || user === null) {
 			return fail(401, {
-				form,
+				createForm,
 				message: 'Invalid session'
 			});
 		}
 
+		const { identifier, fname, lname, university, guarantorId } = createForm.data;
+		const { building } = session;
+		const { username: creator } = user;
+
 		try {
-			const { identifier, fname, lname, university, guarantorId } = form.data;
-			const building = locals.session.building;
-			const creator = locals.user.username;
 			await createGuest(
 				database,
 				identifier,
@@ -57,40 +62,45 @@ export const actions: Actions = {
 				creator,
 				guarantorId
 			);
+
+			return {
+				createForm,
+				message: 'Guest created successfully!'
+			};
 		} catch (err: unknown) {
-			console.debug(`Failed to create guest: ${(err as Error).message}`);
 			return fail(400, {
-				form,
-				message: 'Guest already exists'
+				createForm,
+				message: `Failed to create guest: ${(err as Error).message}`
+			});
+		}
+	},
+	guarantorSearch: async ({ locals, request }) => {
+		const { database } = locals;
+
+		const guarantorSearchForm = await superValidate(request, zod(guarantorSearchFormSchema));
+		if (!guarantorSearchForm.valid) {
+			return fail(400, {
+				guarantorSearchForm,
+				message: 'Invalid form inputs'
 			});
 		}
 
-		return {
-			form,
-			message: 'Guest created successfully!'
-		};
-	},
-	search: async ({ locals, request }) => {
-		const { database } = locals;
+		const { guarantorSearchQuery: searchQuery } = guarantorSearchForm.data;
+
 		try {
-			const formData = await request.formData();
-			const searchQuery = formData.get('q');
+			const guarantors = await getPersons(database, 10, 0, {
+				searchQuery,
+				guarantorSearch: true
+			});
 
-			// Check if the searchQuery is valid
-			if (searchQuery === null || searchQuery === undefined || typeof searchQuery !== 'string') {
-				return fail(400, {
-					message: 'Invalid search query'
-				});
-			}
-
-			const persons = await getPersons(database, 10, 0, { searchQuery, guarantorSearch: true });
 			return {
-				persons
+				guarantorSearchForm,
+				guarantors
 			};
 		} catch (err: unknown) {
-			console.debug(`Failed to search: ${(err as Error).message}`);
 			return fail(500, {
-				message: 'Failed to search'
+				guarantorSearchForm,
+				message: `Failed to search: ${(err as Error).message}`
 			});
 		}
 	}

@@ -1,4 +1,5 @@
 import type { Database } from './connect';
+<<<<<<< HEAD
 import {
 	or,
 	eq,
@@ -14,6 +15,9 @@ import {
 	sum,
 	lte
 } from 'drizzle-orm';
+=======
+import { or, eq, and, max, gt, count, isNull, not, desc } from 'drizzle-orm';
+>>>>>>> as/feat/guests
 import { person, personEntry, personExit } from './schema/person';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
@@ -29,7 +33,11 @@ import {
 	type Person,
 	type PersonType
 } from '$lib/types/person';
+<<<<<<< HEAD
 import { env } from '$env/dynamic/private';
+=======
+import { sleep } from '$lib/utils/sleep';
+>>>>>>> as/feat/guests
 
 type searchOptions = {
 	searchQuery?: string;
@@ -637,30 +645,55 @@ export async function togglePersonState(
 				throw new Error('Guarantor not valid');
 			}
 
-			// Get the person entry and exit timestamps
-			const [{ entryTimestamp, exitTimestamp }] = await tx
+			// Get the person entry timestamp and building
+			const [{ entryTimestamp, entryBuilding }] = await tx
 				.select({
-					id: person.id,
-					entryTimestamp: max(personEntry.timestamp),
-					exitTimestamp: max(personExit.timestamp)
+					entryTimestamp: personEntry.timestamp,
+					entryBuilding: personEntry.building
 				})
-				.from(person)
-				.leftJoin(personEntry, eq(person.id, personEntry.personId))
-				.leftJoin(personExit, eq(person.id, personExit.personId))
-				.where(eq(person.id, id))
-				.groupBy(person.id);
+				.from(personEntry)
+				.where(eq(personEntry.personId, id))
+				.orderBy(desc(personEntry.timestamp))
+				.limit(1);
+
+			// Get the person timestamp
+			const exits = await tx
+				.select({
+					exitTimestamp: personExit.timestamp
+				})
+				.from(personExit)
+				.where(eq(personExit.personId, id))
+				.orderBy(desc(personExit.timestamp))
+				.limit(1);
+			const [{ exitTimestamp }] = exits.length === 1 ? exits : [{ exitTimestamp: null }];
 
 			// Toggle the person state
 			if (isInside(entryTimestamp, exitTimestamp)) {
-				// Exit the person
-				await tx.insert(personExit).values({
-					personId: id,
-					building,
-					creator
-				});
-				return StateOutside;
+				if (building === entryBuilding) {
+					// Release the person
+					await tx.insert(personExit).values({
+						personId: id,
+						building,
+						creator
+					});
+					return StateOutside;
+				} else {
+					// Transfer the person
+					await tx.insert(personExit).values({
+						personId: id,
+						building,
+						creator
+					});
+					await tx.insert(personEntry).values({
+						personId: id,
+						building,
+						creator,
+						guarantorId
+					});
+					return StateInside;
+				}
 			} else {
-				// Enter the person
+				// Admit the person
 				await tx.insert(personEntry).values({
 					personId: id,
 					building,
