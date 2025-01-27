@@ -1,5 +1,4 @@
 import type { Database } from './connect';
-<<<<<<< HEAD
 import {
 	or,
 	eq,
@@ -13,11 +12,9 @@ import {
 	sql,
 	isNotNull,
 	sum,
-	lte
+	lte,
+	desc
 } from 'drizzle-orm';
-=======
-import { or, eq, and, max, gt, count, isNull, not, desc } from 'drizzle-orm';
->>>>>>> as/feat/guests
 import { person, personEntry, personExit } from './schema/person';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
@@ -33,11 +30,7 @@ import {
 	type Person,
 	type PersonType
 } from '$lib/types/person';
-<<<<<<< HEAD
 import { env } from '$env/dynamic/private';
-=======
-import { sleep } from '$lib/utils/sleep';
->>>>>>> as/feat/guests
 
 type searchOptions = {
 	searchQuery?: string;
