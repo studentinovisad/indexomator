@@ -148,7 +148,6 @@ export async function updateUserActive(
 				active: newActive
 			})
 			.where(eq(userTable.id, userId));
-		console.log(`date active for user ${userId} set to ${newActive}`);
 	} catch (err: unknown) {
 		throw new Error(`Couldn't update user.active: ${(err as Error).message}`);
 	}

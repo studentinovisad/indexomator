@@ -53,7 +53,6 @@ export const actions: Actions = {
 		};
 	},
 	deactivate: async (event) => {
-		console.log('Got to action deactivate');
 		const { locals, request } = event;
 		const { database } = locals;
 		const form = await superValidate(request, zod(formSchema));
