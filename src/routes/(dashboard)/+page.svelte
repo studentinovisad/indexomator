@@ -19,6 +19,7 @@
 	let { data, form: actionData } = $props();
 
 	const searchForm = superForm(data.searchForm, {
+		invalidateAll: false,
 		resetForm: false,
 		validators: zodClient(searchFormSchema),
 		onUpdated: ({ form: f }) => {
@@ -48,22 +49,25 @@
 	const { enhance: toggleStateEnhance } = toggleStateForm;
 	const columns = createColumns(data.userBuilding, toggleStateForm, toggleStateEnhance);
 
-	let searchFormElement: HTMLFormElement | null = $state(null);
-	let inputFocus: boolean = $state(false);
+	let searchQuery = $state('');
+	$effect(() => {
+		$searchFormData.searchQuery = searchQuery;
+	});
+
+	let inputFocus = $state(false);
 	/* eslint-disable no-undef */
 	let postTimeout: NodeJS.Timeout | undefined = $state(undefined);
-	let liveSearch: boolean = $state(browser);
+	let liveSearch = $state(browser);
 
 	const persons = $derived(actionData?.persons ?? data.persons);
 </script>
 
 <form
-	bind:this={searchFormElement}
 	method="POST"
 	action="?/search"
 	class="flex gap-2 px-4 py-2"
 	onreset={() => {
-		searchFormElement?.requestSubmit();
+		searchForm.submit();
 	}}
 	use:searchEnhance
 >
@@ -75,7 +79,7 @@
 					oninput={() => {
 						if (!liveSearch) return;
 						clearTimeout(postTimeout);
-						postTimeout = setTimeout(() => searchFormElement?.requestSubmit(), 200);
+						postTimeout = setTimeout(() => searchForm.submit(), 200);
 					}}
 					onfocusin={() => {
 						inputFocus = true;
@@ -86,7 +90,7 @@
 					autofocus={inputFocus}
 					class="max-w-xs"
 					placeholder="Search..."
-					bind:value={$searchFormData.searchQuery}
+					bind:value={searchQuery}
 				/>
 			{/snippet}
 		</Form.Control>
