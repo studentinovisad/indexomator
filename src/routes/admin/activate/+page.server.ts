@@ -40,7 +40,7 @@ export const actions: Actions = {
 			const { id } = await getUserIdAndPasswordHash(database, username);
 			await updateUserActive(database, id, true);
 		} catch (err: unknown) {
-			console.debug(`Failed to activate user ${username}: ${(err as Error).message}`);
+			console.debug(`Failed to activate user ${form.data.username}: ${(err as Error).message}`);
 			return fail(400, {
 				form,
 				message: 'username does not exist'
@@ -77,7 +77,7 @@ export const actions: Actions = {
 			const { id } = await getUserIdAndPasswordHash(database, username);
 			await updateUserActive(database, id, false);
 		} catch (err: unknown) {
-			console.debug(`Failed to deactivate user ${username}: ${(err as Error).message}`);
+			console.debug(`Failed to deactivate user ${form.data.username}: ${(err as Error).message}`);
 			return fail(400, {
 				form,
 				message: 'username does not exist'
