@@ -12,8 +12,9 @@ import {
 	sql,
 	isNotNull,
 	sum,
-	lte,
-	desc
+	desc,
+	lt,
+	gte
 } from 'drizzle-orm';
 import { person, personEntry, personExit } from './schema/person';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
@@ -36,8 +37,6 @@ type searchOptions = {
 	searchQuery?: string;
 	guarantorSearch?: boolean;
 };
-
-const guarantorEligibilityHours = parseInt(env.GUARANTOR_ELIGIBILITY_HOURS ?? '80');
 
 // Gets all persons using optional filters
 export async function getPersons(
@@ -68,6 +67,9 @@ export async function getPersons(
 	const guarantorSearch = opts.guarantorSearch ?? false;
 
 	try {
+		const guarantorEligibilityHours = Number.parseInt(env.GUARANTOR_ELIGIBILITY_HOURS ?? '80');
+		const hoursSpentCutoffHours = Number.parseInt(env.HOURS_SPENT_CUTOFF_HOURS ?? '24');
+
 		const maxEntrySubquery = db
 			.select({
 				personId: personEntry.personId,
@@ -126,7 +128,7 @@ export async function getPersons(
 				totalHoursSpent: sum(hoursSpentSubQuery.hoursSpent).mapWith(Number).as('total_hours_spent')
 			})
 			.from(hoursSpentSubQuery)
-			.where(lte(hoursSpentSubQuery.hoursSpent, 24))
+			.where(lt(hoursSpentSubQuery.hoursSpent, hoursSpentCutoffHours))
 			.groupBy(hoursSpentSubQuery.personId)
 			.as('total_hours_spent');
 
@@ -179,7 +181,7 @@ export async function getPersons(
 								guarantorSearch
 									? and(
 											not(eq(person.type, Guest)),
-											gt(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
+											gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
 										)
 									: undefined,
 								or(
@@ -245,7 +247,7 @@ export async function getPersons(
 							guarantorSearch
 								? and(
 										not(eq(person.type, Guest)),
-										gt(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
+										gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
 									)
 								: undefined
 						)
