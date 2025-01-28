@@ -21,7 +21,7 @@
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
 	import { cn } from '$lib/utils';
-	import { ArrowLeftRight, Check, ChevronsUpDown, LogIn } from 'lucide-svelte';
+	import { Check, CheckCheck, ChevronsUpDown } from 'lucide-svelte';
 	import { tick } from 'svelte';
 	import { useId } from 'bits-ui';
 	import Label from '$lib/components/ui/label/label.svelte';
@@ -242,7 +242,7 @@
 				}}
 				type="button"
 			>
-				<ArrowLeftRight />
+				<CheckCheck />
 				<span class="hidden sm:block">Confirm</span>
 			</Button>
 		</Dialog.Footer>
