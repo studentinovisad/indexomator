@@ -2,9 +2,9 @@
 	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
 	import { ArrowLeftRight, LogIn, LogOut } from 'lucide-svelte';
-	import type { State } from '$lib/types/state';
+	import { StateInside, type State } from '$lib/types/state';
 	import { toggleStateFormSchema, type ToggleStateFormValidated } from './schema';
-	import type { PersonType } from '$lib/types/person';
+	import { Guest, type PersonType } from '$lib/types/person';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import Button from '$lib/components/ui/button/button.svelte';
@@ -41,7 +41,7 @@
 	});
 	const { enhance: toggleStateEnhance } = toggleStateForm;
 
-	const inside = $derived(personState === 'Inside');
+	const inside = $derived(personState === StateInside);
 	const sameBuilding = $derived(userBuilding === building);
 </script>
 
@@ -62,27 +62,12 @@
 		</Form.Control>
 		<Form.FieldErrors />
 	</Form.Field>
-	{#if personType !== 'Guest'}
-		<Form.Button variant="outline" class="w-full">
-			{#if inside}
-				{#if sameBuilding}
-					<LogOut />
-					<span class="hidden sm:block">Release</span>
-				{:else}
-					<ArrowLeftRight />
-					<span class="hidden sm:block">Transfer</span>
-				{/if}
-			{:else}
-				<LogIn />
-				<span class="hidden sm:block">Admit</span>
-			{/if}
-		</Form.Button>
-	{:else if inside && sameBuilding}
+	{#if inside && sameBuilding}
 		<Form.Button variant="outline" class="w-full">
 			<LogOut />
 			<span class="hidden sm:block">Release</span>
 		</Form.Button>
-	{:else}
+	{:else if personType === Guest}
 		<Button
 			onclick={() => {
 				guarantorDialogStore.dialogOpen = true;
@@ -100,5 +85,15 @@
 				<span class="hidden sm:block">Admit</span>
 			{/if}
 		</Button>
+	{:else}
+		<Form.Button variant="outline" class="w-full">
+			{#if inside}
+				<ArrowLeftRight />
+				<span class="hidden sm:block">Transfer</span>
+			{:else}
+				<LogIn />
+				<span class="hidden sm:block">Admit</span>
+			{/if}
+		</Form.Button>
 	{/if}
 </form>

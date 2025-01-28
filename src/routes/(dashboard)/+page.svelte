@@ -29,6 +29,8 @@
 
 	let { data, form: actionData } = $props();
 
+	const columns = $derived(createColumns(data.userBuilding, data.toggleStateForm));
+
 	const searchForm = superForm(data.searchForm, {
 		invalidateAll: false,
 		resetForm: false,
@@ -43,7 +45,14 @@
 			}
 		}
 	});
-	const { form: searchFormData, enhance: searchEnhance } = searchForm;
+	const { enhance: searchEnhance } = searchForm;
+
+	/* eslint-disable no-undef */
+	let searchPostTimeout: NodeJS.Timeout | undefined = $state(undefined);
+	let searchInput = $state('');
+	let searchInputFocus = $state(false);
+	let liveSearch = $state(browser);
+	const persons = $derived(actionData?.persons ?? data.persons);
 
 	const guarantorSearchForm = superForm(data.guarantorSearchForm, {
 		invalidateAll: false,
@@ -61,41 +70,16 @@
 	});
 	const { enhance: guarantorSearchEnhance } = guarantorSearchForm;
 
-	let searchQuery = $state('');
-	$effect(() => {
-		$searchFormData.searchQuery = searchQuery;
-	});
-
-	let inputFocus = $state(false);
 	/* eslint-disable no-undef */
-	let postTimeout: NodeJS.Timeout | undefined = $state(undefined);
-	let liveSearch = $state(browser);
-
-	const persons = $derived(actionData?.persons ?? data.persons);
-
+	let guarantorSearchPostTimeout: NodeJS.Timeout | undefined = $state(undefined);
+	let guarantorSearchInput = $state('');
+	let guarantorSearchPopoverOpen = $state(false);
 	const guarantors = $derived(actionData?.guarantors ?? data.guarantors);
 	const selectedGuarantor = $derived(
 		guarantors.find((g) => g.id === guarantorDialogStore.selectedGuarantorId)
 	);
 
-	let guarantorSearchInput = $state('');
-	/* eslint-disable no-undef */
-	let guarantorPostTimeout: NodeJS.Timeout | undefined = $state(undefined);
-
-	let guarantorSearchPopoverOpen = $state(false);
-
-	// We want to refocus the trigger button when the user selects
-	// an item from the list so users can continue navigating the
-	// rest of the form with the keyboard.
-	function closeAndFocusTrigger(triggerId: string) {
-		guarantorSearchPopoverOpen = false;
-		tick().then(() => {
-			document.getElementById(triggerId)?.focus();
-		});
-	}
 	const triggerId = useId();
-
-	const columns = $derived(createColumns(data.userBuilding, data.toggleStateForm));
 </script>
 
 <form
@@ -114,19 +98,19 @@
 					{...props}
 					oninput={() => {
 						if (!liveSearch) return;
-						clearTimeout(postTimeout);
-						postTimeout = setTimeout(() => searchForm.submit(), 200);
+						clearTimeout(searchPostTimeout);
+						searchPostTimeout = setTimeout(() => searchForm.submit(), 200);
 					}}
 					onfocusin={() => {
-						inputFocus = true;
+						searchInputFocus = true;
 					}}
 					onfocusout={() => {
-						inputFocus = false;
+						searchInputFocus = false;
 					}}
-					autofocus={inputFocus}
+					autofocus={searchInputFocus}
 					class="max-w-xs"
 					placeholder="Search..."
-					bind:value={searchQuery}
+					bind:value={searchInput}
 				/>
 			{/snippet}
 		</Form.Control>
@@ -135,9 +119,19 @@
 	<Form.Button size="icon" class="flex-shrink-0">
 		<Search />
 	</Form.Button>
-	<Button type="reset" variant="destructive" size="icon" class="flex-shrink-0">
-		<Reset />
-	</Button>
+	<Tooltip.Provider>
+		<Tooltip.Root>
+			<Tooltip.Trigger
+				type="reset"
+				class={cn('flex-shrink-0', buttonVariants({ variant: 'destructive', size: 'icon' }))}
+			>
+				<Reset />
+			</Tooltip.Trigger>
+			<Tooltip.Content>
+				<span>Clear the search query</span>
+			</Tooltip.Content>
+		</Tooltip.Root>
+	</Tooltip.Provider>
 	<Tooltip.Provider>
 		<Tooltip.Root>
 			<Tooltip.Trigger
@@ -168,7 +162,7 @@
 </div>
 
 <Dialog.Root bind:open={guarantorDialogStore.dialogOpen}>
-	<Dialog.Content class="sm:max-w-[425px]">
+	<Dialog.Content class="sm:max-w-md">
 		<Dialog.Header>
 			<Dialog.Title>Select guarantor</Dialog.Title>
 			<Dialog.Description>
@@ -196,12 +190,12 @@
 				<Command.Root shouldFilter={false}>
 					<Command.Input
 						oninput={() => {
-							clearTimeout(guarantorPostTimeout);
-							guarantorPostTimeout = setTimeout(() => {
+							clearTimeout(guarantorSearchPostTimeout);
+							guarantorSearchPostTimeout = setTimeout(() => {
 								guarantorSearchForm.submit();
 							}, 200);
 						}}
-						placeholder="Search guarantor..."
+						placeholder="Search guarantors..."
 						class="h-9"
 						bind:value={guarantorSearchInput}
 					/>
@@ -217,7 +211,14 @@
 										} else {
 											guarantorDialogStore.selectedGuarantorId = id;
 										}
-										closeAndFocusTrigger(triggerId);
+
+										// We want to refocus the trigger button when the user selects
+										// an item from the list so users can continue navigating the
+										// rest of the form with the keyboard.
+										guarantorSearchPopoverOpen = false;
+										tick().then(() => {
+											document.getElementById(triggerId)?.focus();
+										});
 									}}
 								>
 									{`${fname} ${lname} (${identifier})`}
@@ -243,7 +244,7 @@
 				type="button"
 			>
 				<CheckCheck />
-				<span class="hidden sm:block">Confirm</span>
+				<span>Confirm</span>
 			</Button>
 		</Dialog.Footer>
 	</Dialog.Content>

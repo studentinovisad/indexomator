@@ -1,0 +1,4 @@
+- [x] non-guests only search
+- [x] server-side check that guest cannot guarantee for a guest
+- [ ] dialog for guests toggle in
+- [ ] show guarantor in table (popover)
