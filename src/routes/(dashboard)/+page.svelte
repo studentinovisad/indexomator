@@ -82,13 +82,13 @@
 	/* eslint-disable no-undef */
 	let guarantorPostTimeout: NodeJS.Timeout | undefined = $state(undefined);
 
-	let open = $state(false);
+	let guarantorSearchPopoverOpen = $state(false);
 
 	// We want to refocus the trigger button when the user selects
 	// an item from the list so users can continue navigating the
 	// rest of the form with the keyboard.
 	function closeAndFocusTrigger(triggerId: string) {
-		open = false;
+		guarantorSearchPopoverOpen = false;
 		tick().then(() => {
 			document.getElementById(triggerId)?.focus();
 		});
@@ -175,8 +175,8 @@
 				Search for a guarantor that is eligible (has at least {guarantorEligibilityHours}h)
 			</Dialog.Description>
 		</Dialog.Header>
-		<Popover.Root bind:open>
-			<div class="grid space-y-3">
+		<Popover.Root bind:open={guarantorSearchPopoverOpen}>
+			<div id={triggerId} class="grid space-y-3">
 				<Label>Guarantor</Label>
 				<Popover.Trigger
 					class={cn(
@@ -217,7 +217,7 @@
 										} else {
 											guarantorDialogStore.selectedGuarantorId = id;
 										}
-										// closeAndFocusTrigger(triggerId);
+										closeAndFocusTrigger(triggerId);
 									}}
 								>
 									{`${fname} ${lname} (${identifier})`}
