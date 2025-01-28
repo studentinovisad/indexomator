@@ -9,5 +9,5 @@ export function isInside(entryTimestamp: Date | null, exitTimestamp: Date | null
 		throw new Error('Exit timestamp is not valid');
 	}
 
-	return exitTimestamp !== null ? entryTimestamp > exitTimestamp : true;
+	return exitTimestamp !== null ? entryTimestamp >= exitTimestamp : true;
 }

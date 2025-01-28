@@ -11,6 +11,7 @@
 	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
 	import LogoLight from '$lib/assets/images/light.svg';
 	import LogoDark from '$lib/assets/images/dark.svg';
+	import { University } from 'lucide-svelte';
 
 	// Menu items.
 	const items = [
@@ -20,14 +21,19 @@
 			icon: House
 		},
 		{
+			title: 'Create Building',
+			url: '/admin/create/building',
+			icon: Building
+		},
+		{
 			title: 'Create Department',
 			url: '/admin/create/department',
 			icon: Cuboid
 		},
 		{
-			title: 'Create Building',
-			url: '/admin/create/building',
-			icon: Building
+			title: 'Create University',
+			url: '/admin/create/university',
+			icon: University
 		},
 		{
 			title: 'Register User',

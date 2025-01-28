@@ -1,17 +1,100 @@
 <script lang="ts">
-	import { ArrowLeftRight } from 'lucide-svelte';
-	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/button/button.svelte';
+	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
-	import { searchStore } from '$lib/stores/search.svelte';
+	import { ArrowLeftRight, LogIn, LogOut } from 'lucide-svelte';
+	import { StateInside, type State } from '$lib/types/state';
+	import { toggleStateFormSchema, type ToggleStateFormValidated } from './schema';
+	import { Guest, type PersonType } from '$lib/types/person';
+	import { superForm } from 'sveltekit-superforms';
+	import { zodClient } from 'sveltekit-superforms/adapters';
+	import Button from '$lib/components/ui/button/button.svelte';
+	import { guarantorDialogStore } from '$lib/stores/guarantorDialog.svelte';
+	import { toast } from 'svelte-sonner';
+	import { page } from '$app/stores';
 
-	let { id, type }: { id: number; type: string } = $props();
+	let {
+		personId,
+		personType,
+		personState,
+		building,
+		userBuilding,
+		toggleStateFormValidated
+	}: {
+		personId: number;
+		personType: PersonType;
+		personState: State;
+		building: string | null;
+		userBuilding: string;
+		toggleStateFormValidated: ToggleStateFormValidated;
+	} = $props();
+
+	const toggleStateForm = superForm(toggleStateFormValidated, {
+		id: `${personId}-toggle-state`,
+		validators: zodClient(toggleStateFormSchema),
+		onUpdated: ({ form: f }) => {
+			// TODO: How to get actionData?.message here?
+			if (f.valid && $page.status === 200) {
+				toast.success('Successfully toggled state');
+			} else {
+				toast.error('Failed to toggle state');
+			}
+		}
+	});
+	const { enhance: toggleStateEnhance } = toggleStateForm;
+
+	const inside = $derived(personState === StateInside);
+	const sameBuilding = $derived(userBuilding === building);
 </script>
 
-<form method="POST" action="?/togglestate" class="w-full" use:enhance>
-	<Input type="hidden" name="q" value={searchStore.query} />
-	<Input type="hidden" name="type" value={type} />
-	<Button variant="outline" type="submit" name="id" value={id} class="w-full">
-		<ArrowLeftRight /> <span class="hidden sm:block">Toggle State</span>
-	</Button>
+<form method="POST" action="?/togglestate" class="w-full" use:toggleStateEnhance>
+	<Form.Field class="hidden" form={toggleStateForm} name="personId">
+		<Form.Control>
+			{#snippet children({ props })}
+				<Input {...props} type="hidden" value={personId} />
+			{/snippet}
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
+	<Form.Field class="hidden" form={toggleStateForm} name="guarantorId">
+		<Form.Control>
+			{#snippet children({ props })}
+				<Input {...props} type="hidden" value={guarantorDialogStore.selectedGuarantorId} />
+			{/snippet}
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
+	{#if inside && sameBuilding}
+		<Form.Button variant="outline" class="w-full">
+			<LogOut />
+			<span class="hidden sm:block">Release</span>
+		</Form.Button>
+	{:else if personType !== Guest}
+		<Form.Button variant="outline" class="w-full">
+			{#if inside}
+				<ArrowLeftRight />
+				<span class="hidden sm:block">Transfer</span>
+			{:else}
+				<LogIn />
+				<span class="hidden sm:block">Admit</span>
+			{/if}
+		</Form.Button>
+	{:else}
+		<Button
+			onclick={() => {
+				guarantorDialogStore.dialogOpen = true;
+				guarantorDialogStore.rowToggleStateForm = toggleStateForm;
+			}}
+			type="button"
+			variant="outline"
+			class="w-full"
+		>
+			{#if inside}
+				<ArrowLeftRight />
+				<span class="hidden sm:block">Transfer</span>
+			{:else}
+				<LogIn />
+				<span class="hidden sm:block">Admit</span>
+			{/if}
+		</Button>
+	{/if}
 </form>

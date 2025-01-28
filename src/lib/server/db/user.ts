@@ -5,13 +5,13 @@ import { hashPassword, verifyPasswordStrength } from '../password';
 
 export async function createUser(db: Database, username: string, password: string): Promise<void> {
 	// Assert that username is valid
-	if (username === undefined || username === null || username === '') {
-		throw new Error('Invalid username');
+	if (username === '') {
+		throw new Error('Invalid username (empty)');
 	}
 
 	// Assert that password is valid
-	if (password === undefined || password === null || password === '') {
-		throw new Error('Invalid password');
+	if (password === '') {
+		throw new Error('Invalid password (empty)');
 	}
 
 	// Check the strength of the password
@@ -36,8 +36,8 @@ export async function getUserIdAndPasswordHash(
 	username: string
 ): Promise<{ id: number; passwordHash: string }> {
 	// Assert that username is valid
-	if (username === null || username === undefined || username === '') {
-		throw new Error('Invalid username');
+	if (username === '') {
+		throw new Error('Invalid username (empty)');
 	}
 
 	try {
@@ -67,23 +67,14 @@ export async function checkUserRatelimit(
 	ratelimitMaxAttempts: number,
 	ratelimitTimeout: number
 ): Promise<boolean> {
-	// Assert that id is valid
-	if (userId === null || userId === undefined) {
-		throw new Error('Invalid userId');
-	}
-
 	// Assert that ratelimitMaxAttempts is valid
-	if (
-		ratelimitMaxAttempts === null ||
-		ratelimitMaxAttempts === undefined ||
-		ratelimitMaxAttempts <= 0
-	) {
-		throw new Error('Invalid ratelimitMaxAttempts');
+	if (ratelimitMaxAttempts <= 0) {
+		throw new Error('Invalid ratelimitMaxAttempts (negative)');
 	}
 
 	// Assert that ratelimitTimeout is valid
-	if (ratelimitTimeout === null || ratelimitTimeout === undefined || ratelimitTimeout <= 0) {
-		throw new Error('Invalid ratelimitTimeout');
+	if (ratelimitTimeout <= 0) {
+		throw new Error('Invalid ratelimitTimeout (negative)');
 	}
 	const ratelimitTimeoutMS = ratelimitTimeout * 1000;
 
