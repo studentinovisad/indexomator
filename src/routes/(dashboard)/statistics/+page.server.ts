@@ -4,11 +4,12 @@ import {
 	getPersonsCountPerDepartment,
 	getPersonsCountPerUniversity
 } from '$lib/server/db/person';
-import { fail, type Actions } from '@sveltejs/kit';
+import { error, fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const { database } = locals;
+
 	try {
 		const personsInsideCountP = getPersonsCountPerBuilding(database);
 		const personsCountPerTypeP = getPersonsCountPerType(database);
@@ -27,16 +28,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 			personsCountPerUniversity
 		};
 	} catch (err: unknown) {
-		console.debug(`Failed to get statistics: ${(err as Error).message}`);
-		return fail(500, {
-			message: 'Failed to get statistics'
-		});
+		return error(500, `Failed to load data: ${(err as Error).message}`);
 	}
 };
 
 export const actions: Actions = {
 	default: async ({ locals }) => {
 		const { database } = locals;
+
 		try {
 			const personsInsideCountP = getPersonsCountPerBuilding(database);
 			const personsCountPerTypeP = getPersonsCountPerType(database);
@@ -53,12 +52,11 @@ export const actions: Actions = {
 				personsCountPerType,
 				personsCountPerDepartment,
 				personsCountPerUniversity,
-				message: 'Successfully refreshed statistics'
+				message: 'Successfully refreshed statistics!'
 			};
 		} catch (err: unknown) {
-			console.debug(`Failed to get statistics: ${(err as Error).message}`);
 			return fail(500, {
-				message: 'Failed to get statistics'
+				message: `Failed to refresh statistics: ${(err as Error).message}`
 			});
 		}
 	}

@@ -23,17 +23,13 @@
 		}
 	});
 
-	const personsInsideCount = $derived(
-		actionData?.personsInsideCount ?? data.personsInsideCount ?? []
-	);
-	const personsCountPerType = $derived(
-		actionData?.personsCountPerType ?? data.personsCountPerType ?? []
-	);
+	const personsInsideCount = $derived(actionData?.personsInsideCount ?? data.personsInsideCount);
+	const personsCountPerType = $derived(actionData?.personsCountPerType ?? data.personsCountPerType);
 	const personsCountPerDepartment = $derived(
-		actionData?.personsCountPerDepartment ?? data.personsCountPerDepartment ?? []
+		actionData?.personsCountPerDepartment ?? data.personsCountPerDepartment
 	);
 	const personsCountPerUniversity = $derived(
-		actionData?.personsCountPerUniversity ?? data.personsCountPerUniversity ?? []
+		actionData?.personsCountPerUniversity ?? data.personsCountPerUniversity
 	);
 </script>
 

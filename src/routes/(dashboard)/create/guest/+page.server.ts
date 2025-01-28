@@ -1,4 +1,4 @@
-import { fail, type Actions } from '@sveltejs/kit';
+import { error, fail, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 
@@ -14,18 +14,22 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const createForm = await superValidate(zod(createFormSchema));
 	const guarantorSearchForm = await superValidate(zod(guarantorSearchFormSchema));
 
-	const universitiesP = getUniversities(database);
-	const guarantorsP = getPersons(database, 10, 0, { guarantorSearch: true });
+	try {
+		const universitiesP = getUniversities(database);
+		const guarantorsP = getPersons(database, 10, 0, { guarantorSearch: true });
 
-	const universities = await universitiesP;
-	const guarantors = await guarantorsP;
+		const universities = await universitiesP;
+		const guarantors = await guarantorsP;
 
-	return {
-		createForm,
-		guarantorSearchForm,
-		universities,
-		guarantors
-	};
+		return {
+			createForm,
+			guarantorSearchForm,
+			universities,
+			guarantors
+		};
+	} catch (err: unknown) {
+		return error(500, `Failed to load data: ${(err as Error).message}`);
+	}
 };
 
 export const actions: Actions = {
@@ -65,7 +69,7 @@ export const actions: Actions = {
 
 			return {
 				createForm,
-				message: 'Guest created successfully!'
+				message: 'Successfully created guest!'
 			};
 		} catch (err: unknown) {
 			return fail(400, {

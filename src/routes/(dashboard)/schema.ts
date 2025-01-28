@@ -16,7 +16,7 @@ export type ToggleStateFormValidated = SuperValidated<
 		personId: number;
 		guarantorId?: number | undefined;
 	},
-	/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+	/* eslint-disable @typescript-eslint/no-explicit-any */
 	any,
 	{
 		personId: number;
@@ -28,16 +28,6 @@ export const guarantorSearchFormSchema = z.object({
 	guarantorSearchQuery: z.string().optional()
 });
 export type GuarantorSearchFormSchema = typeof guarantorSearchFormSchema;
-export type GuarantorSearchFormValidated = SuperValidated<
-	{
-		guarantorSearchQuery?: string | undefined;
-	},
-	/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-	any,
-	{
-		guarantorSearchQuery?: string | undefined;
-	}
->;
 
 export const logoutFormSchema = z.object({
 	sessionId: z.string()

@@ -25,8 +25,8 @@
 			}
 		}
 	});
-
 	const { form: formData, enhance } = form;
+
 	let showPassword = $state(false);
 </script>
 
@@ -86,7 +86,7 @@
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Button type="submit">Submit</Form.Button>
+			<Form.Button>Submit</Form.Button>
 		</Card.Content>
 	</Card.Root>
 </form>

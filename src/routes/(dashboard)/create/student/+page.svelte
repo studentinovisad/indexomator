@@ -6,13 +6,13 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
-	import { formSchema } from './schema';
+	import { createFormSchema } from './schema';
 	import { page } from '$app/stores';
 
 	let { data, form: actionData } = $props();
 
-	const form = superForm(data.form, {
-		validators: zodClient(formSchema),
+	const createForm = superForm(data.createForm, {
+		validators: zodClient(createFormSchema),
 		onUpdated: ({ form: f }) => {
 			if (actionData?.message === undefined) return;
 			const msg = actionData.message;
@@ -23,11 +23,14 @@
 			}
 		}
 	});
-
-	const { form: formData, enhance } = form;
+	const { form: createFormData, enhance: createFormEnhance } = createForm;
 </script>
 
-<form method="POST" class="flex h-[90dvh] w-full items-center justify-center px-4" use:enhance>
+<form
+	method="POST"
+	class="flex h-[90dvh] w-full items-center justify-center px-4"
+	use:createFormEnhance
+>
 	<Card.Root class="mx-auto w-full max-w-sm">
 		<Card.Header>
 			<Card.Title class="text-2xl">Create student</Card.Title>
@@ -36,40 +39,40 @@
 			</Card.Description>
 		</Card.Header>
 		<Card.Content class="grid gap-4">
-			<Form.Field {form} name="fname">
+			<Form.Field form={createForm} name="fname">
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>First name</Form.Label>
-						<Input {...props} bind:value={$formData.fname} />
+						<Input {...props} bind:value={$createFormData.fname} />
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Field {form} name="lname">
+			<Form.Field form={createForm} name="lname">
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Last name</Form.Label>
-						<Input {...props} bind:value={$formData.lname} />
+						<Input {...props} bind:value={$createFormData.lname} />
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Field {form} name="identifier">
+			<Form.Field form={createForm} name="identifier">
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Index</Form.Label>
-						<Input {...props} bind:value={$formData.identifier} />
+						<Input {...props} bind:value={$createFormData.identifier} />
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Field {form} name="department">
+			<Form.Field form={createForm} name="department">
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Department</Form.Label>
-						<Select.Root type="single" bind:value={$formData.department} name={props.name}>
+						<Select.Root type="single" bind:value={$createFormData.department} name={props.name}>
 							<Select.Trigger {...props}>
-								{$formData.department ?? 'Select the department for the student'}
+								{$createFormData.department ?? 'Select the department for the student'}
 							</Select.Trigger>
 							<Select.Content>
 								{#each data.departments as { id, name } (id)}
@@ -81,7 +84,7 @@
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Button type="submit">Submit</Form.Button>
+			<Form.Button>Submit</Form.Button>
 		</Card.Content>
 	</Card.Root>
 </form>

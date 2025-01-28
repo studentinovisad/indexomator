@@ -18,6 +18,7 @@ export const actions: Actions = {
 	default: async (event) => {
 		const { locals, request } = event;
 		const { database } = locals;
+
 		const form = await superValidate(request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {
@@ -26,7 +27,6 @@ export const actions: Actions = {
 			});
 		}
 
-		// Check if the secret is correct
 		const secretOk = await validateSecret(form.data.secret);
 		if (!secretOk) {
 			return fail(401, {
@@ -35,10 +35,15 @@ export const actions: Actions = {
 			});
 		}
 
+		const { username, password } = form.data;
+
 		try {
-			const { username, password } = form.data;
-			// Create the new user
 			await createUser(database, username, password);
+
+			return {
+				form,
+				message: 'Successfully registered user!'
+			};
 		} catch (err: unknown) {
 			console.debug(`Failed to register: ${(err as Error).message}`);
 			return fail(400, {
@@ -46,10 +51,5 @@ export const actions: Actions = {
 				message: 'Username already exists or password is too weak'
 			});
 		}
-
-		return {
-			form,
-			message: 'User created successfully!'
-		};
 	}
 };
