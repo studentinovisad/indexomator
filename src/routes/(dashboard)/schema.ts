@@ -16,6 +16,7 @@ export type ToggleStateFormValidated = SuperValidated<
 		personId: number;
 		guarantorId?: number | undefined;
 	},
+	/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 	any,
 	{
 		personId: number;
@@ -31,6 +32,7 @@ export type GuarantorSearchFormValidated = SuperValidated<
 	{
 		guarantorSearchQuery?: string | undefined;
 	},
+	/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 	any,
 	{
 		guarantorSearchQuery?: string | undefined;

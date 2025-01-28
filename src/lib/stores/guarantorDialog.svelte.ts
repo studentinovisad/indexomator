@@ -13,6 +13,7 @@ export const guarantorDialogStore = $state({
 					personId: number;
 					guarantorId?: number | undefined;
 				},
+				/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 				any
 		  >
 		| undefined;

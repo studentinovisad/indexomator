@@ -28,16 +28,16 @@
 
 	const toggleStateForm = superForm(toggleStateFormValidated, {
 		id: `${personId}-toggle-state`,
-		validators: zodClient(toggleStateFormSchema),
-		onUpdated: ({ form: f }) => {
-			// if (actionData?.message === undefined) return;
-			// const msg = actionData.message;
-			// if (f.valid && $page.status === 200) {
-			// 	toast.success(msg);
-			// } else {
-			// 	toast.error(msg);
-			// }
-		}
+		validators: zodClient(toggleStateFormSchema)
+		// onUpdated: ({ form: f }) => {
+		// 	if (actionData?.message === undefined) return;
+		// 	const msg = actionData.message;
+		// 	if (f.valid && $page.status === 200) {
+		// 		toast.success(msg);
+		// 	} else {
+		// 		toast.error(msg);
+		// 	}
+		// }
 	});
 	const { enhance: toggleStateEnhance } = toggleStateForm;
 
