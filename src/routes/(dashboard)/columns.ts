@@ -2,22 +2,11 @@ import { renderComponent } from '$lib/components/ui/data-table';
 import type { Person } from '$lib/types/person';
 import type { ColumnDef } from '@tanstack/table-core';
 import DataTableActions from './data-table-actions.svelte';
-import type {
-	GuarantorSearchEnhance,
-	GuarantorSearchForm,
-	ToggleStateEnhance,
-	ToggleStateForm,
-	ToggleStateFormData
-} from './schema';
+import type { ToggleStateFormValidated } from './schema';
 
 export function createColumns(
 	userBuilding: string,
-	guarantors: Person[],
-	toggleStateForm: ToggleStateForm,
-	toggleStateFormData: ToggleStateFormData,
-	toggleStateEnhance: ToggleStateEnhance,
-	guarantorSearchForm: GuarantorSearchForm,
-	guarantorSearchEnhance: GuarantorSearchEnhance
+	toggleStateFormValidated: ToggleStateFormValidated
 ): ColumnDef<Person>[] {
 	return [
 		{
@@ -62,12 +51,7 @@ export function createColumns(
 					personState: row.original.state,
 					building: row.original.building,
 					userBuilding,
-					guarantors,
-					toggleStateForm,
-					toggleStateFormData,
-					toggleStateEnhance,
-					guarantorSearchForm,
-					guarantorSearchEnhance
+					toggleStateFormValidated
 				});
 			},
 			enableSorting: false,
