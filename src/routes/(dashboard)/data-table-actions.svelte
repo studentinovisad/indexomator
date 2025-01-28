@@ -67,7 +67,17 @@
 			<LogOut />
 			<span class="hidden sm:block">Release</span>
 		</Form.Button>
-	{:else if personType === Guest}
+	{:else if personType !== Guest}
+		<Form.Button variant="outline" class="w-full">
+			{#if inside}
+				<ArrowLeftRight />
+				<span class="hidden sm:block">Transfer</span>
+			{:else}
+				<LogIn />
+				<span class="hidden sm:block">Admit</span>
+			{/if}
+		</Form.Button>
+	{:else}
 		<Button
 			onclick={() => {
 				guarantorDialogStore.dialogOpen = true;
@@ -85,15 +95,5 @@
 				<span class="hidden sm:block">Admit</span>
 			{/if}
 		</Button>
-	{:else}
-		<Form.Button variant="outline" class="w-full">
-			{#if inside}
-				<ArrowLeftRight />
-				<span class="hidden sm:block">Transfer</span>
-			{:else}
-				<LogIn />
-				<span class="hidden sm:block">Admit</span>
-			{/if}
-		</Form.Button>
 	{/if}
 </form>
