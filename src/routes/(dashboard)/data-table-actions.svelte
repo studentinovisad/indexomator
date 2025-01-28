@@ -9,6 +9,8 @@
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { guarantorDialogStore } from '$lib/stores/guarantorDialog.svelte';
+	import { toast } from 'svelte-sonner';
+	import { page } from '$app/stores';
 
 	let {
 		personId,
@@ -28,16 +30,15 @@
 
 	const toggleStateForm = superForm(toggleStateFormValidated, {
 		id: `${personId}-toggle-state`,
-		validators: zodClient(toggleStateFormSchema)
-		// onUpdated: ({ form: f }) => {
-		// 	if (actionData?.message === undefined) return;
-		// 	const msg = actionData.message;
-		// 	if (f.valid && $page.status === 200) {
-		// 		toast.success(msg);
-		// 	} else {
-		// 		toast.error(msg);
-		// 	}
-		// }
+		validators: zodClient(toggleStateFormSchema),
+		onUpdated: ({ form: f }) => {
+			// TODO: How to get actionData?.message here?
+			if (f.valid && $page.status === 200) {
+				toast.success('Successfully toggled state');
+			} else {
+				toast.error('Failed to toggle state');
+			}
+		}
 	});
 	const { enhance: toggleStateEnhance } = toggleStateForm;
 
