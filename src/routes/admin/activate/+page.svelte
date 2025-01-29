@@ -53,8 +53,8 @@
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Button type="submit" formaction="?/activate">Activate</Form.Button>
-			<Form.Button type="submit" formaction="?/deactivate">Deactivate</Form.Button>
+			<Form.Button formaction="?/activate">Activate</Form.Button>
+			<Form.Button formaction="?/deactivate">Deactivate</Form.Button>
 		</Card.Content>
 	</Card.Root>
 </form>
