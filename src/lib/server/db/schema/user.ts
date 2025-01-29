@@ -5,7 +5,7 @@ export const userTable = pgTable('user', {
 	id: serial('id').primaryKey(),
 	username: text('username').notNull().unique(),
 	passwordHash: text('password_hash').notNull(),
-	active: boolean('active').default(true).notNull()
+	disabled: boolean('disabled').default(false).notNull()
 });
 
 export const ratelimitTable = pgTable('ratelimit', {

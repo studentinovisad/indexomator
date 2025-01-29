@@ -36,8 +36,8 @@
 			icon: KeyRound
 		},
 		{
-			title: 'Activate / deactivate user',
-			url: '/admin/activate',
+			title: 'Disable users',
+			url: '/admin/disable',
 			icon: Lock
 		},
 		{

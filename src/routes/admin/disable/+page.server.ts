@@ -1,4 +1,4 @@
-import { getUserIdAndPasswordHash, updateUserActive } from '$lib/server/db/user';
+import { getUserIdAndPasswordHash, updateUserDisabled } from '$lib/server/db/user';
 import { validateSecret } from '$lib/server/secret';
 import { fail, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
@@ -15,7 +15,7 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	activate: async (event) => {
+	disable: async (event) => {
 		const { locals, request } = event;
 		const { database } = locals;
 		const form = await superValidate(request, zod(formSchema));
@@ -38,9 +38,9 @@ export const actions: Actions = {
 		try {
 			const { username } = form.data;
 			const { id } = await getUserIdAndPasswordHash(database, username);
-			await updateUserActive(database, id, true);
+			await updateUserDisabled(database, id, true);
 		} catch (err: unknown) {
-			console.debug(`Failed to activate user ${form.data.username}: ${(err as Error).message}`);
+			console.debug(`Failed to disable user ${form.data.username}: ${(err as Error).message}`);
 			return fail(400, {
 				form,
 				message: 'username does not exist'
@@ -49,10 +49,10 @@ export const actions: Actions = {
 
 		return {
 			form,
-			message: 'User activated!'
+			message: 'User disabled!'
 		};
 	},
-	deactivate: async (event) => {
+	enable: async (event) => {
 		const { locals, request } = event;
 		const { database } = locals;
 		const form = await superValidate(request, zod(formSchema));
@@ -75,9 +75,9 @@ export const actions: Actions = {
 		try {
 			const { username } = form.data;
 			const { id } = await getUserIdAndPasswordHash(database, username);
-			await updateUserActive(database, id, false);
+			await updateUserDisabled(database, id, false);
 		} catch (err: unknown) {
-			console.debug(`Failed to deactivate user ${form.data.username}: ${(err as Error).message}`);
+			console.debug(`Failed to enable user ${form.data.username}: ${(err as Error).message}`);
 			return fail(400, {
 				form,
 				message: 'username does not exist'
@@ -86,7 +86,7 @@ export const actions: Actions = {
 
 		return {
 			form,
-			message: 'User deactivated!'
+			message: 'User enabled!'
 		};
 	}
 };

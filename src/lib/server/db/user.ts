@@ -117,27 +117,27 @@ export async function checkUserRatelimit(
 	});
 }
 
-export async function isUserActive(db: Database, userId: number): Promise<boolean> {
+export async function isUserDisabled(db: Database, userId: number): Promise<boolean> {
 	assertValidUserId(userId);
 
 	try {
-		const [{ active }] = await db
+		const [{ disabled }] = await db
 			.select({
-				active: userTable.active
+				disabled: userTable.disabled
 			})
 			.from(userTable)
 			.where(eq(userTable.id, userId));
 
-		return active;
+		return disabled;
 	} catch (err: unknown) {
 		throw new Error(`failed getting user status: ${(err as Error).message}`);
 	}
 }
 
-export async function updateUserActive(
+export async function updateUserDisabled(
 	db: Database,
 	userId: number,
-	newActive: boolean
+	newDisabled: boolean
 ): Promise<void> {
 	assertValidUserId(userId);
 
@@ -145,10 +145,10 @@ export async function updateUserActive(
 		await db
 			.update(userTable)
 			.set({
-				active: newActive
+				disabled: newDisabled
 			})
 			.where(eq(userTable.id, userId));
 	} catch (err: unknown) {
-		throw new Error(`Couldn't update user.active: ${(err as Error).message}`);
+		throw new Error(`Couldn't update user.disabled: ${(err as Error).message}`);
 	}
 }

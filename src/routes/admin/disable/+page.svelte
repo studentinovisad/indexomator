@@ -29,10 +29,8 @@
 <form method="POST" class="flex h-[90dvh] w-full items-center justify-center px-4" use:enhance>
 	<Card.Root class="mx-auto w-full max-w-sm">
 		<Card.Header>
-			<Card.Title class="text-2xl">Activate / deactivate users</Card.Title>
-			<Card.Description
-				>Type in the id of the user you want to activate / deactivate.</Card.Description
-			>
+			<Card.Title class="text-2xl">Disable users</Card.Title>
+			<Card.Description>Type in the id of the user you want to disable or enable.</Card.Description>
 		</Card.Header>
 		<Card.Content class="grid gap-4">
 			<Form.Field {form} name="username">
@@ -53,8 +51,8 @@
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Button formaction="?/activate">Activate</Form.Button>
-			<Form.Button formaction="?/deactivate">Deactivate</Form.Button>
+			<Form.Button formaction="?/disable">Disable</Form.Button>
+			<Form.Button formaction="?/enable">Enable</Form.Button>
 		</Card.Content>
 	</Card.Root>
 </form>
