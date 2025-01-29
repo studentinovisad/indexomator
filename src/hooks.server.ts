@@ -1,7 +1,6 @@
 import { connectDatabase } from '$lib/server/db/connect';
 import { validateSessionToken } from '$lib/server/db/session';
 import { setSessionTokenCookie, deleteSessionTokenCookie } from '$lib/server/session';
-import { isUserDisabled } from '$lib/server/db/user';
 import type { Handle } from '@sveltejs/kit';
 import { redirect } from '@sveltejs/kit';
 
@@ -32,7 +31,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	// Validate session token
 	const { session, user } = await validateSessionToken(database, token);
-	if (session !== null && !(await isUserDisabled(database, user.id))) {
+	if (session !== null && !user.disabled) {
 		// If session is valid, ensure the token is up-to-date
 		setSessionTokenCookie(event, token, session.timestamp);
 
