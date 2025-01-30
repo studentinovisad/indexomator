@@ -57,6 +57,13 @@
 			"when": 1735856957839,
 			"tag": "0007_aspiring_zombie",
 			"breakpoints": true
+		},
+		{
+			"idx": 8,
+			"version": "7",
+			"when": 1738173678327,
+			"tag": "0008_lush_selene",
+			"breakpoints": true
 		}
 	]
 }

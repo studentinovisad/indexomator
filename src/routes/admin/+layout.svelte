@@ -20,6 +20,8 @@
 					Create Building
 				{:else if $page.url.pathname === '/admin/create/department'}
 					Create Department
+				{:else if $page.url.pathname === '/admin/disable'}
+					Disable users
 				{:else}
 					Admin Homepage
 				{/if}

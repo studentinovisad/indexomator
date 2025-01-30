@@ -31,7 +31,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	// Validate session token
 	const { session, user } = await validateSessionToken(database, token);
-	if (session !== null) {
+	if (session !== null && !user.disabled) {
 		// If session is valid, ensure the token is up-to-date
 		setSessionTokenCookie(event, token, session.timestamp);
 
