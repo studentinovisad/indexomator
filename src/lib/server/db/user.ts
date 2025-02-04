@@ -152,3 +152,18 @@ export async function updateUserDisabled(
 		throw new Error(`Couldn't update user.disabled: ${(err as Error).message}`);
 	}
 }
+
+export async function updateAllUserDisabled(
+	db: Database,
+	newDisabled: boolean
+): Promise<void> {
+	try {
+		await db
+		.update(userTable)
+		.set({
+			disabled: newDisabled
+		});
+	} catch (err: unknown) {
+		throw new Error(`Couldn't update all user.disabled: ${(err as Error).message}`);
+	}
+}
