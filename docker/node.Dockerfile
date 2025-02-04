@@ -2,7 +2,7 @@ FROM node:lts-slim AS base
 WORKDIR /app
 COPY package.json ./
 COPY pnpm-lock.yaml ./
-RUN corepack enable
+RUN npm install -g pnpm@9
 
 FROM base AS build
 RUN pnpm i --frozen-lockfile
