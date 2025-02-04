@@ -14,79 +14,47 @@ export const load: PageServerLoad = async () => {
 	};
 };
 
-export const actions: Actions = {
-	disable: async (event) => {
-		const { locals, request } = event;
-		const { database } = locals;
-		const form = await superValidate(request, zod(formSchema));
-		if (!form.valid) {
-			return fail(400, {
-				form,
-				message: 'Invalid form inputs'
-			});
-		}
-
-		// Check if the secret is correct
-		const secretOk = await validateSecret(form.data.secret);
-		if (!secretOk) {
-			return fail(401, {
-				form,
-				message: 'Invalid secret'
-			});
-		}
-
-		try {
-			const { username } = form.data;
-			const { id } = await getUserIdAndPasswordHash(database, username);
-			await updateUserDisabled(database, id, true);
-		} catch (err: unknown) {
-			console.debug(`Failed to disable user ${form.data.username}: ${(err as Error).message}`);
-			return fail(400, {
-				form,
-				message: 'username does not exist'
-			});
-		}
-
-		return {
+async function updateStatus(event, newDisabled) {
+	const { locals, request } = event;
+	const { database } = locals;
+	const form = await superValidate(request, zod(formSchema));
+	if (!form.valid) {
+		return fail(400, {
 			form,
-			message: 'User disabled!'
-		};
-	},
-	enable: async (event) => {
-		const { locals, request } = event;
-		const { database } = locals;
-		const form = await superValidate(request, zod(formSchema));
-		if (!form.valid) {
-			return fail(400, {
-				form,
-				message: 'Invalid form inputs'
-			});
-		}
-
-		// Check if the secret is correct
-		const secretOk = await validateSecret(form.data.secret);
-		if (!secretOk) {
-			return fail(401, {
-				form,
-				message: 'Invalid secret'
-			});
-		}
-
-		try {
-			const { username } = form.data;
-			const { id } = await getUserIdAndPasswordHash(database, username);
-			await updateUserDisabled(database, id, false);
-		} catch (err: unknown) {
-			console.debug(`Failed to enable user ${form.data.username}: ${(err as Error).message}`);
-			return fail(400, {
-				form,
-				message: 'username does not exist'
-			});
-		}
-
-		return {
-			form,
-			message: 'User enabled!'
-		};
+			message: 'Invalid form inputs'
+		});
 	}
+
+	const verb = newDisabled ? 'disabled' : 'enabled';
+
+	// Check if the secret is correct
+	const secretOk = await validateSecret(form.data.secret);
+	if (!secretOk) {
+		return fail(401, {
+			form,
+			message: 'Invalid secret'
+		});
+	}
+
+	try {
+		const { username } = form.data;
+		const { id } = await getUserIdAndPasswordHash(database, username);
+		await updateUserDisabled(database, id, newDisabled);
+	} catch (err: unknown) {
+		console.debug(`Failed to${verb} user ${form.data.username}: ${(err as Error).message}`);
+		return fail(400, {
+			form,
+			message: 'username does not exist'
+		});
+	}
+
+	return {
+		form,
+		message: `User ${verb}d!`
+	};
+}
+
+export const actions: Actions = {
+	disable: async (event) => updateStatus(event, true),
+	enable: async (event) => updateStatus(event, false)
 };
