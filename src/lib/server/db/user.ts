@@ -153,14 +153,9 @@ export async function updateUserDisabled(
 	}
 }
 
-export async function updateAllUserDisabled(
-	db: Database,
-	newDisabled: boolean
-): Promise<void> {
+export async function updateAllUserDisabled(db: Database, newDisabled: boolean): Promise<void> {
 	try {
-		await db
-		.update(userTable)
-		.set({
+		await db.update(userTable).set({
 			disabled: newDisabled
 		});
 	} catch (err: unknown) {
