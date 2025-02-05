@@ -14,7 +14,9 @@ export const load: PageServerLoad = async () => {
 	};
 };
 
-async function updateStatus(event, newDisabled) {
+// XXX: what are types of event and what does it return?
+// These are here just to silence errors.
+async function updateStatus(event: any, newDisabled: boolean): Promise<any> {
 	const { locals, request } = event;
 	const { database } = locals;
 	const form = await superValidate(request, zod(formSchema));
