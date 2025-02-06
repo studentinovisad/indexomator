@@ -49,7 +49,7 @@
 		<Tabs.Content value="inside">
 			<Card.Root>
 				<Card.Header>
-					<Card.Title>Inside Statistics</Card.Title>
+					<Card.Title>Inside statistics</Card.Title>
 					<Card.Description>Check how many people are currently inside.</Card.Description>
 				</Card.Header>
 				<Card.Content>
@@ -63,7 +63,7 @@
 		<Tabs.Content value="general">
 			<Card.Root>
 				<Card.Header>
-					<Card.Title>General Statistics</Card.Title>
+					<Card.Title>General statistics</Card.Title>
 					<Card.Description>Check how many people are in the system per type.</Card.Description>
 				</Card.Header>
 				<Card.Content>
@@ -77,7 +77,7 @@
 		<Tabs.Content value="department">
 			<Card.Root>
 				<Card.Header>
-					<Card.Title>Department Statistics</Card.Title>
+					<Card.Title>Department statistics</Card.Title>
 					<Card.Description>
 						Check how many people are in the system per department.
 					</Card.Description>
@@ -93,7 +93,7 @@
 		<Tabs.Content value="university">
 			<Card.Root>
 				<Card.Header>
-					<Card.Title>University Statistics</Card.Title>
+					<Card.Title>University statistics</Card.Title>
 					<Card.Description>
 						Check how many people are in the system per university.
 					</Card.Description>
