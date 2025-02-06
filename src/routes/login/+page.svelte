@@ -9,7 +9,7 @@
 	import { logInFormSchema } from './schema';
 	import LogoLight from '$lib/assets/images/light.svg';
 	import LogoDark from '$lib/assets/images/dark.svg';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button';
 	import Visible from 'lucide-svelte/icons/eye';
 	import Invisible from 'lucide-svelte/icons/eye-closed';
@@ -21,7 +21,7 @@
 		onUpdated: ({ form: f }) => {
 			if (actionData?.message === undefined) return;
 			const msg = actionData.message;
-			if (f.valid && $page.status === 200) {
+			if (f.valid && page.status === 200) {
 				toast.success(msg);
 			} else {
 				toast.error(msg);

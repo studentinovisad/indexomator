@@ -9,7 +9,7 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { cn } from '$lib/utils';
 	import { Check, ChevronsUpDown } from 'lucide-svelte';
 	import { buttonVariants } from '$lib/components/ui/button';
@@ -24,7 +24,7 @@
 		onUpdated: ({ form: f }) => {
 			if (actionData?.message === undefined) return;
 			const msg = actionData.message;
-			if (f.valid && $page.status === 200) {
+			if (f.valid && page.status === 200) {
 				toast.success(msg);
 			} else {
 				toast.error(msg);
@@ -40,7 +40,7 @@
 		onUpdated: ({ form: f }) => {
 			if (actionData?.message === undefined) return;
 			const msg = actionData.message;
-			if (f.valid && $page.status === 200) {
+			if (f.valid && page.status === 200) {
 				toast.success(msg);
 			} else {
 				toast.error(msg);
