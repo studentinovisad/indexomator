@@ -317,6 +317,27 @@ export async function getPersons(
 	}
 }
 
+// Gets all person types
+export async function getAllPersonTypes(db: Database): Promise<PersonType[]> {
+	try {
+		const personTypes = await db
+			.selectDistinct({
+				type: person.type
+			})
+			.from(person)
+			.orderBy(({ type }) => type);
+
+		return personTypes.map((p) => {
+			if (!isPersonType(p.type)) {
+				throw new Error('Invalid type from DB (not PersonType)');
+			}
+			return p.type;
+		});
+	} catch (err: unknown) {
+		throw new Error(`Failed to get all person types from database: ${(err as Error).message}`);
+	}
+}
+
 // Gets the count of all persons per type
 export async function getPersonsCountPerType(db: Database): Promise<
 	{
@@ -345,7 +366,7 @@ export async function getPersonsCountPerType(db: Database): Promise<
 		});
 	} catch (err: unknown) {
 		throw new Error(
-			`Failed to get count of persons per type from database: ${(err as Error).message}}`
+			`Failed to get count of persons per type from database: ${(err as Error).message}`
 		);
 	}
 }
@@ -382,7 +403,7 @@ export async function getPersonsCountPerDepartment(db: Database): Promise<
 		});
 	} catch (err: unknown) {
 		throw new Error(
-			`Failed to get count of persons per department from database: ${(err as Error).message}}`
+			`Failed to get count of persons per department from database: ${(err as Error).message}`
 		);
 	}
 }
@@ -419,7 +440,7 @@ export async function getPersonsCountPerUniversity(db: Database): Promise<
 		});
 	} catch (err: unknown) {
 		throw new Error(
-			`Failed to get count of persons per university from database: ${(err as Error).message}}`
+			`Failed to get count of persons per university from database: ${(err as Error).message}`
 		);
 	}
 }
@@ -473,7 +494,7 @@ export async function getPersonsCountPerBuilding(db: Database): Promise<
 		});
 	} catch (err: unknown) {
 		throw new Error(
-			`Failed to get inside count of persons per building from database: ${(err as Error).message}}`
+			`Failed to get inside count of persons per building from database: ${(err as Error).message}`
 		);
 	}
 }

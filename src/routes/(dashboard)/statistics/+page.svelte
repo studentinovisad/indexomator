@@ -23,6 +23,7 @@
 		}
 	});
 
+	const allTypes = $derived(actionData?.allTypes ?? data.allTypes);
 	const personsInsideCount = $derived(actionData?.personsInsideCount ?? data.personsInsideCount);
 	const personsCountPerType = $derived(actionData?.personsCountPerType ?? data.personsCountPerType);
 	const personsCountPerDepartment = $derived(
@@ -52,7 +53,7 @@
 					<Card.Description>Check how many people are currently inside.</Card.Description>
 				</Card.Header>
 				<Card.Content>
-					<CountInside {personsInsideCount} />
+					<CountInside {allTypes} {personsInsideCount} />
 				</Card.Content>
 				<Card.Footer>
 					<Button type="submit" class="mx-auto">Refresh</Button>

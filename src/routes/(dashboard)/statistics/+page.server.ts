@@ -1,4 +1,5 @@
 import {
+	getAllPersonTypes,
 	getPersonsCountPerType,
 	getPersonsCountPerBuilding,
 	getPersonsCountPerDepartment,
@@ -11,17 +12,20 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const { database } = locals;
 
 	try {
+		const allTypesP = getAllPersonTypes(database);
 		const personsInsideCountP = getPersonsCountPerBuilding(database);
 		const personsCountPerTypeP = getPersonsCountPerType(database);
 		const personsCountPerDepartmentP = getPersonsCountPerDepartment(database);
 		const personsCountPerUniversityP = getPersonsCountPerUniversity(database);
 
+		const allTypes = await allTypesP;
 		const personsInsideCount = await personsInsideCountP;
 		const personsCountPerType = await personsCountPerTypeP;
 		const personsCountPerDepartment = await personsCountPerDepartmentP;
 		const personsCountPerUniversity = await personsCountPerUniversityP;
 
 		return {
+			allTypes,
 			personsInsideCount,
 			personsCountPerType,
 			personsCountPerDepartment,
@@ -37,17 +41,20 @@ export const actions: Actions = {
 		const { database } = locals;
 
 		try {
+			const allTypesP = getAllPersonTypes(database);
 			const personsInsideCountP = getPersonsCountPerBuilding(database);
 			const personsCountPerTypeP = getPersonsCountPerType(database);
 			const personsCountPerDepartmentP = getPersonsCountPerDepartment(database);
 			const personsCountPerUniversityP = getPersonsCountPerUniversity(database);
 
+			const allTypes = await allTypesP;
 			const personsInsideCount = await personsInsideCountP;
 			const personsCountPerType = await personsCountPerTypeP;
 			const personsCountPerDepartment = await personsCountPerDepartmentP;
 			const personsCountPerUniversity = await personsCountPerUniversityP;
 
 			return {
+				allTypes,
 				personsInsideCount,
 				personsCountPerType,
 				personsCountPerDepartment,
