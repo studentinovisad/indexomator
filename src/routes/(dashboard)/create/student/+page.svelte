@@ -8,6 +8,7 @@
 	import { toast } from 'svelte-sonner';
 	import { createFormSchema } from './schema';
 	import { page } from '$app/stores';
+	import { rectorateMode } from '$lib/utils/envPublic';
 
 	let { data, form: actionData } = $props();
 
@@ -66,24 +67,45 @@
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Field form={createForm} name="department">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Form.Label>Department</Form.Label>
-						<Select.Root type="single" bind:value={$createFormData.department} name={props.name}>
-							<Select.Trigger {...props}>
-								{$createFormData.department ?? 'Select the department for the student'}
-							</Select.Trigger>
-							<Select.Content>
-								{#each data.departments as { id, name } (id)}
-									<Select.Item value={name} label={name} />
-								{/each}
-							</Select.Content>
-						</Select.Root>
-					{/snippet}
-				</Form.Control>
-				<Form.FieldErrors />
-			</Form.Field>
+			{#if rectorateMode}
+				<Form.Field form={createForm} name="university">
+					<Form.Control>
+						{#snippet children({ props })}
+							<Form.Label>University</Form.Label>
+							<Select.Root type="single" bind:value={$createFormData.university} name={props.name}>
+								<Select.Trigger {...props}>
+									{$createFormData.university ?? 'Select the university for the student'}
+								</Select.Trigger>
+								<Select.Content>
+									{#each data.universities as { id, name } (id)}
+										<Select.Item value={name} label={name} />
+									{/each}
+								</Select.Content>
+							</Select.Root>
+						{/snippet}
+					</Form.Control>
+					<Form.FieldErrors />
+				</Form.Field>
+			{:else}
+				<Form.Field form={createForm} name="department">
+					<Form.Control>
+						{#snippet children({ props })}
+							<Form.Label>Department</Form.Label>
+							<Select.Root type="single" bind:value={$createFormData.department} name={props.name}>
+								<Select.Trigger {...props}>
+									{$createFormData.department ?? 'Select the department for the student'}
+								</Select.Trigger>
+								<Select.Content>
+									{#each data.departments as { id, name } (id)}
+										<Select.Item value={name} label={name} />
+									{/each}
+								</Select.Content>
+							</Select.Root>
+						{/snippet}
+					</Form.Control>
+					<Form.FieldErrors />
+				</Form.Field>
+			{/if}
 			<Form.Button>Submit</Form.Button>
 		</Card.Content>
 	</Card.Root>

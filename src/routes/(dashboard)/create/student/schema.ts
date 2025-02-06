@@ -5,6 +5,7 @@ export const createFormSchema = z.object({
 	fname: z.string().min(1).max(50).regex(nameRegExp, nameRegExpMsg),
 	lname: z.string().min(1).max(50).regex(nameRegExp, nameRegExpMsg),
 	identifier: z.string().regex(indexRegExp, indexRegExpMsg),
+	university: z.string().optional(),
 	department: z.string().optional()
 });
 

@@ -529,6 +529,21 @@ export async function createStudent(
 	});
 }
 
+// Creates a student in rectorate mode (uni. instead of dept.) (person)
+export async function createStudentRectorateMode(
+	db: Database,
+	identifier: string,
+	fname: string,
+	lname: string,
+	university: string | undefined,
+	building: string,
+	creator: string
+): Promise<PersonLight> {
+	return await createPerson(db, identifier, Student, fname, lname, building, creator, {
+		university
+	});
+}
+
 // Creates a guest (person)
 export async function createGuest(
 	db: Database,

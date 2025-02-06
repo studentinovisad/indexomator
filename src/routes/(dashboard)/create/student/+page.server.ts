@@ -2,11 +2,13 @@ import { error, fail, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 
-import { createStudent } from '$lib/server/db/person';
+import { createStudent, createStudentRectorateMode } from '$lib/server/db/person';
 import { getDepartments } from '$lib/server/db/department';
 
 import { createFormSchema } from './schema';
 import type { PageServerLoad } from './$types';
+import { getUniversities } from '$lib/server/db/university';
+import { rectorateMode } from '$lib/utils/envPublic';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const { database } = locals;
@@ -14,11 +16,16 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const createForm = await superValidate(zod(createFormSchema));
 
 	try {
-		const departments = await getDepartments(database);
+		const departmentsP = getDepartments(database);
+		const universitiesP = getUniversities(database);
+
+		const departments = await departmentsP;
+		const universities = await universitiesP;
 
 		return {
 			createForm,
-			departments
+			departments,
+			universities
 		};
 	} catch (err: unknown) {
 		return error(500, `Failed to load data: ${(err as Error).message}`);
@@ -44,12 +51,24 @@ export const actions: Actions = {
 			});
 		}
 
-		const { identifier, fname, lname, department } = createForm.data;
+		const { identifier, fname, lname, department, university } = createForm.data;
 		const building = locals.session.building;
 		const creator = locals.user.username;
 
 		try {
-			await createStudent(database, identifier, fname, lname, department, building, creator);
+			if (rectorateMode) {
+				await createStudentRectorateMode(
+					database,
+					identifier,
+					fname,
+					lname,
+					university,
+					building,
+					creator
+				);
+			} else {
+				await createStudent(database, identifier, fname, lname, department, building, creator);
+			}
 
 			return {
 				createForm,
