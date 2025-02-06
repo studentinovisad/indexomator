@@ -6,7 +6,7 @@
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
 	import { formSchema } from './schema';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	let { data, form: actionData } = $props();
 
@@ -15,7 +15,7 @@
 		onUpdated: ({ form: f }) => {
 			if (actionData?.message === undefined) return;
 			const msg = actionData.message;
-			if (f.valid && $page.status === 200) {
+			if (f.valid && page.status === 200) {
 				toast.success(msg);
 			} else {
 				toast.error(msg);

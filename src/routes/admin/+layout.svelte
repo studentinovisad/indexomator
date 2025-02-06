@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import AppSidebar from '$lib/components/custom/sidebar/admin-sidebar.svelte';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
@@ -14,15 +14,15 @@
 			<div class="ml-2"><Sidebar.Trigger /></div>
 			<Separator orientation="vertical" class="mr-10 h-4" />
 			<h1 class="text-lg">
-				{#if $page.url.pathname === '/admin/create/department'}
+				{#if page.url.pathname === '/admin/create/department'}
 					Create Department
-				{:else if $page.url.pathname === '/admin/create/university'}
+				{:else if page.url.pathname === '/admin/create/university'}
 					Create University
-				{:else if $page.url.pathname === '/admin/create/building'}
+				{:else if page.url.pathname === '/admin/create/building'}
 					Create Building
-				{:else if $page.url.pathname === '/admin/nuke'}
+				{:else if page.url.pathname === '/admin/nuke'}
 					Nuke Building
-				{:else if $page.url.pathname === '/admin/user/register'}
+				{:else if page.url.pathname === '/admin/user/register'}
 					Register User
 				{:else}
 					Admin Homepage
