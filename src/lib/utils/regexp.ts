@@ -1,4 +1,4 @@
-import { indexRegex } from './env';
+import { indexRegex } from '$lib/utils/env';
 
 export const nameRegExp = /^[a-zA-ZčČćĆǆǄđĐšŠžŽ]+(?:(?:\s|-)[a-zA-ZčČćĆǆǄđĐšŠžŽ]+)?\s*$/;
 export const nameRegExpMsg = 'String must be 1-2 word(s) seperated by space or dash (-)';
