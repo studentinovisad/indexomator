@@ -499,6 +499,7 @@ export async function createGuest(
 
 // Checks if a guarantor exists in the database and is not a guest
 async function validGuarantor(db: Database, guarantorId: number): Promise<boolean> {
+	// Check guarantor type
 	const [{ type }] = await db
 		.select({ type: person.type })
 		.from(person)
@@ -508,7 +509,65 @@ async function validGuarantor(db: Database, guarantorId: number): Promise<boolea
 		throw new Error('Invalid type from DB (not PersonType)');
 	}
 
-	return type !== Guest;
+	// Guarantor must not be a guest
+	if (type === Guest) {
+		return false;
+	}
+
+	// Check guarantor total hours spent
+	const timestampPairsSubquery = db
+		.select({
+			entryTimestamp: sql`${personEntry.timestamp}`.as('entryTimestamp'),
+			exitTimestamp: sql`${personExit.timestamp}`.as('exitTimestamp')
+		})
+		.from(person)
+		.leftJoin(personEntry, eq(personEntry.personId, person.id))
+		.leftJoin(personExit, eq(personExit.personId, person.id))
+		.where(
+			and(
+				eq(person.id, guarantorId),
+				or(
+					isNull(personExit.timestamp),
+					eq(
+						personExit.timestamp,
+						db
+							.select({
+								timestamp: min(personExit.timestamp).as('min_exit_timestamp')
+							})
+							.from(personExit)
+							.where(
+								and(
+									gt(personExit.timestamp, personEntry.timestamp),
+									eq(personExit.personId, person.id)
+								)
+							)
+					)
+				)
+			)
+		)
+		.as('timestamp_pairs');
+
+	const hoursSpentSubQuery = db
+		.with(timestampPairsSubquery)
+		.select({
+			hoursSpent: sql<number>`
+					extract(epoch from (${timestampPairsSubquery.exitTimestamp} - ${timestampPairsSubquery.entryTimestamp})) / 3600`.as(
+				'hours_spent'
+			)
+		})
+		.from(timestampPairsSubquery)
+		.where(isNotNull(timestampPairsSubquery.exitTimestamp))
+		.as('hours_spent');
+
+	const [{ totalHoursSpent }] = await db
+		.select({
+			totalHoursSpent: sum(hoursSpentSubQuery.hoursSpent).mapWith(Number).as('total_hours_spent')
+		})
+		.from(hoursSpentSubQuery)
+		.where(lt(hoursSpentSubQuery.hoursSpent, hoursSpentCutoffHours));
+
+	// Guarantor total hours spent must be greater than or equal to guarantorEligibilityHours
+	return totalHoursSpent >= guarantorEligibilityHours;
 }
 
 // Creates a person and the entry timestamp
@@ -577,8 +636,9 @@ export async function createPerson(
 	try {
 		return await db.transaction(async (tx) => {
 			// Check if the guarantor is valid
-			if (guarantorId && !validGuarantor(tx, guarantorId)) {
-				throw new Error('Guarantor not valid');
+			if (guarantorId) {
+				const valid = await validGuarantor(tx, guarantorId);
+				if (!valid) throw new Error('Guarantor not valid');
 			}
 
 			// Create the person
@@ -634,8 +694,9 @@ export async function togglePersonState(
 	try {
 		return await db.transaction(async (tx) => {
 			// Check if the guarantor is valid
-			if (guarantorId && !validGuarantor(tx, guarantorId)) {
-				throw new Error('Guarantor not valid');
+			if (guarantorId) {
+				const valid = await validGuarantor(tx, guarantorId);
+				if (!valid) throw new Error('Guarantor not valid');
 			}
 
 			// Get the person entry timestamp and building
