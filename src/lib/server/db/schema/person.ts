@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, timestamp, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, text, timestamp, primaryKey, boolean } from 'drizzle-orm/pg-core';
 import { building } from './building';
 import { department } from './department';
 import { userTable } from './user';
@@ -11,7 +11,8 @@ export const person = pgTable('person', {
 	lname: text('lname').notNull(),
 	department: text('department')
 		.notNull()
-		.references(() => department.name, { onDelete: 'restrict', onUpdate: 'cascade' })
+		.references(() => department.name, { onDelete: 'restrict', onUpdate: 'cascade' }),
+	isBanned: boolean('is_banned').notNull().default(false)
 });
 
 export const personEntry = pgTable(

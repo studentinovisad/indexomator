@@ -8,6 +8,9 @@ import { isInside } from '../isInside';
 import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
 import { building } from './schema/building';
 import { isPersonType, type PersonType } from '$lib/types/person';
+import type { RowList } from 'postgres';
+
+
 
 // Gets all persons using optional filters
 export async function getPersons(
@@ -418,6 +421,14 @@ export async function getPersonTypes(db: Database): Promise<PersonType[]> {
 		}, [] as PersonType[]);
 	} catch (err) {
 		throw new Error(`Failed to get persons types from database: ${(err as Error).message}`);
+	}
+}
+
+export async function banPerson(db: Database, studentId: any): Promise<RowList<never[]>> {
+	try {
+		return await db.update(person).set({ isBanned: true }).where(eq(person.id, studentId));
+	} catch (err) {
+		throw new Error(`Failed to ban student in database: ${(err as Error).message}`);
 	}
 }
 
