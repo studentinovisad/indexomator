@@ -2,11 +2,10 @@ import { renderComponent } from '$lib/components/ui/data-table';
 import type { Person } from '$lib/types/person';
 import type { ColumnDef } from '@tanstack/table-core';
 import DataTableActions from './data-table-actions.svelte';
-import type { ToggleStateFormValidated } from './schema';
 
 export function createColumns(
 	userBuilding: string,
-	toggleStateFormValidated: ToggleStateFormValidated
+	toggleStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void
 ): ColumnDef<Person>[] {
 	return [
 		{
@@ -51,7 +50,7 @@ export function createColumns(
 					personState: row.original.state,
 					building: row.original.building,
 					userBuilding,
-					toggleStateFormValidated
+					toggleStateFormSubmit
 				});
 			},
 			enableSorting: false,

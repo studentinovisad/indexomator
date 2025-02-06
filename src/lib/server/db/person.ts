@@ -179,7 +179,7 @@ export async function getPersons(
 								guarantorSearch
 									? and(
 											not(eq(person.type, Guest)),
-											gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
+											gte(totalHoursSpentSubQuery.totalHoursSpent, 0)
 										)
 									: undefined,
 								or(
@@ -243,10 +243,7 @@ export async function getPersons(
 						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
 						.where(
 							guarantorSearch
-								? and(
-										not(eq(person.type, Guest)),
-										gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
-									)
+								? and(not(eq(person.type, Guest)), gte(totalHoursSpentSubQuery.totalHoursSpent, 0))
 								: undefined
 						)
 						.groupBy(

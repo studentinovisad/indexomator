@@ -18,7 +18,7 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
-	import { guarantorSearchFormSchema, searchFormSchema } from './schema';
+	import { guarantorSearchFormSchema, searchFormSchema, toggleStateFormSchema } from './schema';
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
 	import { cn } from '$lib/utils';
@@ -29,8 +29,6 @@
 	import { guarantorDialogStore } from '$lib/stores/guarantorDialog.svelte';
 
 	let { data, form: actionData } = $props();
-
-	const columns = $derived(createColumns(data.userBuilding, data.toggleStateForm));
 
 	const searchForm = superForm(data.searchForm, {
 		invalidateAll: false,
@@ -76,13 +74,29 @@
 	let guarantorSearchInput = $state('');
 	let guarantorSearchPopoverOpen = $state(false);
 	const guarantors = $derived(actionData?.guarantors ?? data.guarantors);
-	const selectedGuarantor = $derived(
-		guarantors.find((g) => g.id === guarantorDialogStore.selectedGuarantorId)
-	);
+
+	let selectedGuarantorId: number | undefined = $state(undefined);
+	const selectedGuarantor = $derived(guarantors.find((g) => g.id === selectedGuarantorId));
+
+	const toggleStateForm = superForm(data.toggleStateForm, {
+		validators: zodClient(toggleStateFormSchema),
+		onUpdated: ({ form: f }) => {
+			if (actionData?.message === undefined) return;
+			const msg = actionData.message;
+			if (f.valid && $page.status === 200) {
+				toast.success(msg);
+			} else {
+				toast.error(msg);
+			}
+		}
+	});
+	const { enhance: toggleStateEnhance, submit: toggleStateFormSubmit } = toggleStateForm;
+	const columns = $derived(createColumns(data.userBuilding, toggleStateFormSubmit));
 
 	const triggerId = useId();
 </script>
 
+<!-- Search for persons -->
 <form
 	method="POST"
 	action="?/search"
@@ -157,11 +171,13 @@
 	</Tooltip.Provider>
 </form>
 
+<!-- Data table for persons -->
 <Separator />
 <div class="m-0 sm:m-4">
 	<DataTable data={persons} {columns} />
 </div>
 
+<!-- Dialog for searching guarantors when admiting/tranfering guests -->
 <Dialog.Root bind:open={guarantorDialogStore.dialogOpen}>
 	<Dialog.Content class="sm:max-w-md">
 		<Dialog.Header>
@@ -177,7 +193,7 @@
 					class={cn(
 						buttonVariants({ variant: 'outline' }),
 						'justify-between',
-						!guarantorDialogStore.selectedGuarantorId && 'text-muted-foreground'
+						!selectedGuarantorId && 'text-muted-foreground'
 					)}
 					role="combobox"
 				>
@@ -207,10 +223,10 @@
 								<Command.Item
 									value={`${id}`}
 									onSelect={() => {
-										if (guarantorDialogStore.selectedGuarantorId === id) {
-											guarantorDialogStore.selectedGuarantorId = undefined;
+										if (selectedGuarantorId === id) {
+											selectedGuarantorId = undefined;
 										} else {
-											guarantorDialogStore.selectedGuarantorId = id;
+											selectedGuarantorId = id;
 										}
 
 										// We want to refocus the trigger button when the user selects
@@ -223,12 +239,7 @@
 									}}
 								>
 									{`${fname} ${lname} (${identifier})`}
-									<Check
-										class={cn(
-											'ml-auto',
-											id !== guarantorDialogStore.selectedGuarantorId && 'text-transparent'
-										)}
-									/>
+									<Check class={cn('ml-auto', id !== selectedGuarantorId && 'text-transparent')} />
 								</Command.Item>
 							{/each}
 						</Command.Group>
@@ -240,7 +251,8 @@
 			<Button
 				onclick={() => {
 					guarantorDialogStore.dialogOpen = false;
-					guarantorDialogStore.rowToggleStateForm?.submit();
+					guarantorDialogStore.guarantorId = selectedGuarantorId;
+					tick().then(() => toggleStateForm.submit());
 				}}
 				type="button"
 			>
@@ -251,11 +263,32 @@
 	</Dialog.Content>
 </Dialog.Root>
 
+<!-- Hidden form used to POST action for searching guarantors -->
 <form method="POST" action="?/guarantorSearch" use:guarantorSearchEnhance>
 	<Form.Field class="hidden" form={guarantorSearchForm} name="guarantorSearchQuery">
 		<Form.Control>
 			{#snippet children({ props })}
 				<Input {...props} type="hidden" value={guarantorSearchInput} />
+			{/snippet}
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
+</form>
+
+<!-- Hidden form used to POST action for toggling person state -->
+<form method="POST" action="?/togglestate" use:toggleStateEnhance>
+	<Form.Field class="hidden" form={toggleStateForm} name="personId">
+		<Form.Control>
+			{#snippet children({ props })}
+				<Input {...props} type="hidden" value={guarantorDialogStore.personId} />
+			{/snippet}
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
+	<Form.Field class="hidden" form={toggleStateForm} name="guarantorId">
+		<Form.Control>
+			{#snippet children({ props })}
+				<Input {...props} type="hidden" value={guarantorDialogStore.guarantorId} />
 			{/snippet}
 		</Form.Control>
 		<Form.FieldErrors />

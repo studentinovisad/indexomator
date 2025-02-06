@@ -1,4 +1,3 @@
-import type { SuperValidated } from 'sveltekit-superforms/client';
 import { z } from 'zod';
 
 export const searchFormSchema = z.object({
@@ -11,18 +10,6 @@ export const toggleStateFormSchema = z.object({
 	guarantorId: z.number().optional()
 });
 export type ToggleStateFormSchema = typeof toggleStateFormSchema;
-export type ToggleStateFormValidated = SuperValidated<
-	{
-		personId: number;
-		guarantorId?: number | undefined;
-	},
-	/* eslint-disable @typescript-eslint/no-explicit-any */
-	any,
-	{
-		personId: number;
-		guarantorId?: number | undefined;
-	}
->;
 
 export const guarantorSearchFormSchema = z.object({
 	guarantorSearchQuery: z.string().optional()
