@@ -8,7 +8,7 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { logInFormSchema } from './schema';
 import type { PageServerLoad } from './$types';
 import { getBuildings } from '$lib/server/db/building';
-import { env } from '$env/dynamic/private';
+import { ratelimitMaxAttempts, ratelimitTimeout } from '$lib/server/env';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const { database } = locals;
@@ -43,9 +43,6 @@ export const actions: Actions = {
 		const { username, password, building } = logInForm.data;
 
 		try {
-			const ratelimitMaxAttempts = Number.parseInt(env.RATELIMIT_MAX_ATTEMPTS ?? '5');
-			const ratelimitTimeout = Number.parseInt(env.RATELIMIT_TIMEOUT ?? '60');
-
 			// Check if the username exists
 			const { id, passwordHash } = await getUserIdAndPasswordHash(database, username);
 

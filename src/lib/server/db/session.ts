@@ -4,15 +4,12 @@ import { encodeHexLowerCase } from '@oslojs/encoding';
 import { sha256 } from '@oslojs/crypto/sha2';
 import { userTable } from './schema/user';
 import { sessionTable } from './schema/session';
-import { env } from '$env/dynamic/private';
 import type { Session, User } from '$lib/types/db';
+import { inactivityTimeout, maxActiveSessions } from '$lib/server/env';
 
 export type SessionValidationResult =
 	| { session: Session; user: User }
 	| { session: null; user: null };
-
-export const inactivityTimeout = Number.parseInt(env.INACTIVITY_TIMEOUT ?? '120') * 60 * 1000;
-export const maxActiveSessions = Number.parseInt(env.MAX_ACTIVE_SESSIONS ?? '3');
 
 export async function createSession(
 	db: Database,

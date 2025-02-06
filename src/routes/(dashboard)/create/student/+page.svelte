@@ -8,7 +8,7 @@
 	import { toast } from 'svelte-sonner';
 	import { createFormSchema } from './schema';
 	import { page } from '$app/stores';
-	import { rectorateMode } from '$lib/utils/envPublic';
+	import { rectorateMode } from '$lib/utils/env';
 
 	let { data, form: actionData } = $props();
 

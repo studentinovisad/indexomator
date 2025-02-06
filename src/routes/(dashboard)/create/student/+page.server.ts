@@ -8,7 +8,7 @@ import { getDepartments } from '$lib/server/db/department';
 import { createFormSchema } from './schema';
 import type { PageServerLoad } from './$types';
 import { getUniversities } from '$lib/server/db/university';
-import { rectorateMode } from '$lib/utils/envPublic';
+import { rectorateMode } from '$lib/utils/env';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const { database } = locals;

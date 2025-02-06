@@ -7,7 +7,7 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import * as Command from '$lib/components/ui/command/index.js';
-	import { guarantorEligibilityHours } from '$lib/utils/envPublic';
+	import { guarantorEligibilityHours } from '$lib/utils/env';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import Search from 'lucide-svelte/icons/search';
 	import Reset from 'lucide-svelte/icons/list-restart';

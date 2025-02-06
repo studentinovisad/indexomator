@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { nameRegExp, nameRegExpMsg } from '$lib/utils/regexp';
+import { optionalDepartment } from '$lib/utils/env';
 
 export const createFormSchema = z.object({
 	fname: z.string().min(1).max(50).regex(nameRegExp, nameRegExpMsg),
@@ -9,7 +10,6 @@ export const createFormSchema = z.object({
 		.refine((value) => z.string().email().safeParse(value).success || /^\d{4}$/.test(value), {
 			message: 'Identifier must be a valid email or a 4-digit number'
 		}),
-	department: z.string().optional()
+	department: optionalDepartment ? z.string().optional() : z.string()
 });
-
 export type CreateFormSchema = typeof createFormSchema;

@@ -32,8 +32,8 @@ import {
 	type PersonLight,
 	type PersonType
 } from '$lib/types/person';
-import { guarantorEligibilityHours } from '$lib/utils/envPublic';
-import { hoursSpentCutoffHours } from '$lib/utils/envPrivate';
+import { guarantorEligibilityHours } from '$lib/utils/env';
+import { hoursSpentCutoffHours } from '$lib/server/env';
 
 type searchOptions = {
 	searchQuery?: string;
