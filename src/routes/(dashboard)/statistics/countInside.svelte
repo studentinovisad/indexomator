@@ -2,38 +2,22 @@
 	import type { PersonType } from '$lib/types/person';
 
 	let {
+		allTypes,
 		personsInsideCount
 	}: {
+		allTypes: PersonType[];
 		personsInsideCount: {
 			type: PersonType | null;
 			building: string;
-			insideCount: number;
+			count: number;
 		}[];
 	} = $props();
 
-	const allTypes = $derived(
-		personsInsideCount
-			.filter(
-				(
-					d
-				): d is {
-					type: PersonType;
-					building: string;
-					insideCount: number;
-				} => d.type !== null
-			)
-			.filter((item, index, self) => self.findIndex((other) => other.type === item.type) === index)
-			.map((d) => ({
-				type: d.type,
-				insideCount: 0
-			}))
-			.sort((t1, t2) => t1.type.localeCompare(t2.type))
-	);
 	const buildings = $derived.by(() => {
 		const dataMap = personsInsideCount.reduce(
-			(acc, { building, type, insideCount }) => {
+			(acc, { building, type, count }) => {
 				if (!acc[building]) acc[building] = {} as Record<PersonType, number>;
-				if (type !== null) acc[building][type] = insideCount;
+				if (type !== null) acc[building][type] = count;
 				return acc;
 			},
 			{} as Record<string, Record<PersonType, number>>
@@ -43,11 +27,14 @@
 			.map(([building, types]) => ({
 				building,
 				types: [
-					...Object.entries(types).map(([type, insideCount]) => ({
+					...Object.entries(types).map(([type, count]) => ({
 						type: type as PersonType,
-						insideCount
+						count
 					})),
-					...allTypes
+					...allTypes.map((type) => ({
+						type,
+						count: 0
+					}))
 				]
 					.filter(
 						(item, index, self) => self.findIndex((other) => other.type === item.type) === index
@@ -62,7 +49,7 @@
 	<thead>
 		<tr>
 			<th class="w-1/3">Building</th>
-			{#each allTypes as { type }}
+			{#each allTypes as type}
 				<th class="w-1/3">{type}</th>
 			{/each}
 		</tr>
@@ -71,8 +58,8 @@
 		{#each buildings as { building, types }}
 			<tr>
 				<td>{building}</td>
-				{#each types as { insideCount }}
-					<td>{insideCount}</td>
+				{#each types as { count }}
+					<td>{count}</td>
 				{/each}
 			</tr>
 		{/each}

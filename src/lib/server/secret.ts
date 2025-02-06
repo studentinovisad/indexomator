@@ -1,4 +1,4 @@
-import { env } from '$env/dynamic/private';
+import { secret as secretEnv } from '$lib/server/env';
 import { hashPassword, verifyPasswordHash } from './password';
 
 export async function validateSecret(secret: string): Promise<boolean> {
@@ -7,7 +7,6 @@ export async function validateSecret(secret: string): Promise<boolean> {
 		throw new Error('Invalid secret');
 	}
 
-	const secretEnv = env.SECRET;
 	// Assert that the secret env exists
 	if (secretEnv === null || secretEnv === undefined || secretEnv === '') {
 		throw new Error('SECRET env is not defined or empty string');

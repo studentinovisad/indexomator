@@ -1,17 +1,107 @@
 <script lang="ts">
-	import { ArrowLeftRight } from 'lucide-svelte';
-	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/button/button.svelte';
-	import { Input } from '$lib/components/ui/input';
-	import { searchStore } from '$lib/stores/search.svelte';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import Button, { buttonVariants } from '$lib/components/ui/button/button.svelte';
+	import { guarantorDialogStore } from '$lib/stores/guarantorDialog.svelte';
+	import { StateInside, type State } from '$lib/types/state';
+	import { Guest, type PersonType } from '$lib/types/person';
+	import { ArrowLeftRight, LogIn, LogOut } from 'lucide-svelte';
+	import { tick } from 'svelte';
+	import { cn } from '$lib/utils';
 
-	let { id, type }: { id: number; type: string } = $props();
+	let {
+		personId,
+		guarantorFname,
+		guarantorLname,
+		guarantorIdentifier,
+		personType,
+		personState,
+		building,
+		userBuilding,
+		toggleStateFormSubmit
+	}: {
+		personId: number;
+		guarantorFname: string | null;
+		guarantorLname: string | null;
+		guarantorIdentifier: string | null;
+		personType: PersonType;
+		personState: State;
+		building: string | null;
+		userBuilding: string;
+		toggleStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void;
+	} = $props();
+
+	const inside = $derived(personState === StateInside);
+	const sameBuilding = $derived(userBuilding === building);
 </script>
 
-<form method="POST" action="?/togglestate" class="w-full" use:enhance>
-	<Input type="hidden" name="q" value={searchStore.query} />
-	<Input type="hidden" name="type" value={type} />
-	<Button variant="outline" type="submit" name="id" value={id} class="w-full">
-		<ArrowLeftRight /> <span class="hidden sm:block">Toggle State</span>
+{#if inside && sameBuilding}
+	{#if guarantorFname && guarantorLname && guarantorIdentifier}
+		<Tooltip.Provider>
+			<Tooltip.Root>
+				<Tooltip.Trigger
+					onclick={() => {
+						guarantorDialogStore.personId = personId;
+						guarantorDialogStore.guarantorId = undefined;
+						tick().then(() => toggleStateFormSubmit());
+					}}
+					class={cn('w-full', buttonVariants({ variant: 'outline' }))}
+				>
+					<LogOut />
+					<span class="hidden sm:block">Release</span>
+				</Tooltip.Trigger>
+				<Tooltip.Content>
+					<span>{guarantorFname} {guarantorLname} ({guarantorIdentifier})</span>
+				</Tooltip.Content>
+			</Tooltip.Root>
+		</Tooltip.Provider>
+	{:else}
+		<Button
+			onclick={() => {
+				guarantorDialogStore.personId = personId;
+				guarantorDialogStore.guarantorId = undefined;
+				tick().then(() => toggleStateFormSubmit());
+			}}
+			variant="outline"
+			class="w-full"
+		>
+			<LogOut />
+			<span class="hidden sm:block">Release</span>
+		</Button>
+	{/if}
+{:else if personType !== Guest}
+	<Button
+		onclick={() => {
+			guarantorDialogStore.personId = personId;
+			guarantorDialogStore.guarantorId = undefined;
+			tick().then(() => toggleStateFormSubmit());
+		}}
+		variant="outline"
+		class="w-full"
+	>
+		{#if inside}
+			<ArrowLeftRight />
+			<span class="hidden sm:block">Transfer</span>
+		{:else}
+			<LogIn />
+			<span class="hidden sm:block">Admit</span>
+		{/if}
 	</Button>
-</form>
+{:else}
+	<Button
+		onclick={() => {
+			guarantorDialogStore.dialogOpen = true;
+			guarantorDialogStore.personId = personId;
+		}}
+		type="button"
+		variant="outline"
+		class="w-full"
+	>
+		{#if inside}
+			<ArrowLeftRight />
+			<span class="hidden sm:block">Transfer</span>
+		{:else}
+			<LogIn />
+			<span class="hidden sm:block">Admit</span>
+		{/if}
+	</Button>
+{/if}

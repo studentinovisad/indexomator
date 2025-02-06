@@ -2,43 +2,47 @@ import { createSession, invalidateExcessSessions } from '$lib/server/db/session'
 import { checkUserRatelimit, getUserIdAndPasswordHash } from '$lib/server/db/user';
 import { verifyPasswordHash } from '$lib/server/password';
 import { generateSessionToken, setSessionTokenCookie } from '$lib/server/session';
-import { fail, redirect, type Actions } from '@sveltejs/kit';
+import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import { formSchema } from './schema';
+import { logInFormSchema } from './schema';
 import type { PageServerLoad } from './$types';
 import { getBuildings } from '$lib/server/db/building';
-import { env } from '$env/dynamic/private';
+import { ratelimitMaxAttempts, ratelimitTimeout } from '$lib/server/env';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const { database } = locals;
-	const form = await superValidate(zod(formSchema));
-	const buildings = await getBuildings(database);
 
-	return {
-		form,
-		buildings
-	};
+	const logInForm = await superValidate(zod(logInFormSchema));
+
+	try {
+		const buildings = await getBuildings(database);
+
+		return {
+			logInForm,
+			buildings
+		};
+	} catch (err: unknown) {
+		return error(500, `Failed to load data: ${(err as Error).message}`);
+	}
 };
 
 export const actions: Actions = {
 	default: async (event) => {
 		const { locals, request } = event;
 		const { database } = locals;
-		const ratelimitMaxAttempts = Number.parseInt(env.RATELIMIT_MAX_ATTEMPTS ?? '5');
-		const ratelimitTimeout = Number.parseInt(env.RATELIMIT_TIMEOUT ?? '60');
 
-		const form = await superValidate(request, zod(formSchema));
-		if (!form.valid) {
+		const logInForm = await superValidate(request, zod(logInFormSchema));
+		if (!logInForm.valid) {
 			return fail(400, {
-				form,
+				logInForm,
 				message: 'Invalid form inputs'
 			});
 		}
 
-		try {
-			const { username, password, building } = form.data;
+		const { username, password, building } = logInForm.data;
 
+		try {
 			// Check if the username exists
 			const { id, passwordHash } = await getUserIdAndPasswordHash(database, username);
 
@@ -52,7 +56,7 @@ export const actions: Actions = {
 			if (ratelimited) {
 				console.warn(`Ratelimited by IP: ${event.getClientAddress()}`);
 				return fail(401, {
-					form,
+					logInForm,
 					message: `Ratelimited, please wait ${ratelimitTimeout}s before trying again`
 				});
 			}
@@ -71,14 +75,15 @@ export const actions: Actions = {
 			// Invalidate sessions that exceed the maximum number of sessions
 			await invalidateExcessSessions(database, id);
 		} catch (err: unknown) {
+			// WARN: Don't return the real error message back to user since this is publicly available
 			console.debug(`Failed to login: ${(err as Error).message}`);
 			return fail(401, {
-				form,
+				logInForm,
 				message: 'Invalid username or password'
 			});
 		}
 
-		// Redirect to the home page
+		// Has to be outside of try-catch because it throws a redirect
 		return redirect(302, '/');
 	}
 };

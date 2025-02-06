@@ -1,16 +1,11 @@
 <script lang="ts">
-	import House from 'lucide-svelte/icons/house';
-	import Building from 'lucide-svelte/icons/building';
-	import Cuboid from 'lucide-svelte/icons/cuboid';
-	import KeyRound from 'lucide-svelte/icons/key-round';
-	import Bomb from 'lucide-svelte/icons/bomb';
-	import Github from 'lucide-svelte/icons/github';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import SidebarFooter from '$lib/components/ui/sidebar/sidebar-footer.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
 	import LogoLight from '$lib/assets/images/light.svg';
 	import LogoDark from '$lib/assets/images/dark.svg';
+	import { Bomb, Building, Cuboid, Github, House, KeyRound, University } from 'lucide-svelte';
 
 	// Menu items.
 	const items = [
@@ -25,19 +20,24 @@
 			icon: Cuboid
 		},
 		{
+			title: 'Create University',
+			url: '/admin/create/university',
+			icon: University
+		},
+		{
 			title: 'Create Building',
 			url: '/admin/create/building',
 			icon: Building
 		},
 		{
-			title: 'Register User',
-			url: '/admin/register',
-			icon: KeyRound
-		},
-		{
 			title: 'Nuke Building',
 			url: '/admin/nuke',
 			icon: Bomb
+		},
+		{
+			title: 'Register User',
+			url: '/admin/user/register',
+			icon: KeyRound
 		}
 	];
 
@@ -63,7 +63,8 @@
 							>
 								{#snippet child({ props })}
 									<a href={item.url} {...props}>
-										<item.icon /> <span class="select-none">{item.title}</span>
+										<item.icon />
+										<span class="select-none">{item.title}</span>
 									</a>
 								{/snippet}
 							</Sidebar.MenuButton>
@@ -75,7 +76,8 @@
 	</Sidebar.Content>
 	<SidebarFooter>
 		<Button variant="link" href="https://github.com/studentinovisad/indexomator">
-			<Github /> <span>Contribute</span>
+			<Github />
+			<span>Contribute</span>
 		</Button>
 	</SidebarFooter>
 </Sidebar.Root>
