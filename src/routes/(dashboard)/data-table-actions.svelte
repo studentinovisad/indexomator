@@ -1,13 +1,18 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/button/button.svelte';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import Button, { buttonVariants } from '$lib/components/ui/button/button.svelte';
 	import { guarantorDialogStore } from '$lib/stores/guarantorDialog.svelte';
 	import { StateInside, type State } from '$lib/types/state';
 	import { Guest, type PersonType } from '$lib/types/person';
 	import { ArrowLeftRight, LogIn, LogOut } from 'lucide-svelte';
 	import { tick } from 'svelte';
+	import { cn } from '$lib/utils';
 
 	let {
 		personId,
+		guarantorFname,
+		guarantorLname,
+		guarantorIdentifier,
 		personType,
 		personState,
 		building,
@@ -15,6 +20,9 @@
 		toggleStateFormSubmit
 	}: {
 		personId: number;
+		guarantorFname: string | null;
+		guarantorLname: string | null;
+		guarantorIdentifier: string | null;
 		personType: PersonType;
 		personState: State;
 		building: string | null;
@@ -27,18 +35,39 @@
 </script>
 
 {#if inside && sameBuilding}
-	<Button
-		onclick={() => {
-			guarantorDialogStore.personId = personId;
-			guarantorDialogStore.guarantorId = undefined;
-			tick().then(() => toggleStateFormSubmit());
-		}}
-		variant="outline"
-		class="w-full"
-	>
-		<LogOut />
-		<span class="hidden sm:block">Release</span>
-	</Button>
+	{#if guarantorFname && guarantorLname && guarantorIdentifier}
+		<Tooltip.Provider>
+			<Tooltip.Root>
+				<Tooltip.Trigger
+					onclick={() => {
+						guarantorDialogStore.personId = personId;
+						guarantorDialogStore.guarantorId = undefined;
+						tick().then(() => toggleStateFormSubmit());
+					}}
+					class={cn('w-full', buttonVariants({ variant: 'outline' }))}
+				>
+					<LogOut />
+					<span class="hidden sm:block">Release</span>
+				</Tooltip.Trigger>
+				<Tooltip.Content>
+					<span>{guarantorFname} {guarantorLname} ({guarantorIdentifier})</span>
+				</Tooltip.Content>
+			</Tooltip.Root>
+		</Tooltip.Provider>
+	{:else}
+		<Button
+			onclick={() => {
+				guarantorDialogStore.personId = personId;
+				guarantorDialogStore.guarantorId = undefined;
+				tick().then(() => toggleStateFormSubmit());
+			}}
+			variant="outline"
+			class="w-full"
+		>
+			<LogOut />
+			<span class="hidden sm:block">Release</span>
+		</Button>
+	{/if}
 {:else if personType !== Guest}
 	<Button
 		onclick={() => {

@@ -16,6 +16,19 @@ export function isPersonType(s: string): s is PersonType {
 	}
 }
 
+export type PersonLight = {
+	id: number;
+	type: PersonType;
+	identifier: string;
+	fname: string;
+	lname: string;
+	department: string | null;
+	university: string | null;
+	building: string | null;
+	guarantorId: number | null;
+	state: State;
+};
+
 export type Person = {
 	id: number;
 	type: PersonType;
@@ -26,5 +39,8 @@ export type Person = {
 	university: string | null;
 	building: string | null;
 	guarantorId: number | null;
+	guarantorFname: string | null;
+	guarantorLname: string | null;
+	guarantorIdentifier: string | null;
 	state: State;
 };

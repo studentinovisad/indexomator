@@ -46,6 +46,9 @@ export function createColumns(
 			cell: ({ row }) => {
 				return renderComponent(DataTableActions, {
 					personId: row.original.id,
+					guarantorFname: row.original.guarantorFname,
+					guarantorLname: row.original.guarantorLname,
+					guarantorIdentifier: row.original.guarantorIdentifier,
 					personType: row.original.type,
 					personState: row.original.state,
 					building: row.original.building,

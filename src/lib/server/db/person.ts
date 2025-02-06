@@ -29,6 +29,7 @@ import {
 	isPersonType,
 	Student,
 	type Person,
+	type PersonLight,
 	type PersonType
 } from '$lib/types/person';
 import { guarantorEligibilityHours } from '$lib/utils/envPublic';
@@ -130,6 +131,16 @@ export async function getPersons(
 			.groupBy(hoursSpentSubQuery.personId)
 			.as('total_hours_spent');
 
+		const guarantorInfoSubQuery = db
+			.select({
+				id: person.id,
+				fname: person.fname,
+				lname: person.lname,
+				identifier: person.identifier
+			})
+			.from(person)
+			.as('guarantor_info');
+
 		const persons =
 			nonEmptySearchQuery !== undefined
 				? await db
@@ -144,6 +155,9 @@ export async function getPersons(
 							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 							entryBuilding: personEntry.building,
 							entryGuarantorId: personEntry.guarantorId,
+							entryGuarantorFname: guarantorInfoSubQuery.fname,
+							entryGuarantorLname: guarantorInfoSubQuery.lname,
+							entryGuarantorIdentifier: guarantorInfoSubQuery.identifier,
 							exitTimestamp: max(personExit.timestamp),
 							leastDistance: sqlLeast([
 								sqlLevenshteinDistance(sqlConcat([person.identifier]), nonEmptySearchQuery),
@@ -174,6 +188,7 @@ export async function getPersons(
 						)
 						.leftJoin(personExit, eq(person.id, personExit.personId))
 						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
+						.leftJoin(guarantorInfoSubQuery, eq(guarantorInfoSubQuery.id, personEntry.guarantorId))
 						.where(
 							and(
 								guarantorSearch
@@ -207,7 +222,10 @@ export async function getPersons(
 							person.university,
 							maxEntrySubquery.maxEntryTimestamp,
 							personEntry.building,
-							personEntry.guarantorId
+							personEntry.guarantorId,
+							guarantorInfoSubQuery.fname,
+							guarantorInfoSubQuery.lname,
+							guarantorInfoSubQuery.identifier
 						)
 						.orderBy(({ leastDistance, leastDistanceIdentifier, identifier }) => [
 							leastDistance,
@@ -228,6 +246,9 @@ export async function getPersons(
 							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 							entryBuilding: personEntry.building,
 							entryGuarantorId: personEntry.guarantorId,
+							entryGuarantorFname: guarantorInfoSubQuery.fname,
+							entryGuarantorLname: guarantorInfoSubQuery.lname,
+							entryGuarantorIdentifier: guarantorInfoSubQuery.identifier,
 							exitTimestamp: max(personExit.timestamp)
 						})
 						.from(person)
@@ -241,6 +262,7 @@ export async function getPersons(
 						)
 						.leftJoin(personExit, eq(person.id, personExit.personId))
 						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
+						.leftJoin(guarantorInfoSubQuery, eq(guarantorInfoSubQuery.id, personEntry.guarantorId))
 						.where(
 							guarantorSearch
 								? and(
@@ -259,7 +281,10 @@ export async function getPersons(
 							person.university,
 							maxEntrySubquery.maxEntryTimestamp,
 							personEntry.building,
-							personEntry.guarantorId
+							personEntry.guarantorId,
+							guarantorInfoSubQuery.fname,
+							guarantorInfoSubQuery.lname,
+							guarantorInfoSubQuery.identifier
 						)
 						.orderBy(({ identifier }) => [identifier])
 						.limit(limit)
@@ -281,6 +306,9 @@ export async function getPersons(
 				university: p.university,
 				building: inside ? p.entryBuilding : null,
 				guarantorId: inside ? p.entryGuarantorId : null,
+				guarantorFname: inside ? p.entryGuarantorFname : null,
+				guarantorLname: inside ? p.entryGuarantorLname : null,
+				guarantorIdentifier: inside ? p.entryGuarantorIdentifier : null,
 				state: inside ? StateInside : StateOutside
 			};
 		});
@@ -459,7 +487,7 @@ export async function createEmployee(
 	department: string | undefined,
 	building: string,
 	creator: string
-): Promise<Person> {
+): Promise<PersonLight> {
 	return await createPerson(db, identifier, Employee, fname, lname, building, creator, {
 		department
 	});
@@ -474,7 +502,7 @@ export async function createStudent(
 	department: string | undefined,
 	building: string,
 	creator: string
-): Promise<Person> {
+): Promise<PersonLight> {
 	return await createPerson(db, identifier, Student, fname, lname, building, creator, {
 		department
 	});
@@ -490,7 +518,7 @@ export async function createGuest(
 	building: string,
 	creator: string,
 	guarantorId: number | undefined
-): Promise<Person> {
+): Promise<PersonLight> {
 	return await createPerson(db, identifier, Guest, fname, lname, building, creator, {
 		university,
 		guarantorId
@@ -584,7 +612,7 @@ export async function createPerson(
 		university?: string;
 		guarantorId?: number;
 	}
-): Promise<Person> {
+): Promise<PersonLight> {
 	const department = opts.department ?? null;
 	const university = opts.university ?? null;
 	const guarantorId = opts.guarantorId ?? null;
