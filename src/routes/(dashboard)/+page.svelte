@@ -276,7 +276,7 @@
 </form>
 
 <!-- Hidden form used to POST action for toggling person state -->
-<form method="POST" action="?/togglestate" use:toggleStateEnhance>
+<form method="POST" action="?/toggleState" use:toggleStateEnhance>
 	<Form.Field class="hidden" form={toggleStateForm} name="personId">
 		<Form.Control>
 			{#snippet children({ props })}

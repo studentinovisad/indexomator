@@ -71,42 +71,6 @@ export const actions: Actions = {
 			});
 		}
 	},
-	togglestate: async ({ locals, request }) => {
-		const { database } = locals;
-
-		const toggleStateForm = await superValidate(request, zod(toggleStateFormSchema));
-		if (!toggleStateForm.valid) {
-			return fail(400, {
-				toggleStateForm,
-				message: 'Invalid form inputs'
-			});
-		}
-
-		if (locals.session === null || locals.user === null) {
-			return fail(401, {
-				toggleStateForm,
-				message: 'Invalid session'
-			});
-		}
-
-		const { personId } = toggleStateForm.data;
-		const { building } = locals.session;
-		const { username } = locals.user;
-
-		try {
-			await togglePersonState(database, personId, building, username);
-
-			return {
-				toggleStateForm,
-				message: 'Successfully toggled state!'
-			};
-		} catch (err: unknown) {
-			return fail(500, {
-				toggleStateForm,
-				message: `Failed to toggle state: ${(err as Error).message}`
-			});
-		}
-	},
 	guarantorSearch: async ({ locals, request }) => {
 		const { database } = locals;
 
@@ -134,6 +98,42 @@ export const actions: Actions = {
 			return fail(500, {
 				guarantorSearchForm,
 				message: `Failed to search for guarantors: ${(err as Error).message}`
+			});
+		}
+	},
+	toggleState: async ({ locals, request }) => {
+		const { database } = locals;
+
+		const toggleStateForm = await superValidate(request, zod(toggleStateFormSchema));
+		if (!toggleStateForm.valid) {
+			return fail(400, {
+				toggleStateForm,
+				message: 'Invalid form inputs'
+			});
+		}
+
+		if (locals.session === null || locals.user === null) {
+			return fail(401, {
+				toggleStateForm,
+				message: 'Invalid session'
+			});
+		}
+
+		const { personId, guarantorId } = toggleStateForm.data;
+		const { building } = locals.session;
+		const { username } = locals.user;
+
+		try {
+			await togglePersonState(database, personId, building, username, guarantorId);
+
+			return {
+				toggleStateForm,
+				message: 'Successfully toggled state!'
+			};
+		} catch (err: unknown) {
+			return fail(500, {
+				toggleStateForm,
+				message: `Failed to toggle state: ${(err as Error).message}`
 			});
 		}
 	},
