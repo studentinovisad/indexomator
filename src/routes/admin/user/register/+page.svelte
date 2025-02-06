@@ -33,7 +33,7 @@
 <form method="POST" class="flex h-[90dvh] w-full items-center justify-center px-4" use:enhance>
 	<Card.Root class="mx-auto w-full max-w-sm">
 		<Card.Header>
-			<Card.Title class="text-2xl">Register</Card.Title>
+			<Card.Title class="text-2xl">Register user</Card.Title>
 			<Card.Description>Enter credentials for user registration.</Card.Description>
 		</Card.Header>
 		<Card.Content class="grid gap-4">
