@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button, { buttonVariants } from '$lib/components/ui/button/button.svelte';
+	import CommandInput from '$lib/components/custom/command/command-input.svelte';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Form from '$lib/components/ui/form';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
@@ -188,7 +189,7 @@
 			</div>
 			<Popover.Content>
 				<Command.Root shouldFilter={false}>
-					<Command.Input
+					<CommandInput
 						oninput={() => {
 							clearTimeout(guarantorSearchPostTimeout);
 							guarantorSearchPostTimeout = setTimeout(() => {

@@ -4,6 +4,7 @@
 	import * as Select from '$lib/components/ui/select';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import * as Command from '$lib/components/ui/command/index.js';
+	import CommandInput from '$lib/components/custom/command/command-input.svelte';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
@@ -154,7 +155,7 @@
 					</Form.Control>
 					<Popover.Content>
 						<Command.Root shouldFilter={false}>
-							<Command.Input
+							<CommandInput
 								oninput={() => {
 									clearTimeout(postTimeout);
 									postTimeout = setTimeout(() => guarantorSearchForm.submit(), 200);

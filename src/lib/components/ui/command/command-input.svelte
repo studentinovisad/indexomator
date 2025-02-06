@@ -7,6 +7,7 @@
 		ref = $bindable(null),
 		class: className,
 		value = $bindable(''),
+		autofocus = true,
 		...restProps
 	}: CommandPrimitive.InputProps = $props();
 </script>
@@ -21,5 +22,6 @@
 		bind:ref
 		{...restProps}
 		bind:value
+		{autofocus}
 	/>
 </div>
