@@ -1,5 +1,5 @@
 {
-	"id": "d976ece0-5c81-46bc-a88e-0f6189316565",
+	"id": "1e9e2df8-44b5-4721-b653-7db0b99c5a4e",
 	"prevId": "81ee13a7-fe6d-4b61-828e-edba465e15b5",
 	"version": "7",
 	"dialect": "postgresql",
@@ -98,7 +98,13 @@
 					"name": "department",
 					"type": "text",
 					"primaryKey": false,
-					"notNull": true
+					"notNull": false
+				},
+				"university": {
+					"name": "university",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
 				}
 			},
 			"indexes": {},
@@ -111,14 +117,23 @@
 					"columnsTo": ["name"],
 					"onDelete": "restrict",
 					"onUpdate": "cascade"
+				},
+				"person_university_university_name_fk": {
+					"name": "person_university_university_name_fk",
+					"tableFrom": "person",
+					"tableTo": "university",
+					"columnsFrom": ["university"],
+					"columnsTo": ["name"],
+					"onDelete": "restrict",
+					"onUpdate": "cascade"
 				}
 			},
 			"compositePrimaryKeys": {},
 			"uniqueConstraints": {
-				"person_identifier_unique": {
-					"name": "person_identifier_unique",
-					"nullsNotDistinct": false,
-					"columns": ["identifier"]
+				"person_identifier_university_id_unique": {
+					"name": "person_identifier_university_id_unique",
+					"nullsNotDistinct": true,
+					"columns": ["identifier", "university"]
 				}
 			}
 		},
@@ -150,6 +165,12 @@
 					"type": "text",
 					"primaryKey": false,
 					"notNull": false
+				},
+				"guarantor_id": {
+					"name": "guarantor_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
 				}
 			},
 			"indexes": {},
@@ -179,6 +200,15 @@
 					"columnsFrom": ["creator"],
 					"columnsTo": ["username"],
 					"onDelete": "no action",
+					"onUpdate": "cascade"
+				},
+				"person_entry_guarantor_id_person_id_fk": {
+					"name": "person_entry_guarantor_id_person_id_fk",
+					"tableFrom": "person_entry",
+					"tableTo": "person",
+					"columnsFrom": ["guarantor_id"],
+					"columnsTo": ["id"],
+					"onDelete": "restrict",
 					"onUpdate": "cascade"
 				}
 			},
@@ -312,6 +342,34 @@
 			"compositePrimaryKeys": {},
 			"uniqueConstraints": {}
 		},
+		"public.university": {
+			"name": "university",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"university_name_unique": {
+					"name": "university_name_unique",
+					"nullsNotDistinct": false,
+					"columns": ["name"]
+				}
+			}
+		},
 		"public.ratelimit": {
 			"name": "ratelimit",
 			"schema": "",
@@ -372,13 +430,6 @@
 					"type": "text",
 					"primaryKey": false,
 					"notNull": true
-				},
-				"disabled": {
-					"name": "disabled",
-					"type": "boolean",
-					"primaryKey": false,
-					"notNull": true,
-					"default": false
 				}
 			},
 			"indexes": {},

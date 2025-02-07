@@ -11,6 +11,7 @@
 		ChartNoAxesCombined,
 		ClipboardList,
 		Github,
+		Handshake,
 		House
 	} from 'lucide-svelte';
 
@@ -30,6 +31,11 @@
 			title: 'Create Employee',
 			url: '/create/employee',
 			icon: Briefcase
+		},
+		{
+			title: 'Create Guest',
+			url: '/create/guest',
+			icon: Handshake
 		},
 		{
 			title: 'Statistics',

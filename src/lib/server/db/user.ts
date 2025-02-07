@@ -74,17 +74,13 @@ export async function checkUserRatelimit(
 	assertValidUserId(userId);
 
 	// Assert that ratelimitMaxAttempts is valid
-	if (
-		ratelimitMaxAttempts === null ||
-		ratelimitMaxAttempts === undefined ||
-		ratelimitMaxAttempts <= 0
-	) {
-		throw new Error('Invalid ratelimitMaxAttempts');
+	if (ratelimitMaxAttempts <= 0) {
+		throw new Error('Invalid ratelimitMaxAttempts (negative)');
 	}
 
 	// Assert that ratelimitTimeout is valid
-	if (ratelimitTimeout === null || ratelimitTimeout === undefined || ratelimitTimeout <= 0) {
-		throw new Error('Invalid ratelimitTimeout');
+	if (ratelimitTimeout <= 0) {
+		throw new Error('Invalid ratelimitTimeout (negative)');
 	}
 	const ratelimitTimeoutMS = ratelimitTimeout * 1000;
 

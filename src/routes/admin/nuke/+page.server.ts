@@ -1,4 +1,4 @@
-import { fail, type Actions } from '@sveltejs/kit';
+import { error, fail, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { formSchema } from './schema';
@@ -9,22 +9,30 @@ import { getPersonTypes, removePersonsFromBuilding } from '$lib/server/db/person
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const { database } = locals;
-	const form = await superValidate(zod(formSchema));
-	const buildingsP = getBuildings(database);
-	const personTypesP = getPersonTypes(database);
-	const buildings = await buildingsP;
-	const personTypes = await personTypesP;
 
-	return {
-		form,
-		buildings,
-		personTypes
-	};
+	const form = await superValidate(zod(formSchema));
+
+	try {
+		const buildingsP = getBuildings(database);
+		const personTypesP = getPersonTypes(database);
+
+		const buildings = await buildingsP;
+		const personTypes = await personTypesP;
+
+		return {
+			form,
+			buildings,
+			personTypes
+		};
+	} catch (err: unknown) {
+		return error(500, `Failed to load data: ${(err as Error).message}`);
+	}
 };
 
 export const actions: Actions = {
 	default: async ({ locals, request }) => {
 		const { database } = locals;
+
 		const form = await superValidate(request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {
@@ -33,7 +41,6 @@ export const actions: Actions = {
 			});
 		}
 
-		// Check if the secret is correct
 		const secretOk = await validateSecret(form.data.secret);
 		if (!secretOk) {
 			return fail(401, {
@@ -42,20 +49,20 @@ export const actions: Actions = {
 			});
 		}
 
+		const { building, personType } = form.data;
+
 		try {
-			const { building, personType } = form.data;
 			await removePersonsFromBuilding(database, building, personType);
+
+			return {
+				form,
+				message: 'Successfully nuked building! 💥'
+			};
 		} catch (err: unknown) {
-			console.debug(`Failed to nuke building: ${(err as Error).message}`);
-			return fail(400, {
+			return fail(500, {
 				form,
 				message: `Failed to nuke building: ${(err as Error).message}`
 			});
 		}
-
-		return {
-			form,
-			message: 'Building nuked successfully! 💥'
-		};
 	}
 };
