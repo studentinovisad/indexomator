@@ -16,8 +16,6 @@
 			<h1 class="text-lg">
 				{#if page.url.pathname === '/admin/create/department'}
 					Create Department
-				{:else if $page.url.pathname === '/admin/disable'}
-					Disable users
 				{:else if page.url.pathname === '/admin/create/university'}
 					Create University
 				{:else if page.url.pathname === '/admin/create/building'}
@@ -26,6 +24,8 @@
 					Nuke Building
 				{:else if page.url.pathname === '/admin/user/register'}
 					Register User
+				{:else if page.url.pathname === '/admin/user/disable'}
+					Disable User
 				{:else}
 					Admin Homepage
 				{/if}

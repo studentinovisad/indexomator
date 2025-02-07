@@ -30,11 +30,6 @@
 			icon: Building
 		},
 		{
-			title: 'Disable users',
-			url: '/admin/disable',
-			icon: Lock
-		},
-		{
 			title: 'Nuke Building',
 			url: '/admin/nuke',
 			icon: Bomb
@@ -43,6 +38,11 @@
 			title: 'Register User',
 			url: '/admin/user/register',
 			icon: KeyRound
+		},
+		{
+			title: 'Disable User',
+			url: '/admin/user/disable',
+			icon: Lock
 		}
 	];
 

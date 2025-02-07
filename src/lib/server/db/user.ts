@@ -126,16 +126,16 @@ export async function isUserDisabled(db: Database, userId: number): Promise<bool
 
 		return disabled;
 	} catch (err: unknown) {
-		throw new Error(`failed getting user status: ${(err as Error).message}`);
+		throw new Error(`Failed to get user status from database: ${(err as Error).message}`);
 	}
 }
 
 export async function updateUserDisabled(
 	db: Database,
-	userId: number,
+	username: string,
 	newDisabled: boolean
 ): Promise<void> {
-	assertValidUserId(userId);
+	assertValidString(username, 'Invalid username');
 
 	try {
 		await db
@@ -143,9 +143,9 @@ export async function updateUserDisabled(
 			.set({
 				disabled: newDisabled
 			})
-			.where(eq(userTable.id, userId));
+			.where(eq(userTable.username, username));
 	} catch (err: unknown) {
-		throw new Error(`Couldn't update user.disabled: ${(err as Error).message}`);
+		throw new Error(`Failed to update user disabled state in database: ${(err as Error).message}`);
 	}
 }
 
@@ -155,6 +155,8 @@ export async function updateAllUserDisabled(db: Database, newDisabled: boolean):
 			disabled: newDisabled
 		});
 	} catch (err: unknown) {
-		throw new Error(`Couldn't update all user.disabled: ${(err as Error).message}`);
+		throw new Error(
+			`Failed to update all users disabled state in database: ${(err as Error).message}`
+		);
 	}
 }
