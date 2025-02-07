@@ -15,10 +15,7 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	default: async (event) => {
-		const { locals, request } = event;
-		const { database } = locals;
-
+	default: async ({ locals: { database }, request }) => {
 		const form = await superValidate(request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {
@@ -45,10 +42,9 @@ export const actions: Actions = {
 				message: 'Successfully registered user!'
 			};
 		} catch (err: unknown) {
-			console.debug(`Failed to register: ${(err as Error).message}`);
 			return fail(400, {
 				form,
-				message: 'Username already exists or password is too weak'
+				message: `Failed to register: ${(err as Error).message}`
 			});
 		}
 	}

@@ -8,9 +8,7 @@ import { getUniversities } from '$lib/server/db/university';
 import { createFormSchema, guarantorSearchFormSchema } from './schema';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	const { database } = locals;
-
+export const load: PageServerLoad = async ({ locals: { database } }) => {
 	const createForm = await superValidate(zod(createFormSchema));
 	const guarantorSearchForm = await superValidate(zod(guarantorSearchFormSchema));
 
@@ -33,9 +31,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	create: async ({ locals, request }) => {
-		const { database, session, user } = locals;
-
+	create: async ({ locals: { database, session, user }, request }) => {
 		const createForm = await superValidate(request, zod(createFormSchema));
 		if (!createForm.valid) {
 			return fail(400, {
@@ -78,9 +74,7 @@ export const actions: Actions = {
 			});
 		}
 	},
-	guarantorSearch: async ({ locals, request }) => {
-		const { database } = locals;
-
+	guarantorSearch: async ({ locals: { database }, request }) => {
 		const guarantorSearchForm = await superValidate(request, zod(guarantorSearchFormSchema));
 		if (!guarantorSearchForm.valid) {
 			return fail(400, {
