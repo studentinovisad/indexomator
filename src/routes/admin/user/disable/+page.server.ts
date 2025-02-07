@@ -17,7 +17,7 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	disable: async ({ locals: { database }, request }) => {
+	single: async ({ locals: { database }, request }) => {
 		const formOne = await superValidate(request, zod(formOneSchema));
 		if (!formOne.valid) {
 			return fail(400, {
@@ -26,7 +26,8 @@ export const actions: Actions = {
 			});
 		}
 
-		const { username, secret } = formOne.data;
+		const { username, secret, action } = formOne.data;
+		const newDisable = action === 'disable';
 
 		// Check if the secret is correct
 		const secretOk = await validateSecret(secret);
@@ -38,56 +39,21 @@ export const actions: Actions = {
 		}
 
 		try {
-			await updateUserDisabled(database, username, true);
+			await updateUserDisabled(database, username, newDisable);
 		} catch (err: unknown) {
-			console.debug(`Failed to disable user: ${(err as Error).message}`);
+			console.debug(`Failed to ${action} user: ${(err as Error).message}`);
 			return fail(400, {
 				formOne,
-				message: `Failed to disable user: ${(err as Error).message}`
+				message: `Failed to ${action} user: ${(err as Error).message}`
 			});
 		}
 
 		return {
 			formOne,
-			message: 'Successfully disabled user!'
+			message: `Successfully ${action}d user!`
 		};
 	},
-	enable: async ({ locals: { database }, request }) => {
-		const formOne = await superValidate(request, zod(formOneSchema));
-		if (!formOne.valid) {
-			return fail(400, {
-				formOne,
-				message: 'Invalid form inputs'
-			});
-		}
-
-		const { username, secret } = formOne.data;
-
-		// Check if the secret is correct
-		const secretOk = await validateSecret(secret);
-		if (!secretOk) {
-			return fail(401, {
-				formOne,
-				message: 'Invalid secret'
-			});
-		}
-
-		try {
-			await updateUserDisabled(database, username, false);
-		} catch (err: unknown) {
-			console.debug(`Failed to enable user: ${(err as Error).message}`);
-			return fail(400, {
-				formOne,
-				message: `Failed to enable user: ${(err as Error).message}`
-			});
-		}
-
-		return {
-			formOne,
-			message: 'Successfully enabled user!'
-		};
-	},
-	disableall: async ({ locals: { database }, request }) => {
+	all: async ({ locals: { database }, request }) => {
 		const formAll = await superValidate(request, zod(formAllSchema));
 		if (!formAll.valid) {
 			return fail(400, {
@@ -96,7 +62,8 @@ export const actions: Actions = {
 			});
 		}
 
-		const { secret } = formAll.data;
+		const { secret, action } = formAll.data;
+		const newDisable = action === 'disable';
 
 		// Check if the secret is correct
 		const secretOk = await validateSecret(secret);
@@ -108,53 +75,18 @@ export const actions: Actions = {
 		}
 
 		try {
-			await updateAllUserDisabled(database, true);
+			await updateAllUserDisabled(database, newDisable);
 		} catch (err: unknown) {
-			console.debug(`Failed to disable all users: ${(err as Error).message}`);
+			console.debug(`Failed to ${action} all users: ${(err as Error).message}`);
 			return fail(400, {
 				formAll,
-				message: `Failed to disable all users: ${(err as Error).message}`
+				message: `Failed to ${action} all users: ${(err as Error).message}`
 			});
 		}
 
 		return {
 			formAll,
-			message: 'Successfully disabled all users!'
-		};
-	},
-	enableall: async ({ locals: { database }, request }) => {
-		const formAll = await superValidate(request, zod(formAllSchema));
-		if (!formAll.valid) {
-			return fail(400, {
-				formAll,
-				message: 'Invalid form inputs'
-			});
-		}
-
-		const { secret } = formAll.data;
-
-		// Check if the secret is correct
-		const secretOk = await validateSecret(secret);
-		if (!secretOk) {
-			return fail(401, {
-				formAll,
-				message: 'Invalid secret'
-			});
-		}
-
-		try {
-			await updateAllUserDisabled(database, false);
-		} catch (err: unknown) {
-			console.debug(`Failed to enable all users: ${(err as Error).message}`);
-			return fail(400, {
-				formAll,
-				message: `Failed to enable all users: ${(err as Error).message}`
-			});
-		}
-
-		return {
-			formAll,
-			message: 'Successfully enabled all users!'
+			message: `Successfully ${action}d all users!`
 		};
 	}
 };
