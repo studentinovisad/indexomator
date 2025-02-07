@@ -5,7 +5,7 @@
 	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
 	import LogoLight from '$lib/assets/images/light.svg';
 	import LogoDark from '$lib/assets/images/dark.svg';
-	import { Bomb, Building, Cuboid, Github, House, KeyRound, University } from 'lucide-svelte';
+	import { Bomb, Building, Cuboid, Github, House, KeyRound, Lock, University } from 'lucide-svelte';
 
 	// Menu items.
 	const items = [
@@ -38,6 +38,11 @@
 			title: 'Register User',
 			url: '/admin/user/register',
 			icon: KeyRound
+		},
+		{
+			title: 'Disable User',
+			url: '/admin/user/disable',
+			icon: Lock
 		}
 	];
 

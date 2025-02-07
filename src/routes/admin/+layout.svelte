@@ -24,6 +24,8 @@
 					Nuke Building
 				{:else if page.url.pathname === '/admin/user/register'}
 					Register User
+				{:else if page.url.pathname === '/admin/user/disable'}
+					Disable User
 				{:else}
 					Admin Homepage
 				{/if}
