@@ -19,7 +19,7 @@
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
 	import { guarantorSearchFormSchema, searchFormSchema, toggleStateFormSchema } from './schema';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { browser } from '$app/environment';
 	import { cn } from '$lib/utils';
 	import { Check, CheckCheck, ChevronsUpDown } from 'lucide-svelte';
@@ -37,7 +37,7 @@
 		onUpdated: ({ form: f }) => {
 			if (actionData?.message === undefined) return;
 			const msg = actionData.message;
-			if (f.valid && $page.status === 200) {
+			if (f.valid && page.status === 200) {
 				toast.success(msg);
 			} else {
 				toast.error(msg);
@@ -60,7 +60,7 @@
 		onUpdated: ({ form: f }) => {
 			if (actionData?.message === undefined) return;
 			const msg = actionData.message;
-			if (f.valid && $page.status === 200) {
+			if (f.valid && page.status === 200) {
 				toast.success(msg);
 			} else {
 				toast.error(msg);
@@ -83,7 +83,7 @@
 		onUpdated: ({ form: f }) => {
 			if (actionData?.message === undefined) return;
 			const msg = actionData.message;
-			if (f.valid && $page.status === 200) {
+			if (f.valid && page.status === 200) {
 				toast.success(msg);
 			} else {
 				toast.error(msg);
