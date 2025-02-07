@@ -47,7 +47,7 @@
 			<Tabs.Trigger value="all">All</Tabs.Trigger>
 		</Tabs.List>
 		<Tabs.Content value="single">
-			<form method="POST" use:formOneEnhance>
+			<form method="POST" action="?/single" use:formOneEnhance>
 				<Card.Root>
 					<Card.Header>
 						<Card.Title class="text-2xl">Disable / Enable user</Card.Title>
@@ -74,14 +74,21 @@
 							</Form.Control>
 							<Form.FieldErrors />
 						</Form.Field>
-						<Form.Button formaction="?/disable">Disable</Form.Button>
-						<Form.Button formaction="?/enable">Enable</Form.Button>
+						<Form.Field form={formAll} name="action" class="mx-auto">
+							<Form.Control>
+								{#snippet children({ props })}
+									<Form.Button {...props} value="disable">Disable</Form.Button>
+									<Form.Button {...props} value="enable">Enable</Form.Button>
+								{/snippet}
+							</Form.Control>
+							<Form.FieldErrors />
+						</Form.Field>
 					</Card.Content>
 				</Card.Root>
 			</form>
 		</Tabs.Content>
 		<Tabs.Content value="all">
-			<form method="POST" use:formAllEnhance>
+			<form method="POST" action="?/all" use:formAllEnhance>
 				<Card.Root>
 					<Card.Header>
 						<Card.Title class="text-2xl">Disable / Enable all users</Card.Title>
@@ -97,8 +104,15 @@
 							</Form.Control>
 							<Form.FieldErrors />
 						</Form.Field>
-						<Form.Button formaction="?/disableall">Disable all</Form.Button>
-						<Form.Button formaction="?/enableall">Enable all</Form.Button>
+						<Form.Field form={formAll} name="action" class="mx-auto">
+							<Form.Control>
+								{#snippet children({ props })}
+									<Form.Button {...props} value="disable">Disable all</Form.Button>
+									<Form.Button {...props} value="enable">Enable all</Form.Button>
+								{/snippet}
+							</Form.Control>
+							<Form.FieldErrors />
+						</Form.Field>
 					</Card.Content>
 				</Card.Root>
 			</form>
