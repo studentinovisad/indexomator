@@ -29,8 +29,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 export const actions: Actions = {
 	default: async (event) => {
-		const { locals, request } = event;
-		const { database } = locals;
+		const {
+			locals: { database },
+			request
+		} = event;
 
 		const logInForm = await superValidate(request, zod(logInFormSchema));
 		if (!logInForm.valid) {
@@ -80,7 +82,7 @@ export const actions: Actions = {
 			await invalidateExcessSessions(database, id);
 		} catch (err: unknown) {
 			// WARN: Don't return the real error message back to user since this is publicly available
-			console.debug(`Failed to login: ${(err as Error).message}`);
+			console.warn(`Failed to login: ${(err as Error).message}`);
 			return fail(401, {
 				logInForm,
 				message: 'Invalid username or password'

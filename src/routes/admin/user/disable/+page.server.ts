@@ -41,7 +41,6 @@ export const actions: Actions = {
 		try {
 			await updateUserDisabled(database, username, newDisable);
 		} catch (err: unknown) {
-			console.debug(`Failed to ${action} user: ${(err as Error).message}`);
 			return fail(400, {
 				formOne,
 				message: `Failed to ${action} user: ${(err as Error).message}`
@@ -77,7 +76,6 @@ export const actions: Actions = {
 		try {
 			await updateAllUserDisabled(database, newDisable);
 		} catch (err: unknown) {
-			console.debug(`Failed to ${action} all users: ${(err as Error).message}`);
 			return fail(400, {
 				formAll,
 				message: `Failed to ${action} all users: ${(err as Error).message}`
