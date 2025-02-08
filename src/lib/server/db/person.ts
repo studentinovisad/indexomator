@@ -13,7 +13,8 @@ import {
 	sum,
 	desc,
 	lt,
-	gte
+	gte,
+	aliasedTable
 } from 'drizzle-orm';
 import { person, personEntry, personExit } from './schema/person';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
@@ -33,6 +34,7 @@ import {
 } from '$lib/types/person';
 import { guarantorEligibilityHours } from '$lib/utils/env';
 import { hoursSpentCutoffHours } from '$lib/server/env';
+import { alias, QueryBuilder, type PgSelectQueryBuilder } from 'drizzle-orm/pg-core';
 
 type searchOptions = {
 	searchQuery?: string;
@@ -68,6 +70,8 @@ export async function getPersons(
 	const guarantorSearch = opts.guarantorSearch ?? false;
 
 	try {
+		const guarantorTable = alias(person, 'guarantor');
+
 		const maxEntrySubquery = db
 			.select({
 				personId: personEntry.personId,
@@ -86,16 +90,6 @@ export async function getPersons(
 			.groupBy(personExit.personId)
 			.as('max_exit_timestamp');
 
-		const guarantorInfoSubQuery = db
-			.select({
-				id: person.id,
-				fname: person.fname,
-				lname: person.lname,
-				identifier: person.identifier
-			})
-			.from(person)
-			.as('guarantor_info');
-
 		const timestampPairsSubquery = db
 			.select({
 				personId: personEntry.personId,
@@ -107,7 +101,6 @@ export async function getPersons(
 			.where(gt(personExit.timestamp, personEntry.timestamp))
 			.groupBy(personEntry.personId, personEntry.timestamp)
 			.as('timestamp_pairs');
-
 		const hoursSpentSubQuery = db
 			.with(timestampPairsSubquery)
 			.select({
@@ -119,7 +112,6 @@ export async function getPersons(
 			})
 			.from(timestampPairsSubquery)
 			.as('hours_spent');
-
 		const totalHoursSpentSubQuery = db
 			.select({
 				personId: hoursSpentSubQuery.personId,
@@ -144,9 +136,9 @@ export async function getPersons(
 							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 							entryBuilding: personEntry.building,
 							entryGuarantorId: personEntry.guarantorId,
-							entryGuarantorFname: guarantorInfoSubQuery.fname,
-							entryGuarantorLname: guarantorInfoSubQuery.lname,
-							entryGuarantorIdentifier: guarantorInfoSubQuery.identifier,
+							entryGuarantorFname: guarantorTable.fname,
+							entryGuarantorLname: guarantorTable.lname,
+							entryGuarantorIdentifier: guarantorTable.identifier,
 							exitTimestamp: maxExitSubquery.maxExitTimestamp,
 							totalHoursSpent: totalHoursSpentSubQuery.totalHoursSpent,
 							leastDistance: sqlLeast([
@@ -177,7 +169,7 @@ export async function getPersons(
 								eq(personEntry.timestamp, maxEntrySubquery.maxEntryTimestamp)
 							)
 						)
-						.leftJoin(guarantorInfoSubQuery, eq(guarantorInfoSubQuery.id, personEntry.guarantorId))
+						.leftJoin(guarantorTable, eq(guarantorTable.id, personEntry.guarantorId))
 						// TODO: Don't left join when not guarantorSearch
 						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
 						.where(
@@ -222,9 +214,9 @@ export async function getPersons(
 							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 							entryBuilding: personEntry.building,
 							entryGuarantorId: personEntry.guarantorId,
-							entryGuarantorFname: guarantorInfoSubQuery.fname,
-							entryGuarantorLname: guarantorInfoSubQuery.lname,
-							entryGuarantorIdentifier: guarantorInfoSubQuery.identifier,
+							entryGuarantorFname: guarantorTable.fname,
+							entryGuarantorLname: guarantorTable.lname,
+							entryGuarantorIdentifier: guarantorTable.identifier,
 							exitTimestamp: maxExitSubquery.maxExitTimestamp,
 							totalHoursSpent: totalHoursSpentSubQuery.totalHoursSpent
 						})
@@ -238,7 +230,7 @@ export async function getPersons(
 								eq(personEntry.timestamp, maxEntrySubquery.maxEntryTimestamp)
 							)
 						)
-						.leftJoin(guarantorInfoSubQuery, eq(guarantorInfoSubQuery.id, personEntry.guarantorId))
+						.leftJoin(guarantorTable, eq(guarantorTable.id, personEntry.guarantorId))
 						// TODO: Don't left join when not guarantorSearch
 						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
 						.where(
