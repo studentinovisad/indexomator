@@ -10,7 +10,8 @@ import {
 	searchFormSchema,
 	toggleStateFormSchema,
 	logoutFormSchema,
-	guarantorSearchFormSchema
+	guarantorSearchFormSchema,
+	toggleGuestStateFormSchema
 } from './schema';
 import type { PageServerLoad } from './$types';
 
@@ -22,6 +23,7 @@ export const load: PageServerLoad = async ({ locals: { database, session } }) =>
 
 	const searchForm = await superValidate(zod(searchFormSchema));
 	const toggleStateForm = await superValidate(zod(toggleStateFormSchema));
+	const toggleGuestStateForm = await superValidate(zod(toggleGuestStateFormSchema));
 	const guarantorSearchForm = await superValidate(zod(guarantorSearchFormSchema));
 
 	try {
@@ -35,6 +37,7 @@ export const load: PageServerLoad = async ({ locals: { database, session } }) =>
 			userBuilding,
 			searchForm,
 			toggleStateForm,
+			toggleGuestStateForm,
 			guarantorSearchForm,
 			persons,
 			guarantors
@@ -113,12 +116,12 @@ export const actions: Actions = {
 			});
 		}
 
-		const { personId, guarantorId } = toggleStateForm.data;
+		const { personId } = toggleStateForm.data;
 		const { building } = session;
 		const { username } = user;
 
 		try {
-			await togglePersonState(database, personId, building, username, guarantorId);
+			await togglePersonState(database, personId, building, username);
 
 			return {
 				toggleStateForm,
@@ -127,6 +130,40 @@ export const actions: Actions = {
 		} catch (err: unknown) {
 			return fail(500, {
 				toggleStateForm,
+				message: `Failed to toggle state: ${(err as Error).message}`
+			});
+		}
+	},
+	toggleGuestState: async ({ locals: { database, session, user }, request }) => {
+		const toggleGuestStateForm = await superValidate(request, zod(toggleGuestStateFormSchema));
+		if (!toggleGuestStateForm.valid) {
+			return fail(400, {
+				toggleGuestStateForm,
+				message: 'Invalid form inputs'
+			});
+		}
+
+		if (session === null || user === null) {
+			return fail(401, {
+				toggleGuestStateForm,
+				message: 'Invalid session'
+			});
+		}
+
+		const { personId, guarantorId } = toggleGuestStateForm.data;
+		const { building } = session;
+		const { username } = user;
+
+		try {
+			await togglePersonState(database, personId, building, username, guarantorId);
+
+			return {
+				toggleGuestStateForm,
+				message: 'Successfully toggled state!'
+			};
+		} catch (err: unknown) {
+			return fail(500, {
+				toggleGuestStateForm,
 				message: `Failed to toggle state: ${(err as Error).message}`
 			});
 		}

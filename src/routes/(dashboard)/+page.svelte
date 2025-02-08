@@ -18,7 +18,12 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
-	import { guarantorSearchFormSchema, searchFormSchema, toggleStateFormSchema } from './schema';
+	import {
+		guarantorSearchFormSchema,
+		searchFormSchema,
+		toggleGuestStateFormSchema,
+		toggleStateFormSchema
+	} from './schema';
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
 	import { cn } from '$lib/utils';
@@ -26,7 +31,7 @@
 	import { tick } from 'svelte';
 	import { useId } from 'bits-ui';
 	import Label from '$lib/components/ui/label/label.svelte';
-	import { guarantorDialogStore } from '$lib/stores/guarantorDialog.svelte';
+	import { toggleStateFormStore } from '$lib/stores/toggleState';
 
 	let { data, form: actionData } = $props();
 
@@ -91,7 +96,25 @@
 		}
 	});
 	const { enhance: toggleStateEnhance, submit: toggleStateFormSubmit } = toggleStateForm;
-	const columns = $derived(createColumns(data.userBuilding, toggleStateFormSubmit));
+
+	const toggleGuestStateForm = superForm(data.toggleGuestStateForm, {
+		validators: zodClient(toggleGuestStateFormSchema),
+		onUpdated: ({ form: f }) => {
+			if (actionData?.message === undefined) return;
+			const msg = actionData.message;
+			if (f.valid && page.status === 200) {
+				toast.success(msg);
+			} else {
+				toast.error(msg);
+			}
+		}
+	});
+	const { enhance: toggleGuestStateEnhance, submit: toggleGuestStateFormSubmit } =
+		toggleGuestStateForm;
+
+	const columns = $derived(
+		createColumns(data.userBuilding, toggleStateFormSubmit, toggleGuestStateFormSubmit)
+	);
 
 	const triggerId = useId();
 </script>
@@ -178,7 +201,7 @@
 </div>
 
 <!-- Dialog for searching guarantors when admiting/tranfering guests -->
-<Dialog.Root bind:open={guarantorDialogStore.dialogOpen}>
+<Dialog.Root bind:open={toggleStateFormStore.dialogOpen}>
 	<Dialog.Content class="sm:max-w-md">
 		<Dialog.Header>
 			<Dialog.Title>Select guarantor</Dialog.Title>
@@ -250,9 +273,8 @@
 		<Dialog.Footer>
 			<Button
 				onclick={() => {
-					guarantorDialogStore.dialogOpen = false;
-					guarantorDialogStore.guarantorId = selectedGuarantorId;
-					tick().then(() => toggleStateForm.submit());
+					toggleStateFormStore.dialogOpen = false;
+					tick().then(() => toggleGuestStateForm.submit());
 				}}
 				type="button"
 			>
@@ -280,15 +302,27 @@
 	<Form.Field class="hidden" form={toggleStateForm} name="personId">
 		<Form.Control>
 			{#snippet children({ props })}
-				<Input {...props} type="hidden" value={guarantorDialogStore.personId} />
+				<Input {...props} type="hidden" value={toggleStateFormStore.personId} />
 			{/snippet}
 		</Form.Control>
 		<Form.FieldErrors />
 	</Form.Field>
-	<Form.Field class="hidden" form={toggleStateForm} name="guarantorId">
+</form>
+
+<!-- Hidden form used to POST action for toggling guest state -->
+<form method="POST" action="?/toggleGuestState" use:toggleGuestStateEnhance>
+	<Form.Field class="hidden" form={toggleGuestStateForm} name="personId">
 		<Form.Control>
 			{#snippet children({ props })}
-				<Input {...props} type="hidden" value={guarantorDialogStore.guarantorId} />
+				<Input {...props} type="hidden" value={toggleStateFormStore.personId} />
+			{/snippet}
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
+	<Form.Field class="hidden" form={toggleGuestStateForm} name="guarantorId">
+		<Form.Control>
+			{#snippet children({ props })}
+				<Input {...props} type="hidden" value={selectedGuarantorId} />
 			{/snippet}
 		</Form.Control>
 		<Form.FieldErrors />

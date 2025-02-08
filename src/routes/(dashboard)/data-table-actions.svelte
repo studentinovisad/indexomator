@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import Button, { buttonVariants } from '$lib/components/ui/button/button.svelte';
-	import { guarantorDialogStore } from '$lib/stores/guarantorDialog.svelte';
+	import { toggleStateFormStore } from '$lib/stores/toggleState';
 	import { StateInside, type State } from '$lib/types/state';
 	import { Guest, type PersonType } from '$lib/types/person';
 	import { ArrowLeftRight, LogIn, LogOut } from 'lucide-svelte';
@@ -17,7 +17,8 @@
 		personState,
 		building,
 		userBuilding,
-		toggleStateFormSubmit
+		toggleStateFormSubmit,
+		toggleGuestStateFormSubmit
 	}: {
 		personId: number;
 		guarantorFname: string | null;
@@ -28,6 +29,7 @@
 		building: string | null;
 		userBuilding: string;
 		toggleStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void;
+		toggleGuestStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void;
 	} = $props();
 
 	const inside = $derived(personState === StateInside);
@@ -40,9 +42,14 @@
 			<Tooltip.Root>
 				<Tooltip.Trigger
 					onclick={() => {
-						guarantorDialogStore.personId = personId;
-						guarantorDialogStore.guarantorId = undefined;
-						tick().then(() => toggleStateFormSubmit());
+						toggleStateFormStore.personId = personId;
+						tick().then(() => {
+							if (personType === Guest) {
+								toggleGuestStateFormSubmit();
+							} else {
+								toggleStateFormSubmit();
+							}
+						});
 					}}
 					class={cn('w-full', buttonVariants({ variant: 'outline' }))}
 				>
@@ -57,9 +64,14 @@
 	{:else}
 		<Button
 			onclick={() => {
-				guarantorDialogStore.personId = personId;
-				guarantorDialogStore.guarantorId = undefined;
-				tick().then(() => toggleStateFormSubmit());
+				toggleStateFormStore.personId = personId;
+				tick().then(() => {
+					if (personType === Guest) {
+						toggleGuestStateFormSubmit();
+					} else {
+						toggleStateFormSubmit();
+					}
+				});
 			}}
 			variant="outline"
 			class="w-full"
@@ -71,8 +83,7 @@
 {:else if personType !== Guest}
 	<Button
 		onclick={() => {
-			guarantorDialogStore.personId = personId;
-			guarantorDialogStore.guarantorId = undefined;
+			toggleStateFormStore.personId = personId;
 			tick().then(() => toggleStateFormSubmit());
 		}}
 		variant="outline"
@@ -89,8 +100,8 @@
 {:else}
 	<Button
 		onclick={() => {
-			guarantorDialogStore.dialogOpen = true;
-			guarantorDialogStore.personId = personId;
+			toggleStateFormStore.dialogOpen = true;
+			toggleStateFormStore.personId = personId;
 		}}
 		type="button"
 		variant="outline"

@@ -5,7 +5,8 @@ import DataTableActions from './data-table-actions.svelte';
 
 export function createColumns(
 	userBuilding: string,
-	toggleStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void
+	toggleStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void,
+	toggleGuestStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void
 ): ColumnDef<Person>[] {
 	return [
 		{
@@ -53,7 +54,8 @@ export function createColumns(
 					personState: row.original.state,
 					building: row.original.building,
 					userBuilding,
-					toggleStateFormSubmit
+					toggleStateFormSubmit,
+					toggleGuestStateFormSubmit
 				});
 			},
 			enableSorting: false,
