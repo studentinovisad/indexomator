@@ -7,9 +7,7 @@ import { getBuildings } from '$lib/server/db/building';
 import { validateSecret } from '$lib/server/secret';
 import { getPersonTypes, removePersonsFromBuilding } from '$lib/server/db/person';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	const { database } = locals;
-
+export const load: PageServerLoad = async ({ locals: { database } }) => {
 	const form = await superValidate(zod(formSchema));
 
 	try {
@@ -30,9 +28,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ locals, request }) => {
-		const { database } = locals;
-
+	default: async ({ locals: { database }, request }) => {
 		const form = await superValidate(request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {

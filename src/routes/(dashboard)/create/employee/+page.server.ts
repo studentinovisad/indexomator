@@ -8,9 +8,7 @@ import { getDepartments } from '$lib/server/db/department';
 import { createFormSchema } from './schema';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	const { database } = locals;
-
+export const load: PageServerLoad = async ({ locals: { database } }) => {
 	const createForm = await superValidate(zod(createFormSchema));
 
 	try {
@@ -26,9 +24,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ locals, request }) => {
-		const { database } = locals;
-
+	default: async ({ locals: { database, session, user }, request }) => {
 		const createForm = await superValidate(request, zod(createFormSchema));
 		if (!createForm.valid) {
 			return fail(400, {
@@ -37,7 +33,7 @@ export const actions: Actions = {
 			});
 		}
 
-		if (locals.session === null || locals.user === null) {
+		if (session === null || user === null) {
 			return fail(401, {
 				createForm,
 				message: 'Invalid session'
@@ -45,8 +41,8 @@ export const actions: Actions = {
 		}
 
 		const { identifier, fname, lname, department } = createForm.data;
-		const building = locals.session.building;
-		const creator = locals.user.username;
+		const { building } = session;
+		const { username: creator } = user;
 
 		try {
 			await createEmployee(database, identifier, fname, lname, department, building, creator);
