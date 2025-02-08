@@ -6,7 +6,7 @@
 
 type ToD = number;
 
-export const todstrRegExp = /^([01][0-9]|2[0-3]):([0-5][0-9])$/;
+export const todstrRegExp = /^([01][0-9]|2[0-3]):([0-5][0-9])$|^24:00$/;
 
 function hm2tod(hours: number, minutes: number): ToD {
 	return hours * 60 + minutes;
@@ -20,6 +20,10 @@ function todstr2tod(todstr: string): ToD {
 	const result = todstrRegExp.exec(todstr);
 	if (result === null) {
 		throw new Error(`invalid time of day string: ${todstr}`);
+	}
+
+	if (result[0] === '24:00') {
+		return hm2tod(24, 0);
 	}
 
 	const hours = parseInt(result[1], 10);
