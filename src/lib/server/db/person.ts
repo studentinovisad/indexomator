@@ -10,7 +10,6 @@ import {
 	not,
 	min,
 	sql,
-	isNotNull,
 	sum,
 	desc,
 	lt,
@@ -76,7 +75,7 @@ export async function getPersons(
 			})
 			.from(personEntry)
 			.groupBy(personEntry.personId)
-			.as('max_entry');
+			.as('max_entry_timestamp');
 
 		const maxExitSubquery = db
 			.select({
@@ -85,7 +84,7 @@ export async function getPersons(
 			})
 			.from(personExit)
 			.groupBy(personExit.personId)
-			.as('max_exit');
+			.as('max_exit_timestamp');
 
 		const guarantorInfoSubQuery = db
 			.select({
@@ -100,12 +99,12 @@ export async function getPersons(
 		const timestampPairsSubquery = db
 			.select({
 				personId: personEntry.personId,
-				entryTimestamp: sql<Date>`${personEntry.timestamp}`.as('entry_timestamp'),
+				entryTimestamp: personEntry.timestamp,
 				exitTimestamp: min(personExit.timestamp).as('exit_timestamp')
 			})
 			.from(personEntry)
 			.innerJoin(personExit, eq(personExit.personId, personEntry.personId))
-			.where(gte(personExit.timestamp, personEntry.timestamp))
+			.where(gt(personExit.timestamp, personEntry.timestamp))
 			.groupBy(personEntry.personId, personEntry.timestamp)
 			.as('timestamp_pairs');
 
@@ -559,34 +558,16 @@ async function validGuarantor(db: Database, guarantorId: number): Promise<boolea
 	// Check guarantor total hours spent
 	const timestampPairsSubquery = db
 		.select({
-			entryTimestamp: sql`${personEntry.timestamp}`.as('entryTimestamp'),
-			exitTimestamp: sql`${personExit.timestamp}`.as('exitTimestamp')
+			personId: personEntry.personId,
+			entryTimestamp: personEntry.timestamp,
+			exitTimestamp: min(personExit.timestamp).as('exit_timestamp')
 		})
-		.from(person)
-		.leftJoin(personEntry, eq(personEntry.personId, person.id))
-		.leftJoin(personExit, eq(personExit.personId, person.id))
+		.from(personEntry)
+		.innerJoin(personExit, eq(personExit.personId, personEntry.personId))
 		.where(
-			and(
-				eq(person.id, guarantorId),
-				or(
-					isNull(personExit.timestamp),
-					eq(
-						personExit.timestamp,
-						db
-							.select({
-								timestamp: min(personExit.timestamp).as('min_exit_timestamp')
-							})
-							.from(personExit)
-							.where(
-								and(
-									gt(personExit.timestamp, personEntry.timestamp),
-									eq(personExit.personId, person.id)
-								)
-							)
-					)
-				)
-			)
+			and(eq(personEntry.personId, guarantorId), gt(personExit.timestamp, personEntry.timestamp))
 		)
+		.groupBy(personEntry.personId, personEntry.timestamp)
 		.as('timestamp_pairs');
 
 	const hoursSpentSubQuery = db
@@ -598,7 +579,6 @@ async function validGuarantor(db: Database, guarantorId: number): Promise<boolea
 			)
 		})
 		.from(timestampPairsSubquery)
-		.where(isNotNull(timestampPairsSubquery.exitTimestamp))
 		.as('hours_spent');
 
 	const [{ totalHoursSpent }] = await db
