@@ -6,7 +6,8 @@
 
 type ToD = number;
 
-export const todstrRegExp = /^([01][0-9]|2[0-3]):([0-5][0-9])$|^24:00$/;
+export const todstrRegExp = /^([01]?[0-9]|2[0-3]):([0-5]?[0-9])$|^24:00$/;
+export const todstrRegExpMsg = 'time of day must be in the form HH:MM';
 
 function hm2tod(hours: number, minutes: number): ToD {
 	return hours * 60 + minutes;
