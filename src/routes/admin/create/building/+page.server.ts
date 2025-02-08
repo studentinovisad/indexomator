@@ -17,6 +17,7 @@ export const load: PageServerLoad = async () => {
 export const actions: Actions = {
 	default: async ({ locals, request }) => {
 		const { database } = locals;
+
 		const form = await superValidate(request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {
@@ -25,7 +26,6 @@ export const actions: Actions = {
 			});
 		}
 
-		// Check if the secret is correct
 		const secretOk = await validateSecret(form.data.secret);
 		if (!secretOk) {
 			return fail(401, {
@@ -34,20 +34,20 @@ export const actions: Actions = {
 			});
 		}
 
+		const { building } = form.data;
+
 		try {
-			const { building } = form.data;
 			await createBuilding(database, building);
-		} catch (err: unknown) {
-			console.debug(`Failed to create building: ${(err as Error).message}`);
-			return fail(400, {
+
+			return {
 				form,
-				message: 'Building already exists'
+				message: 'Successfully created building!'
+			};
+		} catch (err: unknown) {
+			return fail(500, {
+				form,
+				message: `Failed to create building: ${(err as Error).message}`
 			});
 		}
-
-		return {
-			form,
-			message: 'Building created successfully!'
-		};
 	}
 };

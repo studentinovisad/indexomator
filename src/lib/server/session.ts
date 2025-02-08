@@ -1,6 +1,6 @@
 import type { RequestEvent } from '@sveltejs/kit';
-import { inactivityTimeout } from './db/session';
 import { encodeBase32LowerCaseNoPadding } from '@oslojs/encoding';
+import { inactivityTimeout } from '$lib/server/env';
 
 export function generateSessionToken(): string {
 	const bytes = new Uint8Array(20);

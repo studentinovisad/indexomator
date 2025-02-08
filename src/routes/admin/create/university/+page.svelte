@@ -2,14 +2,11 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { toast } from 'svelte-sonner';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
+	import { toast } from 'svelte-sonner';
 	import { formSchema } from './schema';
 	import { page } from '$app/stores';
-	import { Button } from '$lib/components/ui/button';
-	import Visible from 'lucide-svelte/icons/eye';
-	import Invisible from 'lucide-svelte/icons/eye-closed';
 
 	let { data, form: actionData } = $props();
 
@@ -27,52 +24,20 @@
 	});
 
 	const { form: formData, enhance } = form;
-	let showPassword = $state(false);
 </script>
 
 <form method="POST" class="flex h-[90dvh] w-full items-center justify-center px-4" use:enhance>
 	<Card.Root class="mx-auto w-full max-w-sm">
 		<Card.Header>
-			<Card.Title class="text-2xl">Register</Card.Title>
-			<Card.Description>Enter credentials for user registration.</Card.Description>
+			<Card.Title class="text-2xl">Create university</Card.Title>
+			<Card.Description>Enter the name of the new university to create.</Card.Description>
 		</Card.Header>
 		<Card.Content class="grid gap-4">
-			<Form.Field {form} name="username">
+			<Form.Field {form} name="university">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>Username</Form.Label>
-						<Input {...props} bind:value={$formData.username} />
-					{/snippet}
-				</Form.Control>
-				<Form.FieldErrors />
-			</Form.Field>
-			<Form.Field {form} name="password">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Form.Label>Password</Form.Label>
-						<div class="flex gap-2">
-							<Input
-								type={showPassword ? 'text' : 'password'}
-								{...props}
-								bind:value={$formData.password}
-							/>
-							<Button
-								type="button"
-								onclick={() => {
-									showPassword = !showPassword;
-								}}
-								data-sidebar="trigger"
-								variant="outline"
-								size="icon"
-							>
-								{#if showPassword}
-									<Visible />
-								{:else}
-									<Invisible />
-								{/if}
-								<span class="sr-only">Show/Hide Pass</span>
-							</Button>
-						</div>
+						<Form.Label>University</Form.Label>
+						<Input {...props} bind:value={$formData.university} />
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />

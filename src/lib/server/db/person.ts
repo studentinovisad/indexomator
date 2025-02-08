@@ -1,5 +1,21 @@
 import type { Database } from './connect';
-import { or, eq, and, max, gt, count, isNull } from 'drizzle-orm';
+import {
+	or,
+	eq,
+	and,
+	max,
+	gt,
+	count,
+	isNull,
+	not,
+	min,
+	sql,
+	isNotNull,
+	sum,
+	desc,
+	lt,
+	gte
+} from 'drizzle-orm';
 import { person, personEntry, personExit } from './schema/person';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
@@ -7,41 +23,51 @@ import { sqlConcat, sqlLeast, sqlLevenshteinDistance } from './utils';
 import { isInside } from '../isInside';
 import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
 import { building } from './schema/building';
-import { isPersonType, type PersonType } from '$lib/types/person';
 import type { RowList } from 'postgres';
+import {
+	Employee,
+	Guest,
+	isPersonType,
+	Student,
+	type Person,
+	type PersonLight,
+	type PersonType
+} from '$lib/types/person';
+import { guarantorEligibilityHours } from '$lib/utils/env';
+import { hoursSpentCutoffHours } from '$lib/server/env';
 
-
+type searchOptions = {
+	searchQuery?: string;
+	guarantorSearch?: boolean;
+};
 
 // Gets all persons using optional filters
 export async function getPersons(
 	db: Database,
 	limit: number,
 	offset: number,
-	searchQuery?: string
-): Promise<
-	{
-		id: number;
-		identifier: string;
-		type: PersonType;
-		fname: string;
-		lname: string;
-		department: string;
-		building: string | null;
-		state: State;
-	}[]
-> {
+	opts: searchOptions = {}
+): Promise<Person[]> {
 	// Assert limit is valid
-	if (limit === null || limit === undefined || limit <= 0) {
-		throw new Error('Invalid limit');
+	if (limit <= 0) {
+		throw new Error('Invalid limit (negative or zero)');
+	}
+
+	// Assert offset is valid
+	if (offset < 0) {
+		throw new Error('Invalid offset (negative)');
 	}
 
 	// Don't search if the search query is empty when trimmed
-	const sanitizedSearchQuery = searchQuery ? sanitizeString(searchQuery) : undefined;
+	const sanitizedSearchQuery = opts.searchQuery ? sanitizeString(opts.searchQuery) : undefined;
 	const nonEmptySearchQuery = sanitizedSearchQuery
 		? sanitizedSearchQuery !== ''
 			? sanitizedSearchQuery
 			: undefined
 		: undefined;
+
+	// Whether to search for persons that aren't of type "Guest" and are eligible (have enough hours spent)
+	const guarantorSearch = opts.guarantorSearch ?? false;
 
 	try {
 		const maxEntrySubquery = db
@@ -53,6 +79,69 @@ export async function getPersons(
 			.groupBy(personEntry.personId)
 			.as('max_entry');
 
+		const timestampPairsSubquery = db
+			.select({
+				personId: person.id,
+				entryTimestamp: sql`${personEntry.timestamp}`.as('entryTimestamp'),
+				exitTimestamp: sql`${personExit.timestamp}`.as('exitTimestamp')
+			})
+			.from(person)
+			.leftJoin(personEntry, eq(personEntry.personId, person.id))
+			.leftJoin(personExit, eq(personExit.personId, person.id))
+			.where(
+				or(
+					isNull(personExit.timestamp),
+					eq(
+						personExit.timestamp,
+						db
+							.select({
+								timestamp: min(personExit.timestamp).as('min_exit_timestamp')
+							})
+							.from(personExit)
+							.where(
+								and(
+									gt(personExit.timestamp, personEntry.timestamp),
+									eq(personExit.personId, person.id)
+								)
+							)
+					)
+				)
+			)
+			.as('timestamp_pairs');
+
+		const hoursSpentSubQuery = db
+			.with(timestampPairsSubquery)
+			.select({
+				personId: timestampPairsSubquery.personId,
+				hoursSpent: sql<number>`
+					extract(epoch from (${timestampPairsSubquery.exitTimestamp} - ${timestampPairsSubquery.entryTimestamp})) / 3600`.as(
+					'hours_spent'
+				)
+			})
+			.from(timestampPairsSubquery)
+			.where(isNotNull(timestampPairsSubquery.exitTimestamp))
+			.as('hours_spent');
+
+		const totalHoursSpentSubQuery = db
+			.select({
+				personId: hoursSpentSubQuery.personId,
+				totalHoursSpent: sum(hoursSpentSubQuery.hoursSpent).mapWith(Number).as('total_hours_spent')
+			})
+			.from(hoursSpentSubQuery)
+			.where(lt(hoursSpentSubQuery.hoursSpent, hoursSpentCutoffHours))
+			.groupBy(hoursSpentSubQuery.personId)
+			.as('total_hours_spent');
+
+		const guarantorInfoSubQuery = db
+			.select({
+				id: person.id,
+				fname: person.fname,
+				lname: person.lname,
+				identifier: person.identifier
+			})
+			.from(person)
+			.as('guarantor_info');
+
 		const persons =
 			nonEmptySearchQuery !== undefined
 				? await db
@@ -63,8 +152,13 @@ export async function getPersons(
 							fname: person.fname,
 							lname: person.lname,
 							department: person.department,
+							university: person.university,
 							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 							entryBuilding: personEntry.building,
+							entryGuarantorId: personEntry.guarantorId,
+							entryGuarantorFname: guarantorInfoSubQuery.fname,
+							entryGuarantorLname: guarantorInfoSubQuery.lname,
+							entryGuarantorIdentifier: guarantorInfoSubQuery.identifier,
 							exitTimestamp: max(personExit.timestamp),
 							leastDistance: sqlLeast([
 								sqlLevenshteinDistance(sqlConcat([person.identifier]), nonEmptySearchQuery),
@@ -94,19 +188,29 @@ export async function getPersons(
 							)
 						)
 						.leftJoin(personExit, eq(person.id, personExit.personId))
+						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
+						.leftJoin(guarantorInfoSubQuery, eq(guarantorInfoSubQuery.id, personEntry.guarantorId))
 						.where(
-							or(
-								...[
-									...fuzzySearchFilters([person.identifier], nonEmptySearchQuery),
-									...fuzzySearchFilters([person.fname], nonEmptySearchQuery, { distance: 5 }),
-									...fuzzySearchFilters([person.lname], nonEmptySearchQuery, { distance: 5 }),
-									...fuzzySearchFilters([person.fname, person.lname], nonEmptySearchQuery, {
-										distance: 6
-									}),
-									...fuzzySearchFilters([person.lname, person.fname], nonEmptySearchQuery, {
-										distance: 6
-									})
-								]
+							and(
+								guarantorSearch
+									? and(
+											not(eq(person.type, Guest)),
+											gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
+										)
+									: undefined,
+								or(
+									...[
+										...fuzzySearchFilters([person.identifier], nonEmptySearchQuery),
+										...fuzzySearchFilters([person.fname], nonEmptySearchQuery, { distance: 5 }),
+										...fuzzySearchFilters([person.lname], nonEmptySearchQuery, { distance: 5 }),
+										...fuzzySearchFilters([person.fname, person.lname], nonEmptySearchQuery, {
+											distance: 6
+										}),
+										...fuzzySearchFilters([person.lname, person.fname], nonEmptySearchQuery, {
+											distance: 6
+										})
+									]
+								)
 							)
 						)
 						.groupBy(
@@ -116,8 +220,13 @@ export async function getPersons(
 							person.fname,
 							person.lname,
 							person.department,
+							person.university,
 							maxEntrySubquery.maxEntryTimestamp,
-							personEntry.building
+							personEntry.building,
+							personEntry.guarantorId,
+							guarantorInfoSubQuery.fname,
+							guarantorInfoSubQuery.lname,
+							guarantorInfoSubQuery.identifier
 						)
 						.orderBy(({ leastDistance, leastDistanceIdentifier, identifier }) => [
 							leastDistance,
@@ -134,8 +243,13 @@ export async function getPersons(
 							fname: person.fname,
 							lname: person.lname,
 							department: person.department,
+							university: person.university,
 							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 							entryBuilding: personEntry.building,
+							entryGuarantorId: personEntry.guarantorId,
+							entryGuarantorFname: guarantorInfoSubQuery.fname,
+							entryGuarantorLname: guarantorInfoSubQuery.lname,
+							entryGuarantorIdentifier: guarantorInfoSubQuery.identifier,
 							exitTimestamp: max(personExit.timestamp)
 						})
 						.from(person)
@@ -148,6 +262,16 @@ export async function getPersons(
 							)
 						)
 						.leftJoin(personExit, eq(person.id, personExit.personId))
+						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
+						.leftJoin(guarantorInfoSubQuery, eq(guarantorInfoSubQuery.id, personEntry.guarantorId))
+						.where(
+							guarantorSearch
+								? and(
+										not(eq(person.type, Guest)),
+										gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
+									)
+								: undefined
+						)
 						.groupBy(
 							person.id,
 							person.identifier,
@@ -155,27 +279,96 @@ export async function getPersons(
 							person.fname,
 							person.lname,
 							person.department,
+							person.university,
 							maxEntrySubquery.maxEntryTimestamp,
-							personEntry.building
+							personEntry.building,
+							personEntry.guarantorId,
+							guarantorInfoSubQuery.fname,
+							guarantorInfoSubQuery.lname,
+							guarantorInfoSubQuery.identifier
 						)
 						.orderBy(({ identifier }) => [identifier])
 						.limit(limit)
 						.offset(offset);
 
-		return persons.map((s) => {
+		return persons.map((p) => {
+			if (!isPersonType(p.type)) {
+				throw new Error('Invalid type from DB (not PersonType)');
+			}
+
+			const inside = isInside(p.entryTimestamp, p.exitTimestamp);
 			return {
-				id: s.id,
-				identifier: s.identifier,
-				type: s.type as PersonType,
-				fname: s.fname,
-				lname: s.lname,
-				department: s.department,
-				building: isInside(s.entryTimestamp, s.exitTimestamp) ? s.entryBuilding : null,
-				state: isInside(s.entryTimestamp, s.exitTimestamp) ? StateInside : StateOutside
+				id: p.id,
+				identifier: p.identifier,
+				type: p.type,
+				fname: p.fname,
+				lname: p.lname,
+				department: p.department,
+				university: p.university,
+				building: inside ? p.entryBuilding : null,
+				guarantorId: inside ? p.entryGuarantorId : null,
+				guarantorFname: inside ? p.entryGuarantorFname : null,
+				guarantorLname: inside ? p.entryGuarantorLname : null,
+				guarantorIdentifier: inside ? p.entryGuarantorIdentifier : null,
+				state: inside ? StateInside : StateOutside
 			};
 		});
 	} catch (err: unknown) {
 		throw new Error(`Failed to get persons from database: ${(err as Error).message}`);
+	}
+}
+
+// Gets all person types
+export async function getAllPersonTypes(db: Database): Promise<PersonType[]> {
+	try {
+		const personTypes = await db
+			.selectDistinct({
+				type: person.type
+			})
+			.from(person)
+			.orderBy(({ type }) => type);
+
+		return personTypes.map((p) => {
+			if (!isPersonType(p.type)) {
+				throw new Error('Invalid type from DB (not PersonType)');
+			}
+			return p.type;
+		});
+	} catch (err: unknown) {
+		throw new Error(`Failed to get all person types from database: ${(err as Error).message}`);
+	}
+}
+
+// Gets the count of all persons per type
+export async function getPersonsCountPerType(db: Database): Promise<
+	{
+		type: PersonType;
+		count: number;
+	}[]
+> {
+	try {
+		const persons = await db
+			.select({
+				type: person.type,
+				count: count()
+			})
+			.from(person)
+			.groupBy(person.type)
+			.orderBy(({ count }) => count);
+
+		return persons.map((p) => {
+			if (p.type !== null && !isPersonType(p.type)) {
+				throw new Error('Invalid type from DB (not PersonType)');
+			}
+			return {
+				type: p.type,
+				count: p.count
+			};
+		});
+	} catch (err: unknown) {
+		throw new Error(
+			`Failed to get count of persons per type from database: ${(err as Error).message}`
+		);
 	}
 }
 
@@ -195,7 +388,9 @@ export async function getPersonsCountPerDepartment(db: Database): Promise<
 				count: count()
 			})
 			.from(person)
-			.groupBy(person.type, person.department);
+			.where(not(eq(person.type, Guest)))
+			.groupBy(person.type, person.department)
+			.orderBy(({ count }) => count);
 
 		return persons.map((p) => {
 			if (p.type !== null && !isPersonType(p.type)) {
@@ -203,12 +398,51 @@ export async function getPersonsCountPerDepartment(db: Database): Promise<
 			}
 			return {
 				type: p.type,
-				department: p.department,
+				department: p.department ?? 'None',
 				count: p.count
 			};
 		});
 	} catch (err: unknown) {
-		throw new Error(`Failed to get count of persons from database: ${(err as Error).message}}`);
+		throw new Error(
+			`Failed to get count of persons per department from database: ${(err as Error).message}`
+		);
+	}
+}
+
+// Gets the count of all persons per university
+export async function getPersonsCountPerUniversity(db: Database): Promise<
+	{
+		type: PersonType;
+		university: string;
+		count: number;
+	}[]
+> {
+	try {
+		const persons = await db
+			.select({
+				type: person.type,
+				university: person.university,
+				count: count()
+			})
+			.from(person)
+			.where(eq(person.type, Guest))
+			.groupBy(person.type, person.university)
+			.orderBy(({ count }) => count);
+
+		return persons.map((p) => {
+			if (p.type !== null && !isPersonType(p.type)) {
+				throw new Error('Invalid type from DB (not PersonType)');
+			}
+			return {
+				type: p.type,
+				university: p.university ?? 'None',
+				count: p.count
+			};
+		});
+	} catch (err: unknown) {
+		throw new Error(
+			`Failed to get count of persons per university from database: ${(err as Error).message}`
+		);
 	}
 }
 
@@ -217,7 +451,7 @@ export async function getPersonsCountPerBuilding(db: Database): Promise<
 	{
 		type: PersonType | null;
 		building: string;
-		insideCount: number;
+		count: number;
 	}[]
 > {
 	try {
@@ -242,11 +476,12 @@ export async function getPersonsCountPerBuilding(db: Database): Promise<
 			.select({
 				type: personInsideSubquery.type,
 				building: building.name,
-				insideCount: count(personInsideSubquery.personId)
+				count: count(personInsideSubquery.personId)
 			})
 			.from(building)
 			.leftJoin(personInsideSubquery, eq(building.name, personInsideSubquery.entryBuilding))
-			.groupBy(personInsideSubquery.type, building.name);
+			.groupBy(personInsideSubquery.type, building.name)
+			.orderBy(({ count }) => count);
 
 		return persons.map((p) => {
 			if (p.type !== null && !isPersonType(p.type)) {
@@ -255,14 +490,149 @@ export async function getPersonsCountPerBuilding(db: Database): Promise<
 			return {
 				type: p.type,
 				building: p.building,
-				insideCount: p.insideCount
+				count: p.count
 			};
 		});
 	} catch (err: unknown) {
 		throw new Error(
-			`Failed to get inside count of persons from database: ${(err as Error).message}}`
+			`Failed to get inside count of persons per building from database: ${(err as Error).message}`
 		);
 	}
+}
+
+// Creates an employee (person)
+export async function createEmployee(
+	db: Database,
+	identifier: string,
+	fname: string,
+	lname: string,
+	department: string | undefined,
+	building: string,
+	creator: string
+): Promise<PersonLight> {
+	return await createPerson(db, identifier, Employee, fname, lname, building, creator, {
+		department
+	});
+}
+
+// Creates a student (person)
+export async function createStudent(
+	db: Database,
+	identifier: string,
+	fname: string,
+	lname: string,
+	department: string | undefined,
+	building: string,
+	creator: string
+): Promise<PersonLight> {
+	return await createPerson(db, identifier, Student, fname, lname, building, creator, {
+		department
+	});
+}
+
+// Creates a student in rectorate mode (uni. instead of dept.) (person)
+export async function createStudentRectorateMode(
+	db: Database,
+	identifier: string,
+	fname: string,
+	lname: string,
+	university: string | undefined,
+	building: string,
+	creator: string
+): Promise<PersonLight> {
+	return await createPerson(db, identifier, Student, fname, lname, building, creator, {
+		university
+	});
+}
+
+// Creates a guest (person)
+export async function createGuest(
+	db: Database,
+	identifier: string,
+	fname: string,
+	lname: string,
+	university: string | undefined,
+	building: string,
+	creator: string,
+	guarantorId: number | undefined
+): Promise<PersonLight> {
+	return await createPerson(db, identifier, Guest, fname, lname, building, creator, {
+		university,
+		guarantorId
+	});
+}
+
+// Checks if a guarantor exists in the database and is not a guest
+async function validGuarantor(db: Database, guarantorId: number): Promise<boolean> {
+	// Check guarantor type
+	const [{ type }] = await db
+		.select({ type: person.type })
+		.from(person)
+		.where(eq(person.id, guarantorId));
+
+	if (!isPersonType(type)) {
+		throw new Error('Invalid type from DB (not PersonType)');
+	}
+
+	// Guarantor must not be a guest
+	if (type === Guest) {
+		return false;
+	}
+
+	// Check guarantor total hours spent
+	const timestampPairsSubquery = db
+		.select({
+			entryTimestamp: sql`${personEntry.timestamp}`.as('entryTimestamp'),
+			exitTimestamp: sql`${personExit.timestamp}`.as('exitTimestamp')
+		})
+		.from(person)
+		.leftJoin(personEntry, eq(personEntry.personId, person.id))
+		.leftJoin(personExit, eq(personExit.personId, person.id))
+		.where(
+			and(
+				eq(person.id, guarantorId),
+				or(
+					isNull(personExit.timestamp),
+					eq(
+						personExit.timestamp,
+						db
+							.select({
+								timestamp: min(personExit.timestamp).as('min_exit_timestamp')
+							})
+							.from(personExit)
+							.where(
+								and(
+									gt(personExit.timestamp, personEntry.timestamp),
+									eq(personExit.personId, person.id)
+								)
+							)
+					)
+				)
+			)
+		)
+		.as('timestamp_pairs');
+
+	const hoursSpentSubQuery = db
+		.with(timestampPairsSubquery)
+		.select({
+			hoursSpent: sql<number>`
+					extract(epoch from (${timestampPairsSubquery.exitTimestamp} - ${timestampPairsSubquery.entryTimestamp})) / 3600`.as(
+				'hours_spent'
+			)
+		})
+		.from(timestampPairsSubquery)
+		.where(isNotNull(timestampPairsSubquery.exitTimestamp))
+		.as('hours_spent');
+
+	const [{ totalHoursSpent }] = await db
+		.select({
+			totalHoursSpent: sum(hoursSpentSubQuery.hoursSpent).mapWith(Number).as('total_hours_spent')
+		})
+		.from(hoursSpentSubQuery)
+		.where(lt(hoursSpentSubQuery.hoursSpent, hoursSpentCutoffHours));
+
+	// Guarantor total hours spent must be greater than or equal to guarantorEligibilityHours
+	return totalHoursSpent >= guarantorEligibilityHours;
 }
 
 // Creates a person and the entry timestamp
@@ -272,44 +642,56 @@ export async function createPerson(
 	type: PersonType,
 	fnameD: string,
 	lnameD: string,
-	department: string,
 	building: string,
-	creator: string
-): Promise<{
-	id: number;
-	identifier: string;
-	type: PersonType;
-	fname: string;
-	lname: string;
-	department: string;
-	building: string;
-	state: State;
-}> {
-	// Assert fname, lname and identifier are valid
-	if (
-		identifierD === null ||
-		identifierD === undefined ||
-		identifierD === '' ||
-		type === null ||
-		type === undefined ||
-		(type as string) === '' ||
-		fnameD === null ||
-		fnameD === undefined ||
-		fnameD === '' ||
-		lnameD === null ||
-		lnameD === undefined ||
-		lnameD === '' ||
-		department === null ||
-		department === undefined ||
-		department === '' ||
-		building === null ||
-		building === undefined ||
-		building === '' ||
-		creator === null ||
-		creator === undefined ||
-		creator === ''
-	) {
-		throw new Error('Invalid person data');
+	creator: string,
+	opts: {
+		department?: string;
+		university?: string;
+		guarantorId?: number;
+	}
+): Promise<PersonLight> {
+	const department = opts.department ?? null;
+	const university = opts.university ?? null;
+	const guarantorId = opts.guarantorId ?? null;
+
+	// Assert identifier is valid
+	if (identifierD === '') {
+		throw new Error('Invalid identifier (empty)');
+	}
+
+	// Assert type is valid
+	if ((type as string) === '') {
+		throw new Error('Invalid type (empty)');
+	}
+
+	// Assert fname is valid
+	if (fnameD === '') {
+		throw new Error('Invalid fname (empty)');
+	}
+
+	// Assert lname is valid
+	if (lnameD === '') {
+		throw new Error('Invalid lname (empty)');
+	}
+
+	// Assert department is valid
+	if (department && department === '') {
+		throw new Error('Invalid department (empty)');
+	}
+
+	// Assert university is valid
+	if (university && university === '') {
+		throw new Error('Invalid university (empty)');
+	}
+
+	// Assert building is valid
+	if (building === '') {
+		throw new Error('Invalid building (empty)');
+	}
+
+	// Assert creator is valid
+	if (creator === '') {
+		throw new Error('Invalid creator (empty)');
 	}
 
 	const identifier = sanitizeString(identifierD);
@@ -318,17 +700,24 @@ export async function createPerson(
 
 	try {
 		return await db.transaction(async (tx) => {
+			// Check if the guarantor is valid
+			if (guarantorId) {
+				const valid = await validGuarantor(tx, guarantorId);
+				if (!valid) throw new Error('Guarantor not valid');
+			}
+
 			// Create the person
 			const [{ id }] = await tx
 				.insert(person)
-				.values({ identifier, type, fname, lname, department })
+				.values({ identifier, type, fname, lname, department, university })
 				.returning({ id: person.id });
 
 			// Create the person entry
 			await tx.insert(personEntry).values({
 				personId: id,
 				building,
-				creator
+				creator,
+				guarantorId
 			});
 
 			return {
@@ -338,7 +727,9 @@ export async function createPerson(
 				fname,
 				lname,
 				department,
+				university,
 				building,
+				guarantorId,
 				state: StateInside // Because the person was just created, they are inside
 			};
 		});
@@ -352,52 +743,81 @@ export async function togglePersonState(
 	db: Database,
 	id: number,
 	building: string,
-	creator: string
+	creator: string,
+	guarantorId?: number
 ): Promise<State> {
-	// Assert id, building and creator are valid
-	if (
-		id === null ||
-		id === undefined ||
-		building === null ||
-		building === undefined ||
-		building === '' ||
-		creator === null ||
-		creator === undefined ||
-		creator === ''
-	) {
-		throw new Error('Invalid person data');
+	// Assert building is valid
+	if (building === '') {
+		throw new Error('Invalid building (empty)');
+	}
+
+	// Assert creator is valid
+	if (creator === '') {
+		throw new Error('Invalid creator (empty)');
 	}
 
 	try {
 		return await db.transaction(async (tx) => {
-			// Get the person entry and exit timestamps
-			const [{ entryTimestamp, exitTimestamp }] = await tx
+			// Check if the guarantor is valid
+			if (guarantorId) {
+				const valid = await validGuarantor(tx, guarantorId);
+				if (!valid) throw new Error('Guarantor not valid');
+			}
+
+			// Get the person entry timestamp and building
+			const [{ entryTimestamp, entryBuilding }] = await tx
 				.select({
-					id: person.id,
-					entryTimestamp: max(personEntry.timestamp),
-					exitTimestamp: max(personExit.timestamp)
+					entryTimestamp: personEntry.timestamp,
+					entryBuilding: personEntry.building
 				})
-				.from(person)
-				.leftJoin(personEntry, eq(person.id, personEntry.personId))
-				.leftJoin(personExit, eq(person.id, personExit.personId))
-				.where(eq(person.id, id))
-				.groupBy(person.id);
+				.from(personEntry)
+				.where(eq(personEntry.personId, id))
+				.orderBy(desc(personEntry.timestamp))
+				.limit(1);
+
+			// Get the person timestamp
+			const exits = await tx
+				.select({
+					exitTimestamp: personExit.timestamp
+				})
+				.from(personExit)
+				.where(eq(personExit.personId, id))
+				.orderBy(desc(personExit.timestamp))
+				.limit(1);
+			const [{ exitTimestamp }] = exits.length === 1 ? exits : [{ exitTimestamp: null }];
 
 			// Toggle the person state
 			if (isInside(entryTimestamp, exitTimestamp)) {
-				// Exit the person
-				await tx.insert(personExit).values({
-					personId: id,
-					building,
-					creator
-				});
-				return StateOutside;
+				if (building === entryBuilding) {
+					// Release the person
+					await tx.insert(personExit).values({
+						personId: id,
+						building,
+						creator
+					});
+					return StateOutside;
+				} else {
+					// Transfer the person
+					await tx.insert(personExit).values({
+						personId: id,
+						building,
+						creator
+					});
+					await tx.insert(personEntry).values({
+						personId: id,
+						building,
+						creator,
+						guarantorId
+					});
+					return StateInside;
+				}
 			} else {
-				// Enter the person
+				// Admit the person
 				await tx.insert(personEntry).values({
 					personId: id,
 					building,
-					creator
+					creator,
+					guarantorId
 				});
 				return StateInside;
 			}
@@ -424,9 +844,9 @@ export async function getPersonTypes(db: Database): Promise<PersonType[]> {
 	}
 }
 
-export async function banPerson(db: Database, studentId: any): Promise<RowList<never[]>> {
+export async function banPerson(db: Database, personId: number): Promise<void> {
 	try {
-		return await db.update(person).set({ isBanned: true }).where(eq(person.id, studentId));
+		await db.update(person).set({ isBanned: true }).where(eq(person.id, personId));
 	} catch (err) {
 		throw new Error(`Failed to ban student in database: ${(err as Error).message}`);
 	}
@@ -437,6 +857,16 @@ export async function removePersonsFromBuilding(
 	building: string,
 	type: string
 ): Promise<void> {
+	// Assert building is valid
+	if (building === '') {
+		throw new Error('Invalid building (empty)');
+	}
+
+	// Assert type is valid
+	if (type === '') {
+		throw new Error('Invalid type (empty)');
+	}
+
 	try {
 		return await db.transaction(async (tx) => {
 			const personsInside = await tx

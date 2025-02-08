@@ -1,10 +1,10 @@
-import { createUser } from '$lib/server/db/user';
-import { validateSecret } from '$lib/server/secret';
 import { fail, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import type { PageServerLoad } from './$types';
 import { formSchema } from './schema';
+import type { PageServerLoad } from './$types';
+import { createUniversity } from '$lib/server/db/university';
+import { validateSecret } from '$lib/server/secret';
 
 export const load: PageServerLoad = async () => {
 	const form = await superValidate(zod(formSchema));
@@ -15,9 +15,9 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	default: async (event) => {
-		const { locals, request } = event;
+	default: async ({ locals, request }) => {
 		const { database } = locals;
+
 		const form = await superValidate(request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {
@@ -26,7 +26,6 @@ export const actions: Actions = {
 			});
 		}
 
-		// Check if the secret is correct
 		const secretOk = await validateSecret(form.data.secret);
 		if (!secretOk) {
 			return fail(401, {
@@ -35,21 +34,20 @@ export const actions: Actions = {
 			});
 		}
 
+		const { university } = form.data;
+
 		try {
-			const { username, password } = form.data;
-			// Create the new user
-			await createUser(database, username, password);
-		} catch (err: unknown) {
-			console.debug(`Failed to register: ${(err as Error).message}`);
-			return fail(400, {
+			await createUniversity(database, university);
+
+			return {
 				form,
-				message: 'Username already exists or password is too weak'
+				message: 'Successfully created university!'
+			};
+		} catch (err: unknown) {
+			return fail(500, {
+				form,
+				message: `Failed to create university: ${(err as Error).message}`
 			});
 		}
-
-		return {
-			form,
-			message: 'User created successfully!'
-		};
 	}
 };

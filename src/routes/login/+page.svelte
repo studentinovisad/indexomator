@@ -6,7 +6,7 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
-	import { formSchema } from './schema';
+	import { logInFormSchema } from './schema';
 	import LogoLight from '$lib/assets/images/light.svg';
 	import LogoDark from '$lib/assets/images/dark.svg';
 	import { page } from '$app/stores';
@@ -16,8 +16,8 @@
 
 	let { data, form: actionData } = $props();
 
-	const form = superForm(data.form, {
-		validators: zodClient(formSchema),
+	const logInForm = superForm(data.logInForm, {
+		validators: zodClient(logInFormSchema),
 		onUpdated: ({ form: f }) => {
 			if (actionData?.message === undefined) return;
 			const msg = actionData.message;
@@ -28,13 +28,17 @@
 			}
 		}
 	});
+	const { form: logInFormData, enhance: logInFormEnhance } = logInForm;
 
-	const { form: formData, enhance } = form;
 	let showPassword = $state(false);
 </script>
 
 <div class="flex h-screen w-full items-center justify-center px-4">
-	<form method="POST" class="flex w-full items-center justify-center px-4 pt-4" use:enhance>
+	<form
+		method="POST"
+		class="flex w-full items-center justify-center px-4 pt-4"
+		use:logInFormEnhance
+	>
 		<Card.Root class="mx-auto w-full max-w-sm portrait:border-0">
 			<Card.Header class="flex-col items-center">
 				<img class="hidden size-20 dark:block sm:pb-3" src={LogoLight} alt="Logo light" />
@@ -45,16 +49,16 @@
 				>
 			</Card.Header>
 			<Card.Content class="grid gap-4">
-				<Form.Field {form} name="username">
+				<Form.Field form={logInForm} name="username">
 					<Form.Control>
 						{#snippet children({ props })}
 							<Form.Label>Username</Form.Label>
-							<Input {...props} bind:value={$formData.username} />
+							<Input {...props} bind:value={$logInFormData.username} />
 						{/snippet}
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
-				<Form.Field {form} name="password">
+				<Form.Field form={logInForm} name="password">
 					<Form.Control>
 						{#snippet children({ props })}
 							<Form.Label>Password</Form.Label>
@@ -62,7 +66,7 @@
 								<Input
 									type={showPassword ? 'text' : 'password'}
 									{...props}
-									bind:value={$formData.password}
+									bind:value={$logInFormData.password}
 								/>
 								<Button
 									type="button"
@@ -85,17 +89,17 @@
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
-				<Form.Field {form} name="building">
+				<Form.Field form={logInForm} name="building">
 					<Form.Control>
 						{#snippet children({ props })}
 							<Form.Label>Building</Form.Label>
-							<Select.Root type="single" bind:value={$formData.building} name={props.name}>
+							<Select.Root type="single" bind:value={$logInFormData.building} name={props.name}>
 								<Select.Trigger {...props}>
-									{$formData.building ?? 'Select Building'}
+									{$logInFormData.building ?? 'Select Building'}
 								</Select.Trigger>
 								<Select.Content>
-									{#each data.buildings as building (building.id)}
-										<Select.Item value={building.name} label={building.name} />
+									{#each data.buildings as { id, name } (id)}
+										<Select.Item value={name} label={name} />
 									{/each}
 								</Select.Content>
 							</Select.Root>
@@ -103,7 +107,7 @@
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
-				<Form.Button type="submit">Submit</Form.Button>
+				<Form.Button>Submit</Form.Button>
 			</Card.Content>
 			<Card.Footer>
 				<p class="w-full px-2 text-center text-sm text-muted-foreground">
