@@ -13,9 +13,9 @@ import {
 	sum,
 	desc,
 	lt,
-	gte,
-	aliasedTable
+	gte
 } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { person, personEntry, personExit } from './schema/person';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
@@ -28,20 +28,19 @@ import {
 	Guest,
 	isPersonType,
 	Student,
+	type Guarantor,
 	type Person,
 	type PersonLight,
 	type PersonType
 } from '$lib/types/person';
 import { guarantorEligibilityHours } from '$lib/utils/env';
 import { hoursSpentCutoffHours } from '$lib/server/env';
-import { alias, QueryBuilder, type PgSelectQueryBuilder } from 'drizzle-orm/pg-core';
 
 type searchOptions = {
 	searchQuery?: string;
-	guarantorSearch?: boolean;
 };
 
-// Gets all persons using optional filters
+// Gets all persons
 export async function getPersons(
 	db: Database,
 	limit: number,
@@ -66,11 +65,8 @@ export async function getPersons(
 			: undefined
 		: undefined;
 
-	// Whether to search for persons that aren't of type "Guest" and are eligible (have enough hours spent)
-	const guarantorSearch = opts.guarantorSearch ?? false;
-
 	try {
-		const guarantorTable = alias(person, 'guarantor');
+		const guarantor = alias(person, 'guarantor');
 
 		const maxEntrySubquery = db
 			.select({
@@ -90,38 +86,6 @@ export async function getPersons(
 			.groupBy(personExit.personId)
 			.as('max_exit_timestamp');
 
-		const timestampPairsSubquery = db
-			.select({
-				personId: personEntry.personId,
-				entryTimestamp: personEntry.timestamp,
-				exitTimestamp: min(personExit.timestamp).as('exit_timestamp')
-			})
-			.from(personEntry)
-			.innerJoin(personExit, eq(personExit.personId, personEntry.personId))
-			.where(gt(personExit.timestamp, personEntry.timestamp))
-			.groupBy(personEntry.personId, personEntry.timestamp)
-			.as('timestamp_pairs');
-		const hoursSpentSubQuery = db
-			.with(timestampPairsSubquery)
-			.select({
-				personId: timestampPairsSubquery.personId,
-				hoursSpent: sql<number>`
-					extract(epoch from (${timestampPairsSubquery.exitTimestamp} - ${timestampPairsSubquery.entryTimestamp})) / 3600`.as(
-					'hours_spent'
-				)
-			})
-			.from(timestampPairsSubquery)
-			.as('hours_spent');
-		const totalHoursSpentSubQuery = db
-			.select({
-				personId: hoursSpentSubQuery.personId,
-				totalHoursSpent: sum(hoursSpentSubQuery.hoursSpent).mapWith(Number).as('total_hours_spent')
-			})
-			.from(hoursSpentSubQuery)
-			.where(lt(hoursSpentSubQuery.hoursSpent, hoursSpentCutoffHours))
-			.groupBy(hoursSpentSubQuery.personId)
-			.as('total_hours_spent');
-
 		const persons =
 			nonEmptySearchQuery !== undefined
 				? await db
@@ -136,11 +100,10 @@ export async function getPersons(
 							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 							entryBuilding: personEntry.building,
 							entryGuarantorId: personEntry.guarantorId,
-							entryGuarantorFname: guarantorTable.fname,
-							entryGuarantorLname: guarantorTable.lname,
-							entryGuarantorIdentifier: guarantorTable.identifier,
+							entryGuarantorFname: guarantor.fname,
+							entryGuarantorLname: guarantor.lname,
+							entryGuarantorIdentifier: guarantor.identifier,
 							exitTimestamp: maxExitSubquery.maxExitTimestamp,
-							totalHoursSpent: totalHoursSpentSubQuery.totalHoursSpent,
 							leastDistance: sqlLeast([
 								sqlLevenshteinDistance(sqlConcat([person.identifier]), nonEmptySearchQuery),
 								sqlLevenshteinDistance(sqlConcat([person.fname]), nonEmptySearchQuery),
@@ -169,36 +132,25 @@ export async function getPersons(
 								eq(personEntry.timestamp, maxEntrySubquery.maxEntryTimestamp)
 							)
 						)
-						.leftJoin(guarantorTable, eq(guarantorTable.id, personEntry.guarantorId))
-						// TODO: Don't left join when not guarantorSearch
-						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
+						.leftJoin(guarantor, eq(guarantor.id, personEntry.guarantorId))
 						.where(
-							and(
-								guarantorSearch
-									? and(
-											not(eq(person.type, Guest)),
-											gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
-										)
-									: undefined,
-								or(
-									...[
-										...fuzzySearchFilters([person.identifier], nonEmptySearchQuery),
-										...fuzzySearchFilters([person.fname], nonEmptySearchQuery, { distance: 5 }),
-										...fuzzySearchFilters([person.lname], nonEmptySearchQuery, { distance: 5 }),
-										...fuzzySearchFilters([person.fname, person.lname], nonEmptySearchQuery, {
-											distance: 6
-										}),
-										...fuzzySearchFilters([person.lname, person.fname], nonEmptySearchQuery, {
-											distance: 6
-										})
-									]
-								)
+							or(
+								...[
+									...fuzzySearchFilters([person.identifier], nonEmptySearchQuery),
+									...fuzzySearchFilters([person.fname], nonEmptySearchQuery, { distance: 5 }),
+									...fuzzySearchFilters([person.lname], nonEmptySearchQuery, { distance: 5 }),
+									...fuzzySearchFilters([person.fname, person.lname], nonEmptySearchQuery, {
+										distance: 6
+									}),
+									...fuzzySearchFilters([person.lname, person.fname], nonEmptySearchQuery, {
+										distance: 6
+									})
+								]
 							)
 						)
-						.orderBy(({ leastDistance, leastDistanceIdentifier, identifier }) => [
+						.orderBy(({ leastDistance, leastDistanceIdentifier }) => [
 							leastDistance,
-							leastDistanceIdentifier,
-							identifier
+							leastDistanceIdentifier
 						])
 						.limit(limit)
 						.offset(offset)
@@ -214,11 +166,10 @@ export async function getPersons(
 							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 							entryBuilding: personEntry.building,
 							entryGuarantorId: personEntry.guarantorId,
-							entryGuarantorFname: guarantorTable.fname,
-							entryGuarantorLname: guarantorTable.lname,
-							entryGuarantorIdentifier: guarantorTable.identifier,
-							exitTimestamp: maxExitSubquery.maxExitTimestamp,
-							totalHoursSpent: totalHoursSpentSubQuery.totalHoursSpent
+							entryGuarantorFname: guarantor.fname,
+							entryGuarantorLname: guarantor.lname,
+							entryGuarantorIdentifier: guarantor.identifier,
+							exitTimestamp: maxExitSubquery.maxExitTimestamp
 						})
 						.from(person)
 						.leftJoin(maxEntrySubquery, eq(maxEntrySubquery.personId, person.id))
@@ -230,18 +181,7 @@ export async function getPersons(
 								eq(personEntry.timestamp, maxEntrySubquery.maxEntryTimestamp)
 							)
 						)
-						.leftJoin(guarantorTable, eq(guarantorTable.id, personEntry.guarantorId))
-						// TODO: Don't left join when not guarantorSearch
-						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
-						.where(
-							guarantorSearch
-								? and(
-										not(eq(person.type, Guest)),
-										gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
-									)
-								: undefined
-						)
-						.orderBy(({ identifier }) => [identifier])
+						.leftJoin(guarantor, eq(guarantor.id, personEntry.guarantorId))
 						.limit(limit)
 						.offset(offset);
 
@@ -264,12 +204,147 @@ export async function getPersons(
 				guarantorFname: inside ? p.entryGuarantorFname : null,
 				guarantorLname: inside ? p.entryGuarantorLname : null,
 				guarantorIdentifier: inside ? p.entryGuarantorIdentifier : null,
-				state: inside ? StateInside : StateOutside,
-				totalHoursSpent: p.totalHoursSpent
+				state: inside ? StateInside : StateOutside
 			};
 		});
 	} catch (err: unknown) {
 		throw new Error(`Failed to get persons from database: ${(err as Error).message}`);
+	}
+}
+
+// Gets all guarantors
+export async function getGuarantors(
+	db: Database,
+	limit: number,
+	opts: searchOptions = {}
+): Promise<Guarantor[]> {
+	// Assert limit is valid
+	if (limit <= 0) {
+		throw new Error('Invalid limit (negative or zero)');
+	}
+
+	// Don't search if the search query is empty when trimmed
+	const sanitizedSearchQuery = opts.searchQuery ? sanitizeString(opts.searchQuery) : undefined;
+	const nonEmptySearchQuery = sanitizedSearchQuery
+		? sanitizedSearchQuery !== ''
+			? sanitizedSearchQuery
+			: undefined
+		: undefined;
+
+	try {
+		const timestampPairsSubquery = db
+			.select({
+				personId: personEntry.personId,
+				entryTimestamp: personEntry.timestamp,
+				exitTimestamp: min(personExit.timestamp).as('exit_timestamp')
+			})
+			.from(personEntry)
+			.innerJoin(personExit, eq(personExit.personId, personEntry.personId))
+			.where(gt(personExit.timestamp, personEntry.timestamp))
+			.groupBy(personEntry.personId, personEntry.timestamp)
+			.as('timestamp_pairs');
+
+		const hoursSpentSubQuery = db
+			.with(timestampPairsSubquery)
+			.select({
+				personId: timestampPairsSubquery.personId,
+				hoursSpent: sql<number>`
+					extract(epoch from (${timestampPairsSubquery.exitTimestamp} - ${timestampPairsSubquery.entryTimestamp})) / 3600`.as(
+					'hours_spent'
+				)
+			})
+			.from(timestampPairsSubquery)
+			.as('hours_spent');
+
+		const totalHoursSpentSubQuery = db
+			.select({
+				personId: hoursSpentSubQuery.personId,
+				totalHoursSpent: sum(hoursSpentSubQuery.hoursSpent).mapWith(Number).as('total_hours_spent')
+			})
+			.from(hoursSpentSubQuery)
+			.where(lt(hoursSpentSubQuery.hoursSpent, hoursSpentCutoffHours))
+			.groupBy(hoursSpentSubQuery.personId)
+			.as('total_hours_spent');
+
+		const guarantors =
+			nonEmptySearchQuery !== undefined
+				? await db
+						.select({
+							id: person.id,
+							identifier: person.identifier,
+							fname: person.fname,
+							lname: person.lname,
+							leastDistance: sqlLeast([
+								sqlLevenshteinDistance(sqlConcat([person.identifier]), nonEmptySearchQuery),
+								sqlLevenshteinDistance(sqlConcat([person.fname]), nonEmptySearchQuery),
+								sqlLevenshteinDistance(sqlConcat([person.lname]), nonEmptySearchQuery),
+								sqlLevenshteinDistance(
+									sqlConcat([person.fname, person.lname], ' '),
+									nonEmptySearchQuery
+								),
+								sqlLevenshteinDistance(
+									sqlConcat([person.lname, person.fname], ' '),
+									nonEmptySearchQuery
+								)
+							]).as('least_distance'),
+							leastDistanceIdentifier: sqlLevenshteinDistance(
+								sqlConcat([person.identifier]),
+								nonEmptySearchQuery
+							).as('least_distance_identifier')
+						})
+						.from(person)
+						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
+						.where(
+							and(
+								not(eq(person.type, Guest)),
+								gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours),
+								or(
+									...[
+										...fuzzySearchFilters([person.identifier], nonEmptySearchQuery),
+										...fuzzySearchFilters([person.fname], nonEmptySearchQuery, { distance: 5 }),
+										...fuzzySearchFilters([person.lname], nonEmptySearchQuery, { distance: 5 }),
+										...fuzzySearchFilters([person.fname, person.lname], nonEmptySearchQuery, {
+											distance: 6
+										}),
+										...fuzzySearchFilters([person.lname, person.fname], nonEmptySearchQuery, {
+											distance: 6
+										})
+									]
+								)
+							)
+						)
+						.orderBy(({ leastDistance, leastDistanceIdentifier }) => [
+							leastDistance,
+							leastDistanceIdentifier
+						])
+						.limit(limit)
+				: await db
+						.select({
+							id: person.id,
+							identifier: person.identifier,
+							fname: person.fname,
+							lname: person.lname
+						})
+						.from(person)
+						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
+						.where(
+							and(
+								not(eq(person.type, Guest)),
+								gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
+							)
+						)
+						.limit(limit);
+
+		return guarantors.map((g) => {
+			return {
+				id: g.id,
+				identifier: g.identifier,
+				fname: g.fname,
+				lname: g.lname
+			};
+		});
+	} catch (err: unknown) {
+		throw new Error(`Failed to get guarantors from database: ${(err as Error).message}`);
 	}
 }
 

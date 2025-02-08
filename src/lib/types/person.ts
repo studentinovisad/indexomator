@@ -29,6 +29,13 @@ export type PersonLight = {
 	state: State;
 };
 
+export type Guarantor = {
+	id: number;
+	identifier: string;
+	fname: string;
+	lname: string;
+};
+
 export type Person = {
 	id: number;
 	type: PersonType;
@@ -43,5 +50,4 @@ export type Person = {
 	guarantorLname: string | null;
 	guarantorIdentifier: string | null;
 	state: State;
-	totalHoursSpent: number;
 };

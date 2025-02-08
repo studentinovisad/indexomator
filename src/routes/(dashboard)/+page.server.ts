@@ -2,7 +2,7 @@ import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 
-import { getPersons, togglePersonState } from '$lib/server/db/person';
+import { getGuarantors, getPersons, togglePersonState } from '$lib/server/db/person';
 import { invalidateSession } from '$lib/server/db/session';
 import { deleteSessionTokenCookie } from '$lib/server/session';
 
@@ -14,9 +14,10 @@ import {
 } from './schema';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	const { database, session } = locals;
-	if (!session) return error(401, `Invalid session`);
+export const load: PageServerLoad = async ({ locals: { database, session } }) => {
+	if (!session) {
+		return error(401, `Invalid session`);
+	}
 	const { building: userBuilding } = session;
 
 	const searchForm = await superValidate(zod(searchFormSchema));
@@ -25,7 +26,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	try {
 		const personsP = getPersons(database, 1000, 0); // TODO: Pagination with limit and offset
-		const guarantorsP = getPersons(database, 10, 0, { guarantorSearch: true });
+		const guarantorsP = getGuarantors(database, 10);
 
 		const persons = await personsP;
 		const guarantors = await guarantorsP;
@@ -44,9 +45,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	search: async ({ locals, request }) => {
-		const { database } = locals;
-
+	search: async ({ locals: { database }, request }) => {
 		const searchForm = await superValidate(request, zod(searchFormSchema));
 		if (!searchForm.valid) {
 			return fail(400, {
@@ -71,9 +70,7 @@ export const actions: Actions = {
 			});
 		}
 	},
-	guarantorSearch: async ({ locals, request }) => {
-		const { database } = locals;
-
+	guarantorSearch: async ({ locals: { database }, request }) => {
 		const guarantorSearchForm = await superValidate(request, zod(guarantorSearchFormSchema));
 		if (!guarantorSearchForm.valid) {
 			return fail(400, {
@@ -85,9 +82,8 @@ export const actions: Actions = {
 		const { guarantorSearchQuery: searchQuery } = guarantorSearchForm.data;
 
 		try {
-			const guarantors = await getPersons(database, 10, 0, {
-				searchQuery,
-				guarantorSearch: true
+			const guarantors = await getGuarantors(database, 10, {
+				searchQuery
 			});
 
 			return {
@@ -101,9 +97,7 @@ export const actions: Actions = {
 			});
 		}
 	},
-	toggleState: async ({ locals, request }) => {
-		const { database } = locals;
-
+	toggleState: async ({ locals: { database, session, user }, request }) => {
 		const toggleStateForm = await superValidate(request, zod(toggleStateFormSchema));
 		if (!toggleStateForm.valid) {
 			return fail(400, {
@@ -112,7 +106,7 @@ export const actions: Actions = {
 			});
 		}
 
-		if (locals.session === null || locals.user === null) {
+		if (session === null || user === null) {
 			return fail(401, {
 				toggleStateForm,
 				message: 'Invalid session'
@@ -120,8 +114,8 @@ export const actions: Actions = {
 		}
 
 		const { personId, guarantorId } = toggleStateForm.data;
-		const { building } = locals.session;
-		const { username } = locals.user;
+		const { building } = session;
+		const { username } = user;
 
 		try {
 			await togglePersonState(database, personId, building, username, guarantorId);
@@ -138,8 +132,10 @@ export const actions: Actions = {
 		}
 	},
 	logout: async (event) => {
-		const { locals, request } = event;
-		const { database } = locals;
+		const {
+			locals: { database },
+			request
+		} = event;
 
 		const logoutForm = await superValidate(request, zod(logoutFormSchema));
 		if (!logoutForm.valid) {
