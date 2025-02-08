@@ -5,7 +5,17 @@
 	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
 	import LogoLight from '$lib/assets/images/light.svg';
 	import LogoDark from '$lib/assets/images/dark.svg';
-	import { Bomb, Building, Clock8, Cuboid, Github, House, KeyRound, Lock, University } from 'lucide-svelte';
+	import {
+		Bomb,
+		Building,
+		Clock8,
+		Cuboid,
+		Github,
+		House,
+		KeyRound,
+		Lock,
+		University
+	} from 'lucide-svelte';
 
 	// Menu items.
 	const items = [
@@ -44,11 +54,11 @@
 			url: '/admin/user/disable',
 			icon: Lock
 		},
-{
-title: 'Schedule user',
-url: '/admin/user/schedule',
-icon: Clock8
-}
+		{
+			title: 'Schedule user',
+			url: '/admin/user/schedule',
+			icon: Clock8
+		}
 	];
 
 	const sidebar = useSidebar();

@@ -29,8 +29,7 @@
 	<Card.Root class="mx-auto w-full max-w-sm">
 		<Card.Header>
 			<Card.Title class="text-2xl">Set user schedule</Card.Title>
-			<Card.Description>Set the time interval when the user
-			can log in.</Card.Description>
+			<Card.Description>Set the time interval when the user can log in.</Card.Description>
 		</Card.Header>
 		<Card.Content class="grid gap-4">
 			<Form.Field {form} name="username">

@@ -47,7 +47,10 @@ export const actions: Actions = {
 
 		try {
 			// Check if the username exists
-			const { id, passwordHash, disabled, schedStart, schedEnd } = await getUserByUsername(database, username);
+			const { id, passwordHash, disabled, schedStart, schedEnd } = await getUserByUsername(
+				database,
+				username
+			);
 
 			// Check if the ratelimit has been hit
 			const ratelimited = await checkUserRatelimit(
@@ -68,7 +71,7 @@ export const actions: Actions = {
 				throw new Error('user is disabled: contact the administrator');
 			}
 
-			if(!isNowInSchedule(schedStart, schedEnd)) {
+			if (!isNowInSchedule(schedStart, schedEnd)) {
 				throw new Error('user not in schedule');
 			}
 

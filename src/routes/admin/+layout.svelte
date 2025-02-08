@@ -26,7 +26,7 @@
 					Register User
 				{:else if page.url.pathname === '/admin/user/disable'}
 					Disable User
-					{:else if page.url.pathname === '/admin/user/schedule'}
+				{:else if page.url.pathname === '/admin/user/schedule'}
 					User schedule
 				{:else}
 					Admin Homepage
