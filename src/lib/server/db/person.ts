@@ -33,7 +33,7 @@ import {
 	type PersonLight,
 	type PersonType
 } from '$lib/types/person';
-import { guarantorEligibilityHours } from '$lib/utils/env';
+import { guarantorEligibilityHours, optionalGuarantor } from '$lib/utils/env';
 import { hoursSpentCutoffHours } from '$lib/server/env';
 
 type searchOptions = {
@@ -821,6 +821,23 @@ export async function togglePersonState(
 					});
 					return StateOutside;
 				} else {
+					// Check if the guarantor is set (if required)
+					if (!optionalGuarantor && guarantorId === undefined) {
+						// Get the person type
+						const [{ type }] = await tx
+							.select({ type: person.type })
+							.from(person)
+							.where(eq(person.id, id));
+						if (!isPersonType(type)) {
+							throw new Error('Invalid type from DB (not PersonType)');
+						}
+
+						// Check if the person is a guest
+						if (type === Guest) {
+							throw new Error('Guest requires a guarantor to be set');
+						}
+					}
+
 					// Transfer the person
 					await tx.insert(personExit).values({
 						personId: id,
@@ -836,6 +853,23 @@ export async function togglePersonState(
 					return StateInside;
 				}
 			} else {
+				// Check if the guarantor is set (if required)
+				if (!optionalGuarantor && guarantorId === undefined) {
+					// Get the person type
+					const [{ type }] = await tx
+						.select({ type: person.type })
+						.from(person)
+						.where(eq(person.id, id));
+					if (!isPersonType(type)) {
+						throw new Error('Invalid type from DB (not PersonType)');
+					}
+
+					// Check if the person is a guest
+					if (type === Guest) {
+						throw new Error('Guest requires a guarantor to be set');
+					}
+				}
+
 				// Admit the person
 				await tx.insert(personEntry).values({
 					personId: id,
