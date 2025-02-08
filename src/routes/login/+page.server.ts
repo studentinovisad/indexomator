@@ -1,5 +1,5 @@
 import { createSession, invalidateExcessSessions } from '$lib/server/db/session';
-import { checkUserRatelimit, getUserIdAndPasswordHash, isUserDisabled } from '$lib/server/db/user';
+import { checkUserRatelimit, getUserByUsername } from '$lib/server/db/user';
 import { verifyPasswordHash } from '$lib/server/password';
 import { generateSessionToken, setSessionTokenCookie } from '$lib/server/session';
 import { error, fail, redirect, type Actions } from '@sveltejs/kit';
@@ -46,7 +46,7 @@ export const actions: Actions = {
 
 		try {
 			// Check if the username exists
-			const { id, passwordHash } = await getUserIdAndPasswordHash(database, username);
+			const { id, passwordHash, disabled } = await getUserByUsername(database, username);
 
 			// Check if the ratelimit has been hit
 			const ratelimited = await checkUserRatelimit(
@@ -63,14 +63,14 @@ export const actions: Actions = {
 				});
 			}
 
+			if (disabled) {
+				throw new Error('user is disabled: contact the administrator');
+			}
+
 			// Check if the password matches
 			const validPassword = await verifyPasswordHash(passwordHash, password);
 			if (!validPassword) {
 				throw new Error('Incorrect password');
-			}
-
-			if (await isUserDisabled(database, id)) {
-				throw new Error('user is disabled: contact the administrator');
 			}
 
 			// Create a new session token

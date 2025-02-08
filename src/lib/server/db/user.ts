@@ -1,4 +1,5 @@
 import type { Database } from './connect';
+import type { User } from '$lib/types/db';
 import { and, desc, eq, gt } from 'drizzle-orm';
 import { ratelimitTable, userTable } from './schema/user';
 import { hashPassword, verifyPasswordStrength } from '../password';
@@ -38,25 +39,19 @@ export async function createUser(db: Database, username: string, password: strin
 	}
 }
 
-export async function getUserIdAndPasswordHash(
+export async function getUserByUsername(
 	db: Database,
 	username: string
-): Promise<{ id: number; passwordHash: string }> {
+): Promise<User> {
 	assertValidString(username, 'Invalid username');
 
 	try {
-		const [{ id, passwordHash }] = await db
-			.select({
-				id: userTable.id,
-				passwordHash: userTable.passwordHash
-			})
+		const [user] = await db
+			.select()
 			.from(userTable)
 			.where(eq(userTable.username, username));
 
-		return {
-			id,
-			passwordHash
-		};
+		return user;
 	} catch (err: unknown) {
 		throw new Error(
 			`Failed to get user id and password hash from database: ${(err as Error).message}`
@@ -111,23 +106,6 @@ export async function checkUserRatelimit(
 
 		return false;
 	});
-}
-
-export async function isUserDisabled(db: Database, userId: number): Promise<boolean> {
-	assertValidUserId(userId);
-
-	try {
-		const [{ disabled }] = await db
-			.select({
-				disabled: userTable.disabled
-			})
-			.from(userTable)
-			.where(eq(userTable.id, userId));
-
-		return disabled;
-	} catch (err: unknown) {
-		throw new Error(`Failed to get user status from database: ${(err as Error).message}`);
-	}
 }
 
 export async function updateUserDisabled(
