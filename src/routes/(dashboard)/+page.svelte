@@ -66,12 +66,11 @@
 		validators: zodClient(guarantorSearchFormSchema),
 		onUpdated: ({ form: f }) => {
 			if (actionData?.guarantors) guarantors = actionData?.guarantors;
-			if (actionData?.message === undefined) return;
-			const msg = actionData.message;
+			const msg = actionData?.message;
 			if (f.valid && page.status === 200) {
-				toast.success(msg);
+				if (msg) toast.success(msg);
 			} else {
-				toast.error(msg);
+				if (msg) toast.error(msg);
 			}
 		}
 	});
@@ -88,13 +87,12 @@
 	const toggleStateForm = superForm(data.toggleStateForm, {
 		validators: zodClient(toggleStateFormSchema),
 		onUpdated: ({ form: f }) => {
-			if (actionData?.message === undefined) return;
-			const msg = actionData.message;
+			const msg = actionData?.message;
 			if (f.valid && page.status === 200) {
-				searchInput = '';
-				toast.success(msg);
+				resetSearchAndGuarantorSearch();
+				if (msg) toast.success(msg);
 			} else {
-				toast.error(msg);
+				if (msg) toast.error(msg);
 			}
 		}
 	});
@@ -103,18 +101,24 @@
 	const toggleGuestStateForm = superForm(data.toggleGuestStateForm, {
 		validators: zodClient(toggleGuestStateFormSchema),
 		onUpdated: ({ form: f }) => {
-			if (actionData?.message === undefined) return;
-			const msg = actionData.message;
+			const msg = actionData?.message;
 			if (f.valid && page.status === 200) {
-				searchInput = '';
-				toast.success(msg);
+				resetSearchAndGuarantorSearch();
+				if (msg) toast.success(msg);
 			} else {
-				toast.error(msg);
+				if (msg) toast.error(msg);
 			}
 		}
 	});
 	const { enhance: toggleGuestStateEnhance, submit: toggleGuestStateFormSubmit } =
 		toggleGuestStateForm;
+
+	function resetSearchAndGuarantorSearch() {
+		searchInput = '';
+		persons = data.persons;
+		guarantorSearchInput = '';
+		guarantors = data.guarantors;
+	}
 
 	const columns = $derived(
 		createColumns(data.userBuilding, toggleStateFormSubmit, toggleGuestStateFormSubmit)
