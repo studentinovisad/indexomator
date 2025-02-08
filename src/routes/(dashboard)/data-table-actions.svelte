@@ -1,12 +1,12 @@
 <script lang="ts">
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import Button, { buttonVariants } from '$lib/components/ui/button/button.svelte';
-	import { toggleStateFormStore } from '$lib/stores/toggleState';
 	import { StateInside, type State } from '$lib/types/state';
 	import { Guest, type PersonType } from '$lib/types/person';
 	import { ArrowLeftRight, LogIn, LogOut } from 'lucide-svelte';
 	import { tick } from 'svelte';
 	import { cn } from '$lib/utils';
+	import { toggleStateFormStore } from '$lib/stores/toggleState.svelte';
 
 	let {
 		personId,

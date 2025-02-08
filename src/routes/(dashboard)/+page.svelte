@@ -31,7 +31,7 @@
 	import { tick } from 'svelte';
 	import { useId } from 'bits-ui';
 	import Label from '$lib/components/ui/label/label.svelte';
-	import { toggleStateFormStore } from '$lib/stores/toggleState';
+	import { toggleStateFormStore } from '$lib/stores/toggleState.svelte';
 
 	let { data, form: actionData } = $props();
 
