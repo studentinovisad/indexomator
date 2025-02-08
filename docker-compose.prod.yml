@@ -49,11 +49,8 @@ services:
     build:
       context: .
       dockerfile: docker/node.Dockerfile
-    environment:
-      ORIGIN: ${ORIGIN}
-      DATABASE_URL: ${DATABASE_URL}
-      SECRET: ${SECRET}
-      PUBLIC_INDEX_REGEX: ${PUBLIC_INDEX_REGEX}
+    env_file:
+      - .env
     networks:
       - internal
     labels:
