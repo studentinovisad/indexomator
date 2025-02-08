@@ -1,5 +1,5 @@
 import { connectDatabase } from '$lib/server/db/connect';
-import { isNowInSchedule } from '$lib/server/sched';
+import { isNowInSchedule } from '$lib/sched';
 import { validateSessionToken } from '$lib/server/db/session';
 import { setSessionTokenCookie, deleteSessionTokenCookie } from '$lib/server/session';
 import type { Handle } from '@sveltejs/kit';

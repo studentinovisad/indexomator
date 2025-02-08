@@ -1,4 +1,4 @@
-import { isNowInSchedule } from '$lib/server/sched';
+import { isNowInSchedule } from '$lib/sched';
 import { createSession, invalidateExcessSessions } from '$lib/server/db/session';
 import { checkUserRatelimit, getUserByUsername } from '$lib/server/db/user';
 import { verifyPasswordHash } from '$lib/server/password';
