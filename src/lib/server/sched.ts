@@ -18,7 +18,7 @@ function date2tod(date: Date): ToD {
 
 function todstr2tod(todstr: string): ToD {
 	const result = todstrRegExp.exec(todstr);
-	if(result === null) {
+	if (result === null) {
 		throw new Error(`invalid time of day string: ${todstr}`);
 	}
 
@@ -30,18 +30,13 @@ function todstr2tod(todstr: string): ToD {
 
 function isBetween(tod: ToD, start: ToD, end: ToD): boolean {
 	// handle cases like 20:00 to 8:00
-	if(end < start)
-		return !isBetween(tod, end, start)
+	if (end < start) return !isBetween(tod, end, start);
 
 	return start <= tod && tod < end;
 }
 
 export function isInSchedule(date: Date, start: string, end: string): boolean {
-	return isBetween(
-		date2tod(date),
-		todstr2tod(start),
-		todstr2tod(end)
-	);
+	return isBetween(date2tod(date), todstr2tod(start), todstr2tod(end));
 }
 
 export function isNowInSchedule(start: string, end: string): boolean {
