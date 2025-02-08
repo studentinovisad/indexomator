@@ -90,7 +90,13 @@
 			const msg = actionData?.message;
 			if (f.valid && page.status === 200) {
 				resetSearchAndGuarantorSearch();
-				if (msg) toast.success(msg);
+				if (msg) {
+					if (!actionData?.warning) {
+						toast.success(msg);
+					} else {
+						toast.warning(msg);
+					}
+				}
 			} else {
 				if (msg) toast.error(msg);
 			}

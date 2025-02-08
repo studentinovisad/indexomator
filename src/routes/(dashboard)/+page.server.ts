@@ -127,7 +127,8 @@ export const actions: Actions = {
 			if (guestCount > 0) {
 				return {
 					toggleStateForm,
-					message: 'WARNING: Person has guests that are inside!'
+					warning: true,
+					message: 'Person has guests that are inside!'
 				};
 			}
 
