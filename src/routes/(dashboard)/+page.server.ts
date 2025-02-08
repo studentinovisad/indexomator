@@ -2,7 +2,7 @@ import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 
-import { getGuarantors, getPersons, togglePersonState } from '$lib/server/db/person';
+import { getGuarantors, getGuestCount, getPersons, togglePersonState } from '$lib/server/db/person';
 import { invalidateSession } from '$lib/server/db/session';
 import { deleteSessionTokenCookie } from '$lib/server/session';
 
@@ -122,6 +122,14 @@ export const actions: Actions = {
 
 		try {
 			await togglePersonState(database, personId, building, username);
+
+			const guestCount = await getGuestCount(database, personId);
+			if (guestCount > 0) {
+				return {
+					toggleStateForm,
+					message: 'WARNING: Person has guests that are inside!'
+				};
+			}
 
 			return {
 				toggleStateForm,

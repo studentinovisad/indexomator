@@ -516,7 +516,7 @@ export async function getPersonsCountPerBuilding(db: Database): Promise<
 			.leftJoin(personExit, eq(personExit.personId, person.id))
 			.groupBy(person.id, person.type, personEntry.building)
 			.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-				or(isNull(maxExitTimestamp), gt(maxEntryTimestamp, maxExitTimestamp))
+				or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
 			)
 			.as('person_inside');
 
@@ -890,6 +890,36 @@ export async function togglePersonState(
 	}
 }
 
+export async function getGuestCount(db: Database, guarantorId: number): Promise<number> {
+	try {
+		const guestsInsideSubquery = db
+			.select({
+				guestId: person.id,
+				maxEntryTimestamp: max(personEntry.timestamp),
+				maxExitTimestamp: max(personExit.timestamp)
+			})
+			.from(person)
+			.leftJoin(personEntry, eq(personEntry.personId, person.id))
+			.leftJoin(personExit, eq(personExit.personId, person.id))
+			.where(eq(personEntry.guarantorId, guarantorId))
+			.groupBy(person.id)
+			.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
+				or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+			)
+			.as('guests_inside');
+
+		const [{ guestCount }] = await db
+			.select({
+				guestCount: count(guestsInsideSubquery.guestId)
+			})
+			.from(guestsInsideSubquery);
+
+		return guestCount;
+	} catch (err) {
+		throw new Error(`Failed to get guest count from database: ${(err as Error).message}`);
+	}
+}
+
 export async function getPersonTypes(db: Database): Promise<PersonType[]> {
 	try {
 		const types = await db
@@ -938,7 +968,7 @@ export async function removePersonsFromBuilding(
 				.where(and(eq(personEntry.building, building), eq(person.type, type)))
 				.groupBy(person.id, person.type, personEntry.building)
 				.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-					or(isNull(maxExitTimestamp), gt(maxEntryTimestamp, maxExitTimestamp))
+					or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
 				);
 
 			// Return if no one is found inside the building
