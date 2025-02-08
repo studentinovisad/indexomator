@@ -148,9 +148,10 @@ export async function getPersons(
 								]
 							)
 						)
-						.orderBy(({ leastDistance, leastDistanceIdentifier }) => [
+						.orderBy(({ leastDistance, leastDistanceIdentifier, entryTimestamp }) => [
 							leastDistance,
-							leastDistanceIdentifier
+							leastDistanceIdentifier,
+							entryTimestamp
 						])
 						.limit(limit)
 						.offset(offset)
@@ -181,6 +182,7 @@ export async function getPersons(
 								eq(personEntry.timestamp, maxEntrySubquery.maxEntryTimestamp)
 							)
 						)
+						.orderBy(({ entryTimestamp }) => [entryTimestamp])
 						.leftJoin(guarantor, eq(guarantor.id, personEntry.guarantorId))
 						.limit(limit)
 						.offset(offset);
