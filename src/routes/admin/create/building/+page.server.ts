@@ -15,9 +15,7 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	default: async ({ locals, request }) => {
-		const { database } = locals;
-
+	default: async ({ locals: { database }, request }) => {
 		const form = await superValidate(request, zod(formSchema));
 		if (!form.valid) {
 			return fail(400, {
