@@ -127,6 +127,27 @@ export async function updateUserDisabled(
 	}
 }
 
+export async function updateUserSchedule(
+	db: Database,
+	username: string,
+	newSchedStart: string,
+	newSchedEnd: string
+): Promise<void> {
+	assertValidString(username, 'Invalid username');
+
+	try {
+		await db
+			.update(userTable)
+			.set({
+				schedStart: newSchedStart,
+				schedEnd: newSchedEnd
+			})
+			.where(eq(userTable.username, username));
+	} catch (err: unknown) {
+		throw new Error(`Failed to update user schedule in database: ${(err as Error).message}`);
+	}
+}
+
 export async function updateAllUserDisabled(db: Database, newDisabled: boolean): Promise<void> {
 	try {
 		await db.update(userTable).set({
