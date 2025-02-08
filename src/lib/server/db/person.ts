@@ -315,9 +315,10 @@ export async function getGuarantors(
 								)
 							)
 						)
-						.orderBy(({ leastDistance, leastDistanceIdentifier }) => [
+						.orderBy(({ leastDistance, leastDistanceIdentifier, identifier }) => [
 							leastDistance,
-							leastDistanceIdentifier
+							leastDistanceIdentifier,
+							identifier
 						])
 						.limit(limit)
 				: await db
@@ -335,6 +336,7 @@ export async function getGuarantors(
 								gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
 							)
 						)
+						.orderBy(({ identifier }) => [identifier])
 						.limit(limit);
 
 		return guarantors.map((g) => {
