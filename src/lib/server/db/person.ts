@@ -78,34 +78,35 @@ export async function getPersons(
 			.groupBy(personEntry.personId)
 			.as('max_entry');
 
-		const timestampPairsSubquery = db
+		const maxExitSubquery = db
 			.select({
-				personId: person.id,
-				entryTimestamp: sql`${personEntry.timestamp}`.as('entryTimestamp'),
-				exitTimestamp: sql`${personExit.timestamp}`.as('exitTimestamp')
+				personId: personExit.personId,
+				maxExitTimestamp: max(personExit.timestamp).as('max_exit_timestamp')
+			})
+			.from(personExit)
+			.groupBy(personExit.personId)
+			.as('max_exit');
+
+		const guarantorInfoSubQuery = db
+			.select({
+				id: person.id,
+				fname: person.fname,
+				lname: person.lname,
+				identifier: person.identifier
 			})
 			.from(person)
-			.leftJoin(personEntry, eq(personEntry.personId, person.id))
-			.leftJoin(personExit, eq(personExit.personId, person.id))
-			.where(
-				or(
-					isNull(personExit.timestamp),
-					eq(
-						personExit.timestamp,
-						db
-							.select({
-								timestamp: min(personExit.timestamp).as('min_exit_timestamp')
-							})
-							.from(personExit)
-							.where(
-								and(
-									gt(personExit.timestamp, personEntry.timestamp),
-									eq(personExit.personId, person.id)
-								)
-							)
-					)
-				)
-			)
+			.as('guarantor_info');
+
+		const timestampPairsSubquery = db
+			.select({
+				personId: personEntry.personId,
+				entryTimestamp: sql<Date>`${personEntry.timestamp}`.as('entry_timestamp'),
+				exitTimestamp: min(personExit.timestamp).as('exit_timestamp')
+			})
+			.from(personEntry)
+			.innerJoin(personExit, eq(personExit.personId, personEntry.personId))
+			.where(gte(personExit.timestamp, personEntry.timestamp))
+			.groupBy(personEntry.personId, personEntry.timestamp)
 			.as('timestamp_pairs');
 
 		const hoursSpentSubQuery = db
@@ -118,7 +119,6 @@ export async function getPersons(
 				)
 			})
 			.from(timestampPairsSubquery)
-			.where(isNotNull(timestampPairsSubquery.exitTimestamp))
 			.as('hours_spent');
 
 		const totalHoursSpentSubQuery = db
@@ -130,16 +130,6 @@ export async function getPersons(
 			.where(lt(hoursSpentSubQuery.hoursSpent, hoursSpentCutoffHours))
 			.groupBy(hoursSpentSubQuery.personId)
 			.as('total_hours_spent');
-
-		const guarantorInfoSubQuery = db
-			.select({
-				id: person.id,
-				fname: person.fname,
-				lname: person.lname,
-				identifier: person.identifier
-			})
-			.from(person)
-			.as('guarantor_info');
 
 		const persons =
 			nonEmptySearchQuery !== undefined
@@ -158,7 +148,8 @@ export async function getPersons(
 							entryGuarantorFname: guarantorInfoSubQuery.fname,
 							entryGuarantorLname: guarantorInfoSubQuery.lname,
 							entryGuarantorIdentifier: guarantorInfoSubQuery.identifier,
-							exitTimestamp: max(personExit.timestamp),
+							exitTimestamp: maxExitSubquery.maxExitTimestamp,
+							totalHoursSpent: totalHoursSpentSubQuery.totalHoursSpent,
 							leastDistance: sqlLeast([
 								sqlLevenshteinDistance(sqlConcat([person.identifier]), nonEmptySearchQuery),
 								sqlLevenshteinDistance(sqlConcat([person.fname]), nonEmptySearchQuery),
@@ -179,6 +170,7 @@ export async function getPersons(
 						})
 						.from(person)
 						.leftJoin(maxEntrySubquery, eq(maxEntrySubquery.personId, person.id))
+						.leftJoin(maxExitSubquery, eq(maxExitSubquery.personId, person.id))
 						.leftJoin(
 							personEntry,
 							and(
@@ -186,9 +178,9 @@ export async function getPersons(
 								eq(personEntry.timestamp, maxEntrySubquery.maxEntryTimestamp)
 							)
 						)
-						.leftJoin(personExit, eq(person.id, personExit.personId))
-						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
 						.leftJoin(guarantorInfoSubQuery, eq(guarantorInfoSubQuery.id, personEntry.guarantorId))
+						// TODO: Don't left join when not guarantorSearch
+						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
 						.where(
 							and(
 								guarantorSearch
@@ -212,21 +204,6 @@ export async function getPersons(
 								)
 							)
 						)
-						.groupBy(
-							person.id,
-							person.identifier,
-							person.type,
-							person.fname,
-							person.lname,
-							person.department,
-							person.university,
-							maxEntrySubquery.maxEntryTimestamp,
-							personEntry.building,
-							personEntry.guarantorId,
-							guarantorInfoSubQuery.fname,
-							guarantorInfoSubQuery.lname,
-							guarantorInfoSubQuery.identifier
-						)
 						.orderBy(({ leastDistance, leastDistanceIdentifier, identifier }) => [
 							leastDistance,
 							leastDistanceIdentifier,
@@ -249,10 +226,12 @@ export async function getPersons(
 							entryGuarantorFname: guarantorInfoSubQuery.fname,
 							entryGuarantorLname: guarantorInfoSubQuery.lname,
 							entryGuarantorIdentifier: guarantorInfoSubQuery.identifier,
-							exitTimestamp: max(personExit.timestamp)
+							exitTimestamp: maxExitSubquery.maxExitTimestamp,
+							totalHoursSpent: totalHoursSpentSubQuery.totalHoursSpent
 						})
 						.from(person)
 						.leftJoin(maxEntrySubquery, eq(maxEntrySubquery.personId, person.id))
+						.leftJoin(maxExitSubquery, eq(maxExitSubquery.personId, person.id))
 						.leftJoin(
 							personEntry,
 							and(
@@ -260,9 +239,9 @@ export async function getPersons(
 								eq(personEntry.timestamp, maxEntrySubquery.maxEntryTimestamp)
 							)
 						)
-						.leftJoin(personExit, eq(person.id, personExit.personId))
-						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
 						.leftJoin(guarantorInfoSubQuery, eq(guarantorInfoSubQuery.id, personEntry.guarantorId))
+						// TODO: Don't left join when not guarantorSearch
+						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
 						.where(
 							guarantorSearch
 								? and(
@@ -270,21 +249,6 @@ export async function getPersons(
 										gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
 									)
 								: undefined
-						)
-						.groupBy(
-							person.id,
-							person.identifier,
-							person.type,
-							person.fname,
-							person.lname,
-							person.department,
-							person.university,
-							maxEntrySubquery.maxEntryTimestamp,
-							personEntry.building,
-							personEntry.guarantorId,
-							guarantorInfoSubQuery.fname,
-							guarantorInfoSubQuery.lname,
-							guarantorInfoSubQuery.identifier
 						)
 						.orderBy(({ identifier }) => [identifier])
 						.limit(limit)
@@ -309,7 +273,8 @@ export async function getPersons(
 				guarantorFname: inside ? p.entryGuarantorFname : null,
 				guarantorLname: inside ? p.entryGuarantorLname : null,
 				guarantorIdentifier: inside ? p.entryGuarantorIdentifier : null,
-				state: inside ? StateInside : StateOutside
+				state: inside ? StateInside : StateOutside,
+				totalHoursSpent: p.totalHoursSpent
 			};
 		});
 	} catch (err: unknown) {
@@ -335,6 +300,19 @@ export async function getAllPersonTypes(db: Database): Promise<PersonType[]> {
 		});
 	} catch (err: unknown) {
 		throw new Error(`Failed to get all person types from database: ${(err as Error).message}`);
+	}
+}
+
+export async function getPersonsCount(db: Database): Promise<number> {
+	try {
+		const [{ total }] = await db
+			.select({
+				total: count(person.id)
+			})
+			.from(person);
+		return total;
+	} catch (err: unknown) {
+		throw new Error(`Failed to get persons count from database: ${(err as Error).message}`);
 	}
 }
 

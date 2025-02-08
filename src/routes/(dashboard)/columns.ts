@@ -41,6 +41,10 @@ export function createColumns(
 			header: 'State'
 		},
 		{
+			accessorKey: 'totalHoursSpent',
+			header: 'THS'
+		},
+		{
 			id: 'actions',
 			header: 'Toggle State',
 			cell: ({ row }) => {
