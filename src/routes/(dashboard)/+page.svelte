@@ -35,11 +35,13 @@
 
 	let { data, form: actionData } = $props();
 
+	let persons = $state(data.persons);
 	const searchForm = superForm(data.searchForm, {
 		invalidateAll: false,
 		resetForm: false,
 		validators: zodClient(searchFormSchema),
 		onUpdated: ({ form: f }) => {
+			if (actionData?.persons) persons = actionData?.persons;
 			if (actionData?.message === undefined) return;
 			const msg = actionData.message;
 			if (f.valid && page.status === 200) {
@@ -56,13 +58,14 @@
 	let searchInput = $state('');
 	let searchInputFocus = $state(false);
 	let liveSearch = $state(browser);
-	const persons = $derived(actionData?.persons ?? data.persons);
 
+	let guarantors = $state(data.guarantors);
 	const guarantorSearchForm = superForm(data.guarantorSearchForm, {
 		invalidateAll: false,
 		resetForm: false,
 		validators: zodClient(guarantorSearchFormSchema),
 		onUpdated: ({ form: f }) => {
+			if (actionData?.guarantors) guarantors = actionData?.guarantors;
 			if (actionData?.message === undefined) return;
 			const msg = actionData.message;
 			if (f.valid && page.status === 200) {
@@ -78,7 +81,6 @@
 	let guarantorSearchPostTimeout: NodeJS.Timeout | undefined = $state(undefined);
 	let guarantorSearchInput = $state('');
 	let guarantorSearchPopoverOpen = $state(false);
-	const guarantors = $derived(actionData?.guarantors ?? data.guarantors);
 
 	let selectedGuarantorId: number | undefined = $state(undefined);
 	const selectedGuarantor = $derived(guarantors.find((g) => g.id === selectedGuarantorId));
@@ -89,6 +91,7 @@
 			if (actionData?.message === undefined) return;
 			const msg = actionData.message;
 			if (f.valid && page.status === 200) {
+				searchInput = '';
 				toast.success(msg);
 			} else {
 				toast.error(msg);
@@ -103,6 +106,7 @@
 			if (actionData?.message === undefined) return;
 			const msg = actionData.message;
 			if (f.valid && page.status === 200) {
+				searchInput = '';
 				toast.success(msg);
 			} else {
 				toast.error(msg);
