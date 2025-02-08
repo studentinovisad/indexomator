@@ -38,7 +38,10 @@
 			action: {
 				label: 'Learn more',
 				onClick: () => {
-					window.open('https://github.com/studentinovisad/indexomator/blob/main/PRIVACY.md', '_blank');
+					window.open(
+						'https://github.com/studentinovisad/indexomator/blob/main/PRIVACY.md',
+						'_blank'
+					);
 				}
 			}
 		});
@@ -132,9 +135,13 @@
 					License.
 					<!--TODO: Create Privacy Policy and Contributing-->
 					<span class="mt-2 flex w-full justify-center gap-4"
-						><a class="underline-offset-4 hover:text-primary hover:underline" href="https://github.com/studentinovisad/indexomator/blob/main/PRIVACY.md"
+						><a
+							class="underline-offset-4 hover:text-primary hover:underline"
+							href="https://github.com/studentinovisad/indexomator/blob/main/PRIVACY.md"
 							>Privacy Policy</a
-						><a class="underline-offset-4 hover:text-primary hover:underline" href="https://github.com/studentinovisad/indexomator/blob/main/CONTRIBUTING.md"
+						><a
+							class="underline-offset-4 hover:text-primary hover:underline"
+							href="https://github.com/studentinovisad/indexomator/blob/main/CONTRIBUTING.md"
 							>Contributing</a
 						></span
 					>
