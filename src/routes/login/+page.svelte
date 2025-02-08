@@ -11,8 +11,8 @@
 	import LogoDark from '$lib/assets/images/dark.svg';
 	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button';
-	import Visible from 'lucide-svelte/icons/eye';
-	import Invisible from 'lucide-svelte/icons/eye-closed';
+	import { Eye as Visible, EyeClosed as Invisible, Cookie } from 'lucide-svelte';
+	import { onMount } from 'svelte';
 
 	let { data, form: actionData } = $props();
 
@@ -31,9 +31,21 @@
 	const { form: logInFormData, enhance: logInFormEnhance } = logInForm;
 
 	let showPassword = $state(false);
+
+	onMount(() => {
+		toast('This site has to use some necessary cookies to function normally.', {
+			icon: Cookie,
+			action: {
+				label: 'Learn more',
+				onClick: () => {
+					window.open('', '_blank'); // TODO: Create Privacy Policy
+				}
+			}
+		});
+	});
 </script>
 
-<div class="flex h-screen w-full items-center justify-center px-4">
+<div class="flex h-screen w-full flex-col items-center justify-center px-4">
 	<form
 		method="POST"
 		class="flex w-full items-center justify-center px-4 pt-4"
@@ -116,7 +128,16 @@
 						class="underline underline-offset-4 hover:text-primary"
 					>
 						MIT
-					</a> License.
+					</a>
+					License.
+					<!--TODO: Create Privacy Policy and Contributing-->
+					<span class="mt-2 flex w-full justify-center gap-4"
+						><a class="underline-offset-4 hover:text-primary hover:underline" href=""
+							>Privacy Policy</a
+						><a class="underline-offset-4 hover:text-primary hover:underline" href=""
+							>Contributing</a
+						></span
+					>
 				</p>
 			</Card.Footer>
 		</Card.Root>
