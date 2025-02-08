@@ -3,16 +3,23 @@ import { and, desc, eq, gt } from 'drizzle-orm';
 import { ratelimitTable, userTable } from './schema/user';
 import { hashPassword, verifyPasswordStrength } from '../password';
 
-export async function createUser(db: Database, username: string, password: string): Promise<void> {
-	// Assert that username is valid
-	if (username === '') {
-		throw new Error('Invalid username (empty)');
+// If more files make checks like this
+// move it to util and export.
+function assertValidString(it: string, msg: string): void {
+	if (it === undefined || it === null || it === '') {
+		throw new Error(msg);
 	}
+}
 
-	// Assert that password is valid
-	if (password === '') {
-		throw new Error('Invalid password (empty)');
+function assertValidUserId(id: number): void {
+	if (id === undefined || id === null) {
+		throw new Error('Invalid user id');
 	}
+}
+
+export async function createUser(db: Database, username: string, password: string): Promise<void> {
+	assertValidString(username, 'Invalid username');
+	assertValidString(password, 'Invalid password');
 
 	// Check the strength of the password
 	const strong = await verifyPasswordStrength(password);
@@ -35,10 +42,7 @@ export async function getUserIdAndPasswordHash(
 	db: Database,
 	username: string
 ): Promise<{ id: number; passwordHash: string }> {
-	// Assert that username is valid
-	if (username === '') {
-		throw new Error('Invalid username (empty)');
-	}
+	assertValidString(username, 'Invalid username');
 
 	try {
 		const [{ id, passwordHash }] = await db
@@ -67,6 +71,8 @@ export async function checkUserRatelimit(
 	ratelimitMaxAttempts: number,
 	ratelimitTimeout: number
 ): Promise<boolean> {
+	assertValidUserId(userId);
+
 	// Assert that ratelimitMaxAttempts is valid
 	if (ratelimitMaxAttempts <= 0) {
 		throw new Error('Invalid ratelimitMaxAttempts (negative)');
@@ -105,4 +111,52 @@ export async function checkUserRatelimit(
 
 		return false;
 	});
+}
+
+export async function isUserDisabled(db: Database, userId: number): Promise<boolean> {
+	assertValidUserId(userId);
+
+	try {
+		const [{ disabled }] = await db
+			.select({
+				disabled: userTable.disabled
+			})
+			.from(userTable)
+			.where(eq(userTable.id, userId));
+
+		return disabled;
+	} catch (err: unknown) {
+		throw new Error(`Failed to get user status from database: ${(err as Error).message}`);
+	}
+}
+
+export async function updateUserDisabled(
+	db: Database,
+	username: string,
+	newDisabled: boolean
+): Promise<void> {
+	assertValidString(username, 'Invalid username');
+
+	try {
+		await db
+			.update(userTable)
+			.set({
+				disabled: newDisabled
+			})
+			.where(eq(userTable.username, username));
+	} catch (err: unknown) {
+		throw new Error(`Failed to update user disabled state in database: ${(err as Error).message}`);
+	}
+}
+
+export async function updateAllUserDisabled(db: Database, newDisabled: boolean): Promise<void> {
+	try {
+		await db.update(userTable).set({
+			disabled: newDisabled
+		});
+	} catch (err: unknown) {
+		throw new Error(
+			`Failed to update all users disabled state in database: ${(err as Error).message}`
+		);
+	}
 }

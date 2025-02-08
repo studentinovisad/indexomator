@@ -5,7 +5,7 @@
 	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
 	import LogoLight from '$lib/assets/images/light.svg';
 	import LogoDark from '$lib/assets/images/dark.svg';
-	import { Bomb, Building, Cuboid, Github, House, KeyRound, University, Skull } from 'lucide-svelte';
+	import { Bomb, Building, Cuboid, Github, House, KeyRound, Lock, University, Skull } from 'lucide-svelte';
 
 	// Menu items.
 	const items = [
@@ -43,6 +43,11 @@
 			title: 'Ban Person',
 			url: '/admin/person/ban',
 			icon: Skull
+		},
+		{
+			title: 'Disable User',
+			url: '/admin/user/disable',
+			icon: Lock
 		}
 	];
 

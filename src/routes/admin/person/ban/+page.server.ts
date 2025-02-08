@@ -5,16 +5,13 @@ import { formSchema } from './schema';
 // import type { PageServerLoad } from './$types';
 import { getPersons, banPerson } from '$lib/server/db/person';
 import { validateSecret } from '$lib/server/secret';
+import type { PageServerLoad } from './$types';
 
-export const load = async ({ locals }) => {
-	const { database } = locals;
+export const load: PageServerLoad = async () => {
 	const form = await superValidate(zod(formSchema));
-	const studentsP = getPersons(database, 10, 0);
-	const students = await studentsP;
 
 	return {
-		form,
-		students
+		form
 	};
 };
 

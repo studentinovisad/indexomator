@@ -11,7 +11,8 @@ import {
 export const userTable = pgTable('user', {
 	id: serial('id').primaryKey(),
 	username: text('username').notNull().unique(),
-	passwordHash: text('password_hash').notNull()
+	passwordHash: text('password_hash').notNull(),
+	disabled: boolean('disabled').default(false).notNull()
 });
 
 export const ratelimitTable = pgTable(

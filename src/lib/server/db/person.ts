@@ -844,9 +844,9 @@ export async function getPersonTypes(db: Database): Promise<PersonType[]> {
 	}
 }
 
-export async function banPerson(db: Database, personId: number): Promise<void> {
+export async function banPerson(db: Database, personId: string): Promise<void> {
 	try {
-		await db.update(person).set({ isBanned: true }).where(eq(person.id, personId));
+		await db.update(person).set({ isBanned: true }).where(eq(person.identifier, personId));
 	} catch (err) {
 		throw new Error(`Failed to ban student in database: ${(err as Error).message}`);
 	}

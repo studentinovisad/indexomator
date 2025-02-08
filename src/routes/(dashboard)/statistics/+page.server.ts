@@ -8,9 +8,7 @@ import {
 import { error, fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	const { database } = locals;
-
+export const load: PageServerLoad = async ({ locals: { database } }) => {
 	try {
 		const allTypesP = getAllPersonTypes(database);
 		const personsInsideCountP = getPersonsCountPerBuilding(database);
@@ -37,9 +35,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ locals }) => {
-		const { database } = locals;
-
+	default: async ({ locals: { database } }) => {
 		try {
 			const allTypesP = getAllPersonTypes(database);
 			const personsInsideCountP = getPersonsCountPerBuilding(database);
