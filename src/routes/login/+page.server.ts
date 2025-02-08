@@ -1,3 +1,4 @@
+import { isNowInSchedule } from '$lib/server/sched';
 import { createSession, invalidateExcessSessions } from '$lib/server/db/session';
 import { checkUserRatelimit, getUserByUsername } from '$lib/server/db/user';
 import { verifyPasswordHash } from '$lib/server/password';
@@ -46,7 +47,7 @@ export const actions: Actions = {
 
 		try {
 			// Check if the username exists
-			const { id, passwordHash, disabled } = await getUserByUsername(database, username);
+			const { id, passwordHash, disabled, schedStart, schedEnd } = await getUserByUsername(database, username);
 
 			// Check if the ratelimit has been hit
 			const ratelimited = await checkUserRatelimit(
@@ -65,6 +66,10 @@ export const actions: Actions = {
 
 			if (disabled) {
 				throw new Error('user is disabled: contact the administrator');
+			}
+
+			if(!isNowInSchedule(schedStart, schedEnd)) {
+				throw new Error('user not in schedule');
 			}
 
 			// Check if the password matches
