@@ -817,15 +817,6 @@ export async function togglePersonState(
 
 	try {
 		return await db.transaction(async (tx) => {
-			// Check if the guarantor is valid
-			if (guarantorId) {
-				try {
-					await validGuarantor(tx, guarantorId);
-				} catch (err) {
-					throw new Error(`Invalid guarantor: ${(err as Error).message}`);
-				}
-			}
-
 			// Get the person entry timestamp and building
 			const [{ entryTimestamp, entryBuilding }] = await tx
 				.select({
@@ -876,6 +867,15 @@ export async function togglePersonState(
 						}
 					}
 
+					// Check if the guarantor is valid
+					if (guarantorId) {
+						try {
+							await validGuarantor(tx, guarantorId);
+						} catch (err) {
+							throw new Error(`Invalid guarantor: ${(err as Error).message}`);
+						}
+					}
+
 					// Transfer the person
 					await tx.insert(personExit).values({
 						personId: id,
@@ -905,6 +905,15 @@ export async function togglePersonState(
 					// Check if the person is a guest
 					if (type === Guest) {
 						throw new Error('Guest requires a guarantor to be set');
+					}
+				}
+
+				// Check if the guarantor is valid
+				if (guarantorId) {
+					try {
+						await validGuarantor(tx, guarantorId);
+					} catch (err) {
+						throw new Error(`Invalid guarantor: ${(err as Error).message}`);
 					}
 				}
 
