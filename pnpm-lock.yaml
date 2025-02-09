@@ -46,8 +46,8 @@ importers:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.5.1)
       bits-ui:
-        specifier: 1.0.0-next.77
-        version: 1.0.0-next.77(svelte@5.19.9)
+        specifier: 1.0.0-next.88
+        version: 1.0.0-next.88(svelte@5.19.9)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -1463,8 +1463,8 @@ packages:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
 
-  bits-ui@1.0.0-next.77:
-    resolution: {integrity: sha512-IV0AyVEvsRkXv4s/fl4iea5E9W2b9EBf98s9mRMKMc1xHxM9MmtM2r6MZMqftHQ/c+gHTIt3A9EKuTlh7uay8w==}
+  bits-ui@1.0.0-next.88:
+    resolution: {integrity: sha512-vtktOIoG7SzPGD6aQpWIyvc9TFbxfNG0a3+eEOHtsq86zFyYCE7K78L32YGKz4F4pIaix8p72vq7rzHHTT+Vfw==}
     engines: {node: '>=18', pnpm: '>=8.7.0'}
     peerDependencies:
       svelte: ^5.11.0
@@ -2367,11 +2367,6 @@ packages:
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
 
-  runed@0.22.0:
-    resolution: {integrity: sha512-ZWVXWhOr0P5xdNgtviz6D1ivLUDWKLCbeC5SUEJ3zBkqLReVqWHenFxMNFeFaiC5bfxhFxyxzyzB+98uYFtwdA==}
-    peerDependencies:
-      svelte: ^5.7.0
-
   runed@0.23.2:
     resolution: {integrity: sha512-AhHCb5/B+YQW6ar1pzhGQOQy+byfjCH63ofuhrexSWwQKhC0EbQ60Z/wMYwETLo3ZubhwlNryxBt0seOMOrVFQ==}
     peerDependencies:
@@ -2499,6 +2494,9 @@ packages:
     peerDependencies:
       '@sveltejs/kit': 1.x || 2.x
       svelte: 3.x || 4.x || >=5.0.0-next.51
+
+  tabbable@6.2.0:
+    resolution: {integrity: sha512-Cat63mxsVJlzYvN51JmVXIgNoUokrIaT2zLclCXjRd8boZ0004U4KCs/sToJ75C6sdlByWxpYnb5Boif1VSFew==}
 
   tailwind-merge@2.5.4:
     resolution: {integrity: sha512-0q8cfZHMu9nuYP/b5Shb7Y7Sh1B7Nnl5GqNr1U+n2p6+mybvRtayrQ+0042Z5byvTA8ihjlP8Odo8/VnHbZu4Q==}
@@ -3693,15 +3691,16 @@ snapshots:
 
   binary-extensions@2.3.0: {}
 
-  bits-ui@1.0.0-next.77(svelte@5.19.9):
+  bits-ui@1.0.0-next.88(svelte@5.19.9):
     dependencies:
       '@floating-ui/core': 1.6.9
       '@floating-ui/dom': 1.6.13
       '@internationalized/date': 3.7.0
       esm-env: 1.2.2
-      runed: 0.22.0(svelte@5.19.9)
+      runed: 0.23.2(svelte@5.19.9)
       svelte: 5.19.9
       svelte-toolbelt: 0.7.1(svelte@5.19.9)
+      tabbable: 6.2.0
 
   brace-expansion@1.1.11:
     dependencies:
@@ -4542,11 +4541,6 @@ snapshots:
     dependencies:
       queue-microtask: 1.2.3
 
-  runed@0.22.0(svelte@5.19.9):
-    dependencies:
-      esm-env: 1.2.2
-      svelte: 5.19.9
-
   runed@0.23.2(svelte@5.19.9):
     dependencies:
       esm-env: 1.2.2
@@ -4711,6 +4705,8 @@ snapshots:
       - '@types/json-schema'
       - typescript
 
+  tabbable@6.2.0: {}
+
   tailwind-merge@2.5.4: {}
 
   tailwind-merge@3.0.1: {}
@@ -4836,7 +4832,7 @@ snapshots:
 
   vaul-svelte@1.0.0-next.3(svelte@5.19.9):
     dependencies:
-      bits-ui: 1.0.0-next.77(svelte@5.19.9)
+      bits-ui: 1.0.0-next.88(svelte@5.19.9)
       svelte: 5.19.9
       svelte-toolbelt: 0.4.6(svelte@5.19.9)
 
