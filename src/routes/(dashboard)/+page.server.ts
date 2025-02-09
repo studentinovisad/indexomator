@@ -42,7 +42,7 @@ export const load: PageServerLoad = async ({ locals: { database, session } }) =>
 			persons,
 			guarantors
 		};
-	} catch (err: unknown) {
+	} catch (err) {
 		return error(500, `Failed to load data: ${(err as Error).message}`);
 	}
 };
@@ -66,7 +66,7 @@ export const actions: Actions = {
 				searchForm,
 				persons
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return fail(500, {
 				searchForm,
 				message: `Failed to search: ${(err as Error).message}`
@@ -93,7 +93,7 @@ export const actions: Actions = {
 				guarantorSearchForm,
 				guarantors
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return fail(500, {
 				guarantorSearchForm,
 				message: `Failed to search for guarantors: ${(err as Error).message}`
@@ -136,7 +136,7 @@ export const actions: Actions = {
 				toggleStateForm,
 				message: 'Successfully toggled state!'
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return fail(500, {
 				toggleStateForm,
 				message: `Failed to toggle state: ${(err as Error).message}`
@@ -170,7 +170,7 @@ export const actions: Actions = {
 				toggleGuestStateForm,
 				message: 'Successfully toggled state!'
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return fail(500, {
 				toggleGuestStateForm,
 				message: `Failed to toggle state: ${(err as Error).message}`
@@ -196,7 +196,7 @@ export const actions: Actions = {
 		try {
 			await invalidateSession(database, sessionId);
 			deleteSessionTokenCookie(event);
-		} catch (err: unknown) {
+		} catch (err) {
 			return error(500, `Failed to logout: ${(err as Error).message}`);
 		}
 

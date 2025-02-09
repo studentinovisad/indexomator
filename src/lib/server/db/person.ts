@@ -209,7 +209,7 @@ export async function getPersons(
 				state: inside ? StateInside : StateOutside
 			};
 		});
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(`Failed to get persons from database: ${(err as Error).message}`);
 	}
 }
@@ -347,7 +347,7 @@ export async function getGuarantors(
 				lname: g.lname
 			};
 		});
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(`Failed to get guarantors from database: ${(err as Error).message}`);
 	}
 }
@@ -368,7 +368,7 @@ export async function getAllPersonTypes(db: Database): Promise<PersonType[]> {
 			}
 			return p.type;
 		});
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(`Failed to get all person types from database: ${(err as Error).message}`);
 	}
 }
@@ -381,7 +381,7 @@ export async function getPersonsCount(db: Database): Promise<number> {
 			})
 			.from(person);
 		return total;
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(`Failed to get persons count from database: ${(err as Error).message}`);
 	}
 }
@@ -412,7 +412,7 @@ export async function getPersonsCountPerType(db: Database): Promise<
 				count: p.count
 			};
 		});
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(
 			`Failed to get count of persons per type from database: ${(err as Error).message}`
 		);
@@ -449,7 +449,7 @@ export async function getPersonsCountPerDepartment(db: Database): Promise<
 				count: p.count
 			};
 		});
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(
 			`Failed to get count of persons per department from database: ${(err as Error).message}`
 		);
@@ -486,7 +486,7 @@ export async function getPersonsCountPerUniversity(db: Database): Promise<
 				count: p.count
 			};
 		});
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(
 			`Failed to get count of persons per university from database: ${(err as Error).message}`
 		);
@@ -540,7 +540,7 @@ export async function getPersonsCountPerBuilding(db: Database): Promise<
 				count: p.count
 			};
 		});
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(
 			`Failed to get inside count of persons per building from database: ${(err as Error).message}`
 		);
@@ -740,7 +740,7 @@ export async function createPerson(
 			if (guarantorId) {
 				try {
 					await validGuarantor(tx, guarantorId);
-				} catch (err: unknown) {
+				} catch (err) {
 					throw new Error(`Invalid guarantor: ${(err as Error).message}`);
 				}
 			}
@@ -792,7 +792,7 @@ export async function createPerson(
 				state: StateInside // Because the person was just created, they are inside
 			};
 		});
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(`Failed to create person in database: ${(err as Error).message}`);
 	}
 }
@@ -821,7 +821,7 @@ export async function togglePersonState(
 			if (guarantorId) {
 				try {
 					await validGuarantor(tx, guarantorId);
-				} catch (err: unknown) {
+				} catch (err) {
 					throw new Error(`Invalid guarantor: ${(err as Error).message}`);
 				}
 			}
@@ -918,7 +918,7 @@ export async function togglePersonState(
 				return StateInside;
 			}
 		});
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(`Failed to toggle person state in database: ${(err as Error).message}`);
 	}
 }

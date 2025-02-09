@@ -25,7 +25,7 @@ export const load: PageServerLoad = async ({ locals: { database } }) => {
 			universities,
 			guarantors
 		};
-	} catch (err: unknown) {
+	} catch (err) {
 		return error(500, `Failed to load data: ${(err as Error).message}`);
 	}
 };
@@ -67,7 +67,7 @@ export const actions: Actions = {
 				createForm,
 				message: 'Successfully created guest!'
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return fail(400, {
 				createForm,
 				message: `Failed to create guest: ${(err as Error).message}`
@@ -94,7 +94,7 @@ export const actions: Actions = {
 				guarantorSearchForm,
 				guarantors
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return fail(500, {
 				guarantorSearchForm,
 				message: `Failed to search: ${(err as Error).message}`

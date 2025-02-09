@@ -25,7 +25,7 @@ export const load: PageServerLoad = async ({ locals: { database } }) => {
 			departments,
 			universities
 		};
-	} catch (err: unknown) {
+	} catch (err) {
 		return error(500, `Failed to load data: ${(err as Error).message}`);
 	}
 };
@@ -70,7 +70,7 @@ export const actions: Actions = {
 				createForm,
 				message: 'Successfully created student!'
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return fail(400, {
 				createForm,
 				message: `Failed to create student: ${(err as Error).message}`

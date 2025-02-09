@@ -33,7 +33,7 @@ export async function createUser(db: Database, username: string, password: strin
 			username,
 			passwordHash
 		});
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(`Failed to create user in database: ${(err as Error).message}`);
 	}
 }
@@ -57,7 +57,7 @@ export async function getUserIdAndPasswordHash(
 			id,
 			passwordHash
 		};
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(
 			`Failed to get user id and password hash from database: ${(err as Error).message}`
 		);
@@ -125,7 +125,7 @@ export async function isUserDisabled(db: Database, userId: number): Promise<bool
 			.where(eq(userTable.id, userId));
 
 		return disabled;
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(`Failed to get user status from database: ${(err as Error).message}`);
 	}
 }
@@ -144,7 +144,7 @@ export async function updateUserDisabled(
 				disabled: newDisabled
 			})
 			.where(eq(userTable.username, username));
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(`Failed to update user disabled state in database: ${(err as Error).message}`);
 	}
 }
@@ -154,7 +154,7 @@ export async function updateAllUserDisabled(db: Database, newDisabled: boolean):
 		await db.update(userTable).set({
 			disabled: newDisabled
 		});
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(
 			`Failed to update all users disabled state in database: ${(err as Error).message}`
 		);
