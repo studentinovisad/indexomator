@@ -21,11 +21,13 @@ If you'd like to create your own branch to fix an issue, feel free to do so. Con
 When creating a branch, please make sure to follow our branch naming convention. This helps keep things organized and makes it easier for everyone to collaborate. **The branch name format should be**: `{initials}/{feat/fix}/{branch-name}`.
 
 - `{initials}`: Use your initials or a really short nick to identify your work;
-- `{feat/fix}`: Specify whether the branch is for a new feature (feat) or a bug fix (fix);
+- `{feat/fix/chore}`: Specify whether the branch is for a new feature (feat), a bug fix (fix) or something not code-related (chore);
 - `{branch-name}`: Give the branch a descriptive name related to the task you're working on (e.g., user-authentication, login-bug);
 - `/` **separator**: Be sure to include a `/` between these sections.
 
 This structure helps ensure that branches are **clear**, **consistent**, and **easy to navigate**.
+
+_Before committing, ask the project administration if there are any commit name notation rules._
 
 ## Contact
 
