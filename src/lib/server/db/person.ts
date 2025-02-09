@@ -627,8 +627,8 @@ async function validGuarantor(db: Database, guarantorId: number): Promise<void> 
 	}
 
 	// Check if guarantor has used all his guarantee slots
-	const guestCount = await getInsideGuestCount(db, guarantorId);
-	if (guarantorMaxGuests && guarantorMaxGuests >= guestCount) {
+	const insideGuestCount = await getInsideGuestCount(db, guarantorId);
+	if (guarantorMaxGuests && insideGuestCount >= guarantorMaxGuests) {
 		throw new Error('Guarantor reached maximum number of inside guests');
 	}
 
