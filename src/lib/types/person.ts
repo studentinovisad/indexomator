@@ -23,6 +23,14 @@ export type Guarantor = {
 	lname: string;
 };
 
+export type Guest = {
+	id: number;
+	identifier: string;
+	fname: string;
+	lname: string;
+	university: string | null;
+};
+
 export type Person = {
 	id: number;
 	type: PersonType;

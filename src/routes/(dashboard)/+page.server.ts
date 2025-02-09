@@ -5,6 +5,7 @@ import { zod } from 'sveltekit-superforms/adapters';
 import {
 	getGuarantors,
 	getInsideGuestCount,
+	getInsideGuests,
 	getPersons,
 	togglePersonState
 } from '$lib/server/db/person';
@@ -13,10 +14,11 @@ import { deleteSessionTokenCookie } from '$lib/server/session';
 
 import {
 	searchFormSchema,
-	toggleStateFormSchema,
-	logoutFormSchema,
 	guarantorSearchFormSchema,
-	toggleGuestStateFormSchema
+	toggleStateFormSchema,
+	toggleGuestStateFormSchema,
+	showGuestsFormSchema,
+	logoutFormSchema
 } from './schema';
 import type { PageServerLoad } from './$types';
 
@@ -27,9 +29,10 @@ export const load: PageServerLoad = async ({ locals: { database, session } }) =>
 	const { building: userBuilding } = session;
 
 	const searchForm = await superValidate(zod(searchFormSchema));
+	const guarantorSearchForm = await superValidate(zod(guarantorSearchFormSchema));
 	const toggleStateForm = await superValidate(zod(toggleStateFormSchema));
 	const toggleGuestStateForm = await superValidate(zod(toggleGuestStateFormSchema));
-	const guarantorSearchForm = await superValidate(zod(guarantorSearchFormSchema));
+	const showGuestsForm = await superValidate(zod(showGuestsFormSchema));
 
 	try {
 		const personsP = getPersons(database, 1000, 0); // TODO: Pagination with limit and offset
@@ -41,9 +44,10 @@ export const load: PageServerLoad = async ({ locals: { database, session } }) =>
 		return {
 			userBuilding,
 			searchForm,
+			guarantorSearchForm,
 			toggleStateForm,
 			toggleGuestStateForm,
-			guarantorSearchForm,
+			showGuestsForm,
 			persons,
 			guarantors
 		};
@@ -179,6 +183,31 @@ export const actions: Actions = {
 			return fail(500, {
 				toggleGuestStateForm,
 				message: `Failed to toggle state: ${(err as Error).message}`
+			});
+		}
+	},
+	showGuests: async ({ locals: { database }, request }) => {
+		const showGuestsForm = await superValidate(request, zod(showGuestsFormSchema));
+		if (!showGuestsForm.valid) {
+			return fail(400, {
+				showGuestsForm,
+				message: 'Invalid form inputs'
+			});
+		}
+
+		const { guarantorId } = showGuestsForm.data;
+
+		try {
+			const insideGuests = await getInsideGuests(database, guarantorId);
+
+			return {
+				showGuestsForm,
+				insideGuests
+			};
+		} catch (err) {
+			return fail(500, {
+				showGuestsForm,
+				message: `Failed to show guests: ${(err as Error).message}`
 			});
 		}
 	},

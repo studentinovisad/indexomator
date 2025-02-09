@@ -932,6 +932,45 @@ export async function togglePersonState(
 	}
 }
 
+export async function getInsideGuests(db: Database, guarantorId: number): Promise<Guest[]> {
+	try {
+		const guestsInside = await db
+			.select({
+				id: person.id,
+				identifier: person.identifier,
+				fname: person.fname,
+				lname: person.lname,
+				university: person.university,
+				maxEntryTimestamp: max(personEntry.timestamp),
+				maxExitTimestamp: max(personExit.timestamp)
+			})
+			.from(person)
+			.leftJoin(personEntry, eq(personEntry.personId, person.id))
+			.leftJoin(personExit, eq(personExit.personId, person.id))
+			.where(eq(personEntry.guarantorId, guarantorId))
+			.groupBy(person.id)
+			.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
+				or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+			)
+			.orderBy(({ university, fname, lname, identifier }) => [
+				university,
+				fname,
+				lname,
+				identifier
+			]);
+
+		return guestsInside.map((g) => ({
+			id: g.id,
+			identifier: g.identifier,
+			fname: g.fname,
+			lname: g.lname,
+			university: g.university
+		}));
+	} catch (err) {
+		throw new Error(`Failed to get guests from database: ${(err as Error).message}`);
+	}
+}
+
 export async function getInsideGuestCount(db: Database, guarantorId: number): Promise<number> {
 	try {
 		const guestsInsideSubquery = db

@@ -6,7 +6,8 @@ import DataTableActions from './data-table-actions.svelte';
 export function createColumns(
 	userBuilding: string,
 	toggleStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void,
-	toggleGuestStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void
+	toggleGuestStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void,
+	showGuestsFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void
 ): ColumnDef<Person>[] {
 	return [
 		{
@@ -42,7 +43,7 @@ export function createColumns(
 			header: 'State'
 		},
 		{
-			id: 'actions',
+			id: 'togglestate',
 			header: 'Toggle State',
 			cell: ({ row }) => {
 				return renderComponent(DataTableActions, {
@@ -55,7 +56,8 @@ export function createColumns(
 					building: row.original.building,
 					userBuilding,
 					toggleStateFormSubmit,
-					toggleGuestStateFormSubmit
+					toggleGuestStateFormSubmit,
+					showGuestsFormSubmit
 				});
 			},
 			enableSorting: false,

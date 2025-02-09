@@ -21,6 +21,7 @@
 	import {
 		guarantorSearchFormSchema,
 		searchFormSchema,
+		showGuestsFormSchema,
 		toggleGuestStateFormSchema,
 		toggleStateFormSchema
 	} from './schema';
@@ -32,6 +33,8 @@
 	import { useId } from 'bits-ui';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { toggleStateFormStore } from '$lib/stores/toggleState.svelte';
+	import type { Guest } from '$lib/types/person';
+	import { showGuestsFormStore } from '$lib/stores/showGuests.svelte';
 
 	let { data, form: actionData } = $props();
 
@@ -119,6 +122,22 @@
 	const { enhance: toggleGuestStateEnhance, submit: toggleGuestStateFormSubmit } =
 		toggleGuestStateForm;
 
+	let insideGuests: Guest[] = $state([]);
+	const showGuestsForm = superForm(data.showGuestsForm, {
+		validators: zodClient(showGuestsFormSchema),
+		onUpdated: ({ form: f }) => {
+			if (actionData?.insideGuests) insideGuests = actionData?.insideGuests;
+			if (actionData?.message === undefined) return;
+			const msg = actionData.message;
+			if (f.valid && page.status === 200) {
+				toast.success(msg);
+			} else {
+				toast.error(msg);
+			}
+		}
+	});
+	const { enhance: showGuestsEnhance, submit: showGuestsFormSubmit } = showGuestsForm;
+
 	function resetSearchAndGuarantorSearch() {
 		searchInput = '';
 		persons = data.persons;
@@ -127,7 +146,12 @@
 	}
 
 	const columns = $derived(
-		createColumns(data.userBuilding, toggleStateFormSubmit, toggleGuestStateFormSubmit)
+		createColumns(
+			data.userBuilding,
+			toggleStateFormSubmit,
+			toggleGuestStateFormSubmit,
+			showGuestsFormSubmit
+		)
 	);
 
 	const triggerId = useId();
@@ -342,3 +366,38 @@
 		<Form.FieldErrors />
 	</Form.Field>
 </form>
+
+<!-- Hidden form used to POST action for showing guests -->
+<form method="POST" action="?/showGuests" use:showGuestsEnhance>
+	<Form.Field class="hidden" form={showGuestsForm} name="guarantorId">
+		<Form.Control>
+			{#snippet children({ props })}
+				<Input {...props} type="hidden" value={showGuestsFormStore.guarantorId} />
+			{/snippet}
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
+</form>
+
+<!-- Dialog for showing table of inside guests -->
+<Dialog.Root bind:open={showGuestsFormStore.dialogOpen}>
+	<Dialog.Content class="sm:max-w-md">
+		<Dialog.Header>
+			<Dialog.Title>Inside guests</Dialog.Title>
+		</Dialog.Header>
+		<!-- TODO: Table of all inside guests -->
+		{#each insideGuests as { id, fname, lname } (id)}
+			<p>{fname} {lname}</p>
+		{:else}
+			<p>No guests found inside</p>
+		{/each}
+		<Dialog.Footer>
+			<!-- TODO: Exit all guests, exit particular guest
+			<Button type="button">
+				<CheckCheck />
+				<span>Confirm</span>
+			</Button>
+			-->
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>

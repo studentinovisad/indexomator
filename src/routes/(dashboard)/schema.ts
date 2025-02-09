@@ -6,6 +6,11 @@ export const searchFormSchema = z.object({
 });
 export type SearchFormSchema = typeof searchFormSchema;
 
+export const guarantorSearchFormSchema = z.object({
+	guarantorSearchQuery: z.string().optional()
+});
+export type GuarantorSearchFormSchema = typeof guarantorSearchFormSchema;
+
 export const toggleStateFormSchema = z.object({
 	personId: z.number()
 });
@@ -17,10 +22,10 @@ export const toggleGuestStateFormSchema = z.object({
 });
 export type ToggleGuestStateFormSchema = typeof toggleGuestStateFormSchema;
 
-export const guarantorSearchFormSchema = z.object({
-	guarantorSearchQuery: z.string().optional()
+export const showGuestsFormSchema = z.object({
+	guarantorId: z.number()
 });
-export type GuarantorSearchFormSchema = typeof guarantorSearchFormSchema;
+export type ShowGuestsFormSchema = typeof showGuestsFormSchema;
 
 export const logoutFormSchema = z.object({
 	sessionId: z.string()
