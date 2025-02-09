@@ -19,7 +19,7 @@ import {
 	toggleGuestStateFormSchema
 } from './schema';
 import type { PageServerLoad } from './$types';
-import { StateOutside } from '$lib/types/state';
+import { StateInside, StateOutside } from '$lib/types/state';
 
 export const load: PageServerLoad = async ({ locals: { database, session } }) => {
 	if (!session) {
@@ -127,18 +127,15 @@ export const actions: Actions = {
 		const { username } = user;
 
 		try {
-			const state = await togglePersonState(database, personId, building, username);
+			await togglePersonState(database, personId, building, username);
 
-			// Warn when releasing a person
-			if (state === StateOutside) {
-				const guestCount = await getInsideGuestCount(database, personId);
-				if (guestCount > 0) {
-					return {
-						toggleStateForm,
-						warning: true,
-						message: 'Person has leftover guests that are inside!'
-					};
-				}
+			const guestCount = await getInsideGuestCount(database, personId);
+			if (guestCount > 0) {
+				return {
+					toggleStateForm,
+					warning: true,
+					message: 'Person has leftover guests that are inside!'
+				};
 			}
 
 			return {
