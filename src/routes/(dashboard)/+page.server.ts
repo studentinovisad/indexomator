@@ -2,7 +2,12 @@ import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 
-import { getGuarantors, getGuestCount, getPersons, togglePersonState } from '$lib/server/db/person';
+import {
+	getGuarantors,
+	getInsideGuestCount,
+	getPersons,
+	togglePersonState
+} from '$lib/server/db/person';
 import { invalidateSession } from '$lib/server/db/session';
 import { deleteSessionTokenCookie } from '$lib/server/session';
 
@@ -14,6 +19,7 @@ import {
 	toggleGuestStateFormSchema
 } from './schema';
 import type { PageServerLoad } from './$types';
+import { StateOutside } from '$lib/types/state';
 
 export const load: PageServerLoad = async ({ locals: { database, session } }) => {
 	if (!session) {
@@ -121,15 +127,18 @@ export const actions: Actions = {
 		const { username } = user;
 
 		try {
-			await togglePersonState(database, personId, building, username);
+			const state = await togglePersonState(database, personId, building, username);
 
-			const guestCount = await getGuestCount(database, personId);
-			if (guestCount > 0) {
-				return {
-					toggleStateForm,
-					warning: true,
-					message: 'Person has guests that are inside!'
-				};
+			// Warn when releasing a person
+			if (state === StateOutside) {
+				const guestCount = await getInsideGuestCount(database, personId);
+				if (guestCount > 0) {
+					return {
+						toggleStateForm,
+						warning: true,
+						message: 'Person has leftover guests that are inside!'
+					};
+				}
 			}
 
 			return {
