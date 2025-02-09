@@ -19,7 +19,6 @@ import {
 	toggleGuestStateFormSchema
 } from './schema';
 import type { PageServerLoad } from './$types';
-import { StateInside, StateOutside } from '$lib/types/state';
 
 export const load: PageServerLoad = async ({ locals: { database, session } }) => {
 	if (!session) {
