@@ -39,7 +39,7 @@
 	const sameBuilding = $derived(userBuilding === building);
 </script>
 
-<div class="flex">
+<div class="flex space-x-1 sm:space-x-2">
 	{#if inside && sameBuilding}
 		{#if guarantorFname && guarantorLname && guarantorIdentifier}
 			<Tooltip.Provider>

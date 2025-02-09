@@ -14,7 +14,8 @@
 	import Zap from 'lucide-svelte/icons/zap';
 	import ZapOff from 'lucide-svelte/icons/zap-off';
 	import DataTable from './data-table.svelte';
-	import { createColumns } from './columns';
+	import DataTableGuests from './data-table-guests.svelte';
+	import { createColumns, createColumnsGuests } from './columns';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
@@ -153,6 +154,7 @@
 			showGuestsFormSubmit
 		)
 	);
+	const columnsGuests = $derived(createColumnsGuests());
 
 	const triggerId = useId();
 </script>
@@ -385,12 +387,7 @@
 		<Dialog.Header>
 			<Dialog.Title>Inside guests</Dialog.Title>
 		</Dialog.Header>
-		<!-- TODO: Table of all inside guests -->
-		{#each insideGuests as { id, fname, lname } (id)}
-			<p>{fname} {lname}</p>
-		{:else}
-			<p>No guests found inside</p>
-		{/each}
+		<DataTableGuests data={insideGuests} columns={columnsGuests} />
 		<Dialog.Footer>
 			<!-- TODO: Exit all guests, exit particular guest
 			<Button type="button">

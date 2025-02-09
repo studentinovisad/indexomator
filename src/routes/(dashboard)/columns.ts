@@ -1,5 +1,5 @@
 import { renderComponent } from '$lib/components/ui/data-table';
-import type { Person } from '$lib/types/person';
+import type { Guest, Person } from '$lib/types/person';
 import type { ColumnDef } from '@tanstack/table-core';
 import DataTableActions from './data-table-actions.svelte';
 
@@ -63,6 +63,27 @@ export function createColumns(
 			enableSorting: false,
 			enableColumnFilter: false,
 			enableGrouping: false
+		}
+	];
+}
+
+export function createColumnsGuests(): ColumnDef<Guest>[] {
+	return [
+		{
+			accessorKey: 'fname',
+			header: 'First name'
+		},
+		{
+			accessorKey: 'lname',
+			header: 'Last name'
+		},
+		{
+			accessorKey: 'identifier',
+			header: 'Identifier'
+		},
+		{
+			accessorKey: 'university',
+			header: 'University'
 		}
 	];
 }
