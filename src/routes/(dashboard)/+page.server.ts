@@ -129,8 +129,8 @@ export const actions: Actions = {
 		try {
 			await togglePersonState(database, personId, building, username);
 
-			const guestCount = await getInsideGuestCount(database, personId);
-			if (guestCount > 0) {
+			const insideGuestCount = await getInsideGuestCount(database, personId);
+			if (insideGuestCount > 0) {
 				return {
 					toggleStateForm,
 					warning: true,
