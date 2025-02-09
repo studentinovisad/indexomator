@@ -43,17 +43,17 @@ export function createColumns(
 			header: 'State'
 		},
 		{
-			id: 'togglestate',
-			header: 'Toggle State',
-			cell: ({ row }) => {
+			id: 'actions',
+			header: 'Actions',
+			cell: ({ row: { original: person } }) => {
 				return renderComponent(DataTableActions, {
-					personId: row.original.id,
-					guarantorFname: row.original.guarantorFname,
-					guarantorLname: row.original.guarantorLname,
-					guarantorIdentifier: row.original.guarantorIdentifier,
-					personType: row.original.type,
-					personState: row.original.state,
-					building: row.original.building,
+					personId: person.id,
+					guarantorFname: person.guarantorFname,
+					guarantorLname: person.guarantorLname,
+					guarantorIdentifier: person.guarantorIdentifier,
+					personType: person.type,
+					personState: person.state,
+					building: person.building,
 					userBuilding,
 					toggleStateFormSubmit,
 					toggleGuestStateFormSubmit,

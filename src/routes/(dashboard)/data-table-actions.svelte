@@ -133,7 +133,7 @@
 			class="w-full"
 		>
 			<Handshake />
-			<span class="sr-only">Show guests</span>
+			<span class="hidden sm:block">Show guests</span>
 		</Button>
 	{/if}
 </div>
