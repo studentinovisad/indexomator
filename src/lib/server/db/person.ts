@@ -30,7 +30,6 @@ import {
 	Student,
 	type Guarantor,
 	type Person,
-	type PersonLight,
 	type PersonType
 } from '$lib/types/person';
 import { guarantorEligibilityHours, optionalGuarantor } from '$lib/utils/env';
@@ -557,7 +556,7 @@ export async function createEmployee(
 	department: string | undefined,
 	building: string,
 	creator: string
-): Promise<PersonLight> {
+): Promise<Person> {
 	return await createPerson(db, identifier, Employee, fname, lname, building, creator, {
 		department
 	});
@@ -572,7 +571,7 @@ export async function createStudent(
 	department: string | undefined,
 	building: string,
 	creator: string
-): Promise<PersonLight> {
+): Promise<Person> {
 	return await createPerson(db, identifier, Student, fname, lname, building, creator, {
 		department
 	});
@@ -587,7 +586,7 @@ export async function createStudentRectorateMode(
 	university: string | undefined,
 	building: string,
 	creator: string
-): Promise<PersonLight> {
+): Promise<Person> {
 	return await createPerson(db, identifier, Student, fname, lname, building, creator, {
 		university
 	});
@@ -603,7 +602,7 @@ export async function createGuest(
 	building: string,
 	creator: string,
 	guarantorId: number | undefined
-): Promise<PersonLight> {
+): Promise<Person> {
 	return await createPerson(db, identifier, Guest, fname, lname, building, creator, {
 		university,
 		guarantorId
@@ -678,7 +677,7 @@ export async function createPerson(
 		university?: string;
 		guarantorId?: number;
 	}
-): Promise<PersonLight> {
+): Promise<Person> {
 	const department = opts.department ?? null;
 	const university = opts.university ?? null;
 	const guarantorId = opts.guarantorId ?? null;
@@ -749,6 +748,23 @@ export async function createPerson(
 				guarantorId
 			});
 
+			const [{ guarantorFname, guarantorLname, guarantorIdentifier }] = guarantorId
+				? await tx
+						.select({
+							guarantorFname: person.fname,
+							guarantorLname: person.lname,
+							guarantorIdentifier: person.identifier
+						})
+						.from(person)
+						.where(eq(person.id, guarantorId))
+				: [
+						{
+							guarantorFname: null,
+							guarantorLname: null,
+							guarantorIdentifier: null
+						}
+					];
+
 			return {
 				id,
 				identifier,
@@ -759,6 +775,9 @@ export async function createPerson(
 				university,
 				building,
 				guarantorId,
+				guarantorFname,
+				guarantorLname,
+				guarantorIdentifier,
 				state: StateInside // Because the person was just created, they are inside
 			};
 		});
