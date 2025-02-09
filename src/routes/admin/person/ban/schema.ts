@@ -6,7 +6,7 @@ export const formSchema = z.object({
 	secret: z.string().min(32).max(255),
 	action: z
 		.string()
-		.default('disable')
-		.refine((value) => value === 'disable' || value === 'enable', "Must be 'disable' or 'enable'")
+		.default('ban')
+		.refine((value) => value === 'ban', "Must be 'disable' or 'enable'")
 });
 export type FormSchema = typeof formSchema;

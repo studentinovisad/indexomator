@@ -16,7 +16,7 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	default: async ({ locals, request }) => {
+	ban: async ({ locals, request }) => {
 		const { database } = locals;
 		const form = await superValidate(request, zod(formSchema));
 		if (!form.valid) {
@@ -37,6 +37,7 @@ export const actions: Actions = {
 
 		try {
 			const { personId } = form.data;
+			console.log('personId:', personId);
 			await banPerson(database, personId);
 		} catch (err: unknown) {
 			console.debug(`Failed to ban student: ${(err as Error).message}`);
@@ -48,7 +49,7 @@ export const actions: Actions = {
 
 		return {
 			form,
-			message: 'Student banned successfully! 🚫'
+			message: 'Person banned successfully! 🚫'
 		};
 	}
 };
