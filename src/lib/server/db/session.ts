@@ -35,7 +35,7 @@ export async function createSession(
 			.returning();
 
 		return result;
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(`Failed to create session in database: ${(err as Error).message}`);
 	}
 }
@@ -73,7 +73,7 @@ export async function validateSessionToken(
 				.where(eq(sessionTable.id, session.id));
 		}
 		return { session, user };
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(`Failed to validate session token: ${(err as Error).message}`);
 	}
 }
@@ -86,7 +86,7 @@ export async function invalidateSession(db: Database, sessionId: string): Promis
 
 	try {
 		await db.delete(sessionTable).where(eq(sessionTable.id, sessionId));
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(`Failed to invalidate session in database: ${(err as Error).message}`);
 	}
 }

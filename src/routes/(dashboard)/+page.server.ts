@@ -2,30 +2,41 @@ import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 
-import { getPersons, togglePersonState } from '$lib/server/db/person';
+import {
+	getGuarantors,
+	getInsideGuestCount,
+	getInsideGuests,
+	getPersons,
+	togglePersonState
+} from '$lib/server/db/person';
 import { invalidateSession } from '$lib/server/db/session';
 import { deleteSessionTokenCookie } from '$lib/server/session';
 
 import {
 	searchFormSchema,
+	guarantorSearchFormSchema,
 	toggleStateFormSchema,
-	logoutFormSchema,
-	guarantorSearchFormSchema
+	toggleGuestStateFormSchema,
+	showGuestsFormSchema,
+	logoutFormSchema
 } from './schema';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	const { database, session } = locals;
-	if (!session) return error(401, `Invalid session`);
+export const load: PageServerLoad = async ({ locals: { database, session } }) => {
+	if (!session) {
+		return error(401, `Invalid session`);
+	}
 	const { building: userBuilding } = session;
 
 	const searchForm = await superValidate(zod(searchFormSchema));
-	const toggleStateForm = await superValidate(zod(toggleStateFormSchema));
 	const guarantorSearchForm = await superValidate(zod(guarantorSearchFormSchema));
+	const toggleStateForm = await superValidate(zod(toggleStateFormSchema));
+	const toggleGuestStateForm = await superValidate(zod(toggleGuestStateFormSchema));
+	const showGuestsForm = await superValidate(zod(showGuestsFormSchema));
 
 	try {
 		const personsP = getPersons(database, 1000, 0); // TODO: Pagination with limit and offset
-		const guarantorsP = getPersons(database, 10, 0, { guarantorSearch: true });
+		const guarantorsP = getGuarantors(database, 10);
 
 		const persons = await personsP;
 		const guarantors = await guarantorsP;
@@ -33,20 +44,20 @@ export const load: PageServerLoad = async ({ locals }) => {
 		return {
 			userBuilding,
 			searchForm,
-			toggleStateForm,
 			guarantorSearchForm,
+			toggleStateForm,
+			toggleGuestStateForm,
+			showGuestsForm,
 			persons,
 			guarantors
 		};
-	} catch (err: unknown) {
+	} catch (err) {
 		return error(500, `Failed to load data: ${(err as Error).message}`);
 	}
 };
 
 export const actions: Actions = {
-	search: async ({ locals, request }) => {
-		const { database } = locals;
-
+	search: async ({ locals: { database }, request }) => {
 		const searchForm = await superValidate(request, zod(searchFormSchema));
 		if (!searchForm.valid) {
 			return fail(400, {
@@ -64,16 +75,14 @@ export const actions: Actions = {
 				searchForm,
 				persons
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return fail(500, {
 				searchForm,
 				message: `Failed to search: ${(err as Error).message}`
 			});
 		}
 	},
-	guarantorSearch: async ({ locals, request }) => {
-		const { database } = locals;
-
+	guarantorSearch: async ({ locals: { database }, request }) => {
 		const guarantorSearchForm = await superValidate(request, zod(guarantorSearchFormSchema));
 		if (!guarantorSearchForm.valid) {
 			return fail(400, {
@@ -85,25 +94,22 @@ export const actions: Actions = {
 		const { guarantorSearchQuery: searchQuery } = guarantorSearchForm.data;
 
 		try {
-			const guarantors = await getPersons(database, 10, 0, {
-				searchQuery,
-				guarantorSearch: true
+			const guarantors = await getGuarantors(database, 10, {
+				searchQuery
 			});
 
 			return {
 				guarantorSearchForm,
 				guarantors
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return fail(500, {
 				guarantorSearchForm,
 				message: `Failed to search for guarantors: ${(err as Error).message}`
 			});
 		}
 	},
-	toggleState: async ({ locals, request }) => {
-		const { database } = locals;
-
+	toggleState: async ({ locals: { database, session, user }, request }) => {
 		const toggleStateForm = await superValidate(request, zod(toggleStateFormSchema));
 		if (!toggleStateForm.valid) {
 			return fail(400, {
@@ -112,34 +118,104 @@ export const actions: Actions = {
 			});
 		}
 
-		if (locals.session === null || locals.user === null) {
+		if (session === null || user === null) {
 			return fail(401, {
 				toggleStateForm,
 				message: 'Invalid session'
 			});
 		}
 
-		const { personId, guarantorId } = toggleStateForm.data;
-		const { building } = locals.session;
-		const { username } = locals.user;
+		const { personId } = toggleStateForm.data;
+		const { building } = session;
+		const { username } = user;
 
 		try {
-			await togglePersonState(database, personId, building, username, guarantorId);
+			await togglePersonState(database, personId, building, username);
+
+			const insideGuestCount = await getInsideGuestCount(database, personId);
+			if (insideGuestCount > 0) {
+				return {
+					toggleStateForm,
+					warning: true,
+					message: 'Person has leftover guests that are inside!'
+				};
+			}
 
 			return {
 				toggleStateForm,
 				message: 'Successfully toggled state!'
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return fail(500, {
 				toggleStateForm,
 				message: `Failed to toggle state: ${(err as Error).message}`
 			});
 		}
 	},
+	toggleGuestState: async ({ locals: { database, session, user }, request }) => {
+		const toggleGuestStateForm = await superValidate(request, zod(toggleGuestStateFormSchema));
+		if (!toggleGuestStateForm.valid) {
+			return fail(400, {
+				toggleGuestStateForm,
+				message: 'Invalid form inputs'
+			});
+		}
+
+		if (session === null || user === null) {
+			return fail(401, {
+				toggleGuestStateForm,
+				message: 'Invalid session'
+			});
+		}
+
+		const { personId, guarantorId } = toggleGuestStateForm.data;
+		const { building } = session;
+		const { username } = user;
+
+		try {
+			await togglePersonState(database, personId, building, username, guarantorId);
+
+			return {
+				toggleGuestStateForm,
+				message: 'Successfully toggled state!'
+			};
+		} catch (err) {
+			return fail(500, {
+				toggleGuestStateForm,
+				message: `Failed to toggle state: ${(err as Error).message}`
+			});
+		}
+	},
+	showGuests: async ({ locals: { database }, request }) => {
+		const showGuestsForm = await superValidate(request, zod(showGuestsFormSchema));
+		if (!showGuestsForm.valid) {
+			return fail(400, {
+				showGuestsForm,
+				message: 'Invalid form inputs'
+			});
+		}
+
+		const { guarantorId } = showGuestsForm.data;
+
+		try {
+			const insideGuests = await getInsideGuests(database, guarantorId);
+
+			return {
+				showGuestsForm,
+				insideGuests
+			};
+		} catch (err) {
+			return fail(500, {
+				showGuestsForm,
+				message: `Failed to show guests: ${(err as Error).message}`
+			});
+		}
+	},
 	logout: async (event) => {
-		const { locals, request } = event;
-		const { database } = locals;
+		const {
+			locals: { database },
+			request
+		} = event;
 
 		const logoutForm = await superValidate(request, zod(logoutFormSchema));
 		if (!logoutForm.valid) {
@@ -154,7 +230,7 @@ export const actions: Actions = {
 		try {
 			await invalidateSession(database, sessionId);
 			deleteSessionTokenCookie(event);
-		} catch (err: unknown) {
+		} catch (err) {
 			return error(500, `Failed to logout: ${(err as Error).message}`);
 		}
 
