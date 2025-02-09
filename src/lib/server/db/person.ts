@@ -32,7 +32,7 @@ import {
 	type Person,
 	type PersonType
 } from '$lib/types/person';
-import { guarantorEligibilityHours, optionalGuarantor } from '$lib/utils/env';
+import { guarantorEligibilityHours, guarantorMaxGuests, optionalGuarantor } from '$lib/utils/env';
 import { hoursSpentCutoffHours } from '$lib/server/env';
 
 type searchOptions = {
@@ -610,7 +610,7 @@ export async function createGuest(
 }
 
 // Checks if a guarantor exists in the database and is not a guest
-async function validGuarantor(db: Database, guarantorId: number): Promise<boolean> {
+async function validGuarantor(db: Database, guarantorId: number): Promise<void> {
 	// Check guarantor type
 	const [{ type }] = await db
 		.select({ type: person.type })
@@ -623,7 +623,13 @@ async function validGuarantor(db: Database, guarantorId: number): Promise<boolea
 
 	// Guarantor must not be a guest
 	if (type === Guest) {
-		return false;
+		throw new Error("Guarantor can't be a guest");
+	}
+
+	// Check if guarantor has used all his guarantee slots
+	const guestCount = await getInsideGuestCount(db, guarantorId);
+	if (guarantorMaxGuests && guarantorMaxGuests >= guestCount) {
+		throw new Error('Guarantor reached maximum number of inside guests');
 	}
 
 	// Check guarantor total hours spent
@@ -660,7 +666,9 @@ async function validGuarantor(db: Database, guarantorId: number): Promise<boolea
 		.where(lt(hoursSpentSubQuery.hoursSpent, hoursSpentCutoffHours));
 
 	// Guarantor total hours spent must be greater than or equal to guarantorEligibilityHours
-	return totalHoursSpent >= guarantorEligibilityHours;
+	if (totalHoursSpent < guarantorEligibilityHours) {
+		throw new Error(`Guarantor doesn't have enough hours (${guarantorEligibilityHours})`);
+	}
 }
 
 // Creates a person and the entry timestamp
@@ -730,8 +738,11 @@ export async function createPerson(
 		return await db.transaction(async (tx) => {
 			// Check if the guarantor is valid
 			if (guarantorId) {
-				const valid = await validGuarantor(tx, guarantorId);
-				if (!valid) throw new Error('Guarantor not valid');
+				try {
+					await validGuarantor(tx, guarantorId);
+				} catch (err: unknown) {
+					throw new Error(`Invalid guarantor: ${(err as Error).message}`);
+				}
 			}
 
 			// Create the person
@@ -808,8 +819,11 @@ export async function togglePersonState(
 		return await db.transaction(async (tx) => {
 			// Check if the guarantor is valid
 			if (guarantorId) {
-				const valid = await validGuarantor(tx, guarantorId);
-				if (!valid) throw new Error('Guarantor not valid');
+				try {
+					await validGuarantor(tx, guarantorId);
+				} catch (err: unknown) {
+					throw new Error(`Invalid guarantor: ${(err as Error).message}`);
+				}
 			}
 
 			// Get the person entry timestamp and building
@@ -909,7 +923,7 @@ export async function togglePersonState(
 	}
 }
 
-export async function getGuestCount(db: Database, guarantorId: number): Promise<number> {
+export async function getInsideGuestCount(db: Database, guarantorId: number): Promise<number> {
 	try {
 		const guestsInsideSubquery = db
 			.select({
