@@ -37,7 +37,7 @@ Under the GDPR, you have the right to:
 
 If you have any questions about this Privacy Policy or wish to exercise your rights, please reach out to us at:
 
-**Email:** support@evidencija.app
+**Email:** privacy@studentinovisad.com
 
 ## Updates to This Privacy Policy
 
