@@ -10,6 +10,14 @@ import type { PageServerLoad } from './$types';
 import { getBuildings } from '$lib/server/db/building';
 import { ratelimitMaxAttempts, ratelimitTimeout } from '$lib/server/env';
 
+class LoginError extends Error {
+	sensitive: boolean;
+	constructor(name: string, sensitive: boolean) {
+		super(name);
+		this.sensitive = sensitive;
+	}
+}
+
 export const load: PageServerLoad = async ({ locals }) => {
 	const { database } = locals;
 
@@ -64,13 +72,13 @@ export const actions: Actions = {
 			}
 
 			if (disabled) {
-				throw new Error('user is disabled: contact the administrator');
+				throw new LoginError('user is disabled: contact the administrator', true);
 			}
 
 			// Check if the password matches
 			const validPassword = await verifyPasswordHash(passwordHash, password);
 			if (!validPassword) {
-				throw new Error('Incorrect password');
+				throw new LoginError('Incorrect password', true);
 			}
 
 			// Create a new session token
@@ -80,12 +88,14 @@ export const actions: Actions = {
 
 			// Invalidate sessions that exceed the maximum number of sessions
 			await invalidateExcessSessions(database, id);
-		} catch (err) {
-			// WARN: Don't return the real error message back to user since this is publicly available
+		} catch (err: unknown) {
 			console.warn(`Failed to login: ${(err as Error).message}`);
 			return fail(401, {
 				logInForm,
-				message: 'Invalid username or password'
+				message:
+					!(err instanceof LoginError) || err.sensitive
+						? 'Invalid username or password'
+						: err.message
 			});
 		}
 
