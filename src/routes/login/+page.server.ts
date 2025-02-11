@@ -1,3 +1,4 @@
+import { isUserScheduled } from '$lib/server/db/schedule';
 import { createSession, invalidateExcessSessions } from '$lib/server/db/session';
 import { checkUserRatelimit, getUserByUsername } from '$lib/server/db/user';
 import { verifyPasswordHash } from '$lib/server/password';
@@ -73,6 +74,10 @@ export const actions: Actions = {
 
 			if (disabled) {
 				throw new LoginError('user is disabled: contact the administrator', true);
+			}
+
+			if(!await isUserScheduled(database, id)) {
+				throw new LoginError('you are not scheduled', false);
 			}
 
 			// Check if the password matches
