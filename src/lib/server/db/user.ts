@@ -108,44 +108,6 @@ export async function checkUserRatelimit(
 	});
 }
 
-<<<<<<< HEAD
-export async function isUserDisabled(db: Database, userId: number): Promise<boolean> {
-	assertValidUserId(userId);
-
-	try {
-		const [{ disabled }] = await db
-			.select({
-				disabled: userTable.disabled
-			})
-			.from(userTable)
-			.where(eq(userTable.id, userId));
-
-		return disabled;
-	} catch (err) {
-		throw new Error(`Failed to get user status from database: ${(err as Error).message}`);
-	}
-}
-
-||||||| parent of 835b608 (lib/server/db/user, routes/login: get the whole user table since basically every column is used)
-export async function isUserDisabled(db: Database, userId: number): Promise<boolean> {
-	assertValidUserId(userId);
-
-	try {
-		const [{ disabled }] = await db
-			.select({
-				disabled: userTable.disabled
-			})
-			.from(userTable)
-			.where(eq(userTable.id, userId));
-
-		return disabled;
-	} catch (err: unknown) {
-		throw new Error(`Failed to get user status from database: ${(err as Error).message}`);
-	}
-}
-
-=======
->>>>>>> 835b608 (lib/server/db/user, routes/login: get the whole user table since basically every column is used)
 export async function updateUserDisabled(
 	db: Database,
 	username: string,
