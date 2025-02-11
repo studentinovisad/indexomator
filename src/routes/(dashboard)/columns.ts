@@ -53,6 +53,7 @@ export function createColumns(
 					personState: row.original.state,
 					building: row.original.building,
 					userBuilding,
+					isBanned: row.original.isBanned,
 					toggleStateFormSubmit
 				});
 			},
