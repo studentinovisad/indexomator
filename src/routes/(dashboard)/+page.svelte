@@ -36,6 +36,7 @@
 	import { toggleStateFormStore } from '$lib/stores/toggleState.svelte';
 	import type { Guest } from '$lib/types/person';
 	import { showGuestsFormStore } from '$lib/stores/showGuests.svelte';
+	import toggleSFX from '$lib/assets/sfx/toggle.mp3';
 
 	let { data, form: actionData } = $props();
 
@@ -97,8 +98,10 @@
 				if (msg) {
 					if (!actionData?.warning) {
 						toast.success(msg);
+						new Audio(toggleSFX).play();
 					} else {
 						toast.warning(msg);
+						new Audio(toggleSFX).play();
 					}
 				}
 			} else {
@@ -115,6 +118,7 @@
 			if (f.valid && page.status === 200) {
 				resetSearchAndGuarantorSearch();
 				if (msg) toast.success(msg);
+				new Audio(toggleSFX).play();
 			} else {
 				if (msg) toast.error(msg);
 			}
