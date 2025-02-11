@@ -1,6 +1,5 @@
-import { isNowInSchedule } from '$lib/sched';
 import { createSession, invalidateExcessSessions } from '$lib/server/db/session';
-import { checkUserRatelimit, getUserByUsername } from '$lib/server/db/user';
+import { checkUserRatelimit, getUserIdAndPasswordHash, isUserDisabled } from '$lib/server/db/user';
 import { verifyPasswordHash } from '$lib/server/password';
 import { generateSessionToken, setSessionTokenCookie } from '$lib/server/session';
 import { error, fail, redirect, type Actions } from '@sveltejs/kit';
@@ -10,14 +9,6 @@ import { logInFormSchema } from './schema';
 import type { PageServerLoad } from './$types';
 import { getBuildings } from '$lib/server/db/building';
 import { ratelimitMaxAttempts, ratelimitTimeout } from '$lib/server/env';
-
-class LoginError extends Error {
-	sensitive: boolean;
-	constructor(name: string, sensitive: boolean) {
-		super(name);
-		this.sensitive = sensitive;
-	}
-}
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const { database } = locals;
@@ -31,7 +22,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			logInForm,
 			buildings
 		};
-	} catch (err: unknown) {
+	} catch (err) {
 		return error(500, `Failed to load data: ${(err as Error).message}`);
 	}
 };
@@ -55,10 +46,7 @@ export const actions: Actions = {
 
 		try {
 			// Check if the username exists
-			const { id, passwordHash, disabled, schedStart, schedEnd } = await getUserByUsername(
-				database,
-				username
-			);
+			const { id, passwordHash } = await getUserIdAndPasswordHash(database, username);
 
 			// Check if the ratelimit has been hit
 			const ratelimited = await checkUserRatelimit(
@@ -75,18 +63,14 @@ export const actions: Actions = {
 				});
 			}
 
-			if (disabled) {
-				throw new LoginError('user is disabled: contact the administrator', true);
-			}
-
-			if (!isNowInSchedule(schedStart, schedEnd)) {
-				throw new LoginError('user not in schedule', false);
-			}
-
 			// Check if the password matches
 			const validPassword = await verifyPasswordHash(passwordHash, password);
 			if (!validPassword) {
-				throw new LoginError('Incorrect password', true);
+				throw new Error('Incorrect password');
+			}
+
+			if (await isUserDisabled(database, id)) {
+				throw new Error('user is disabled: contact the administrator');
 			}
 
 			// Create a new session token
@@ -96,14 +80,12 @@ export const actions: Actions = {
 
 			// Invalidate sessions that exceed the maximum number of sessions
 			await invalidateExcessSessions(database, id);
-		} catch (err: unknown) {
+		} catch (err) {
+			// WARN: Don't return the real error message back to user since this is publicly available
 			console.warn(`Failed to login: ${(err as Error).message}`);
 			return fail(401, {
 				logInForm,
-				message:
-					!(err instanceof LoginError) || err.sensitive
-						? 'Invalid username or password'
-						: err.message
+				message: 'Invalid username or password'
 			});
 		}
 

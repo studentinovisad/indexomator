@@ -2,7 +2,7 @@ import { error, fail, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 
-import { createGuest, getPersons } from '$lib/server/db/person';
+import { createGuest, getGuarantors } from '$lib/server/db/person';
 import { getUniversities } from '$lib/server/db/university';
 
 import { createFormSchema, guarantorSearchFormSchema } from './schema';
@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ locals: { database } }) => {
 
 	try {
 		const universitiesP = getUniversities(database);
-		const guarantorsP = getPersons(database, 10, 0, { guarantorSearch: true });
+		const guarantorsP = getGuarantors(database, 10);
 
 		const universities = await universitiesP;
 		const guarantors = await guarantorsP;
@@ -25,7 +25,7 @@ export const load: PageServerLoad = async ({ locals: { database } }) => {
 			universities,
 			guarantors
 		};
-	} catch (err: unknown) {
+	} catch (err) {
 		return error(500, `Failed to load data: ${(err as Error).message}`);
 	}
 };
@@ -67,7 +67,7 @@ export const actions: Actions = {
 				createForm,
 				message: 'Successfully created guest!'
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return fail(400, {
 				createForm,
 				message: `Failed to create guest: ${(err as Error).message}`
@@ -86,16 +86,15 @@ export const actions: Actions = {
 		const { guarantorSearchQuery: searchQuery } = guarantorSearchForm.data;
 
 		try {
-			const guarantors = await getPersons(database, 10, 0, {
-				searchQuery,
-				guarantorSearch: true
+			const guarantors = await getGuarantors(database, 10, {
+				searchQuery
 			});
 
 			return {
 				guarantorSearchForm,
 				guarantors
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return fail(500, {
 				guarantorSearchForm,
 				message: `Failed to search: ${(err as Error).message}`

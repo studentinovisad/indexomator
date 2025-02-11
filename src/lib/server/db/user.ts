@@ -1,5 +1,4 @@
 import type { Database } from './connect';
-import type { User } from '$lib/types/db';
 import { and, desc, eq, gt } from 'drizzle-orm';
 import { ratelimitTable, userTable } from './schema/user';
 import { hashPassword, verifyPasswordStrength } from '../password';
@@ -34,19 +33,31 @@ export async function createUser(db: Database, username: string, password: strin
 			username,
 			passwordHash
 		});
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(`Failed to create user in database: ${(err as Error).message}`);
 	}
 }
 
-export async function getUserByUsername(db: Database, username: string): Promise<User> {
+export async function getUserIdAndPasswordHash(
+	db: Database,
+	username: string
+): Promise<{ id: number; passwordHash: string }> {
 	assertValidString(username, 'Invalid username');
 
 	try {
-		const [user] = await db.select().from(userTable).where(eq(userTable.username, username));
+		const [{ id, passwordHash }] = await db
+			.select({
+				id: userTable.id,
+				passwordHash: userTable.passwordHash
+			})
+			.from(userTable)
+			.where(eq(userTable.username, username));
 
-		return user;
-	} catch (err: unknown) {
+		return {
+			id,
+			passwordHash
+		};
+	} catch (err) {
 		throw new Error(
 			`Failed to get user id and password hash from database: ${(err as Error).message}`
 		);
@@ -102,6 +113,23 @@ export async function checkUserRatelimit(
 	});
 }
 
+export async function isUserDisabled(db: Database, userId: number): Promise<boolean> {
+	assertValidUserId(userId);
+
+	try {
+		const [{ disabled }] = await db
+			.select({
+				disabled: userTable.disabled
+			})
+			.from(userTable)
+			.where(eq(userTable.id, userId));
+
+		return disabled;
+	} catch (err) {
+		throw new Error(`Failed to get user status from database: ${(err as Error).message}`);
+	}
+}
+
 export async function updateUserDisabled(
 	db: Database,
 	username: string,
@@ -116,29 +144,8 @@ export async function updateUserDisabled(
 				disabled: newDisabled
 			})
 			.where(eq(userTable.username, username));
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(`Failed to update user disabled state in database: ${(err as Error).message}`);
-	}
-}
-
-export async function updateUserSchedule(
-	db: Database,
-	username: string,
-	newSchedStart: string,
-	newSchedEnd: string
-): Promise<void> {
-	assertValidString(username, 'Invalid username');
-
-	try {
-		await db
-			.update(userTable)
-			.set({
-				schedStart: newSchedStart,
-				schedEnd: newSchedEnd
-			})
-			.where(eq(userTable.username, username));
-	} catch (err: unknown) {
-		throw new Error(`Failed to update user schedule in database: ${(err as Error).message}`);
 	}
 }
 
@@ -147,7 +154,7 @@ export async function updateAllUserDisabled(db: Database, newDisabled: boolean):
 		await db.update(userTable).set({
 			disabled: newDisabled
 		});
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(
 			`Failed to update all users disabled state in database: ${(err as Error).message}`
 		);

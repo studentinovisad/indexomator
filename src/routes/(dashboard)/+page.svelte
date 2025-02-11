@@ -14,11 +14,18 @@
 	import Zap from 'lucide-svelte/icons/zap';
 	import ZapOff from 'lucide-svelte/icons/zap-off';
 	import DataTable from './data-table.svelte';
-	import { createColumns } from './columns';
+	import DataTableGuests from './data-table-guests.svelte';
+	import { createColumns, createColumnsGuests } from './columns';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
-	import { guarantorSearchFormSchema, searchFormSchema, toggleStateFormSchema } from './schema';
+	import {
+		guarantorSearchFormSchema,
+		searchFormSchema,
+		showGuestsFormSchema,
+		toggleGuestStateFormSchema,
+		toggleStateFormSchema
+	} from './schema';
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
 	import { cn } from '$lib/utils';
@@ -26,15 +33,19 @@
 	import { tick } from 'svelte';
 	import { useId } from 'bits-ui';
 	import Label from '$lib/components/ui/label/label.svelte';
-	import { guarantorDialogStore } from '$lib/stores/guarantorDialog.svelte';
+	import { toggleStateFormStore } from '$lib/stores/toggleState.svelte';
+	import type { Guest } from '$lib/types/person';
+	import { showGuestsFormStore } from '$lib/stores/showGuests.svelte';
 
 	let { data, form: actionData } = $props();
 
+	let persons = $state(data.persons);
 	const searchForm = superForm(data.searchForm, {
 		invalidateAll: false,
 		resetForm: false,
 		validators: zodClient(searchFormSchema),
 		onUpdated: ({ form: f }) => {
+			if (actionData?.persons) persons = actionData?.persons;
 			if (actionData?.message === undefined) return;
 			const msg = actionData.message;
 			if (f.valid && page.status === 200) {
@@ -51,19 +62,19 @@
 	let searchInput = $state('');
 	let searchInputFocus = $state(false);
 	let liveSearch = $state(browser);
-	const persons = $derived(actionData?.persons ?? data.persons);
 
+	let guarantors = $state(data.guarantors);
 	const guarantorSearchForm = superForm(data.guarantorSearchForm, {
 		invalidateAll: false,
 		resetForm: false,
 		validators: zodClient(guarantorSearchFormSchema),
 		onUpdated: ({ form: f }) => {
-			if (actionData?.message === undefined) return;
-			const msg = actionData.message;
+			if (actionData?.guarantors) guarantors = actionData?.guarantors;
+			const msg = actionData?.message;
 			if (f.valid && page.status === 200) {
-				toast.success(msg);
+				if (msg) toast.success(msg);
 			} else {
-				toast.error(msg);
+				if (msg) toast.error(msg);
 			}
 		}
 	});
@@ -73,7 +84,6 @@
 	let guarantorSearchPostTimeout: NodeJS.Timeout | undefined = $state(undefined);
 	let guarantorSearchInput = $state('');
 	let guarantorSearchPopoverOpen = $state(false);
-	const guarantors = $derived(actionData?.guarantors ?? data.guarantors);
 
 	let selectedGuarantorId: number | undefined = $state(undefined);
 	const selectedGuarantor = $derived(guarantors.find((g) => g.id === selectedGuarantorId));
@@ -81,6 +91,43 @@
 	const toggleStateForm = superForm(data.toggleStateForm, {
 		validators: zodClient(toggleStateFormSchema),
 		onUpdated: ({ form: f }) => {
+			const msg = actionData?.message;
+			if (f.valid && page.status === 200) {
+				resetSearchAndGuarantorSearch();
+				if (msg) {
+					if (!actionData?.warning) {
+						toast.success(msg);
+					} else {
+						toast.warning(msg);
+					}
+				}
+			} else {
+				if (msg) toast.error(msg);
+			}
+		}
+	});
+	const { enhance: toggleStateEnhance, submit: toggleStateFormSubmit } = toggleStateForm;
+
+	const toggleGuestStateForm = superForm(data.toggleGuestStateForm, {
+		validators: zodClient(toggleGuestStateFormSchema),
+		onUpdated: ({ form: f }) => {
+			const msg = actionData?.message;
+			if (f.valid && page.status === 200) {
+				resetSearchAndGuarantorSearch();
+				if (msg) toast.success(msg);
+			} else {
+				if (msg) toast.error(msg);
+			}
+		}
+	});
+	const { enhance: toggleGuestStateEnhance, submit: toggleGuestStateFormSubmit } =
+		toggleGuestStateForm;
+
+	let insideGuests: Guest[] = $state([]);
+	const showGuestsForm = superForm(data.showGuestsForm, {
+		validators: zodClient(showGuestsFormSchema),
+		onUpdated: ({ form: f }) => {
+			if (actionData?.insideGuests) insideGuests = actionData?.insideGuests;
 			if (actionData?.message === undefined) return;
 			const msg = actionData.message;
 			if (f.valid && page.status === 200) {
@@ -90,8 +137,24 @@
 			}
 		}
 	});
-	const { enhance: toggleStateEnhance, submit: toggleStateFormSubmit } = toggleStateForm;
-	const columns = $derived(createColumns(data.userBuilding, toggleStateFormSubmit));
+	const { enhance: showGuestsEnhance, submit: showGuestsFormSubmit } = showGuestsForm;
+
+	function resetSearchAndGuarantorSearch() {
+		searchInput = '';
+		persons = data.persons;
+		guarantorSearchInput = '';
+		guarantors = data.guarantors;
+	}
+
+	const columns = $derived(
+		createColumns(
+			data.userBuilding,
+			toggleStateFormSubmit,
+			toggleGuestStateFormSubmit,
+			showGuestsFormSubmit
+		)
+	);
+	const columnsGuests = $derived(createColumnsGuests());
 
 	const triggerId = useId();
 </script>
@@ -178,7 +241,7 @@
 </div>
 
 <!-- Dialog for searching guarantors when admiting/tranfering guests -->
-<Dialog.Root bind:open={guarantorDialogStore.dialogOpen}>
+<Dialog.Root bind:open={toggleStateFormStore.dialogOpen}>
 	<Dialog.Content class="sm:max-w-md">
 		<Dialog.Header>
 			<Dialog.Title>Select guarantor</Dialog.Title>
@@ -250,9 +313,8 @@
 		<Dialog.Footer>
 			<Button
 				onclick={() => {
-					guarantorDialogStore.dialogOpen = false;
-					guarantorDialogStore.guarantorId = selectedGuarantorId;
-					tick().then(() => toggleStateForm.submit());
+					toggleStateFormStore.dialogOpen = false;
+					tick().then(() => toggleGuestStateForm.submit());
 				}}
 				type="button"
 			>
@@ -280,17 +342,59 @@
 	<Form.Field class="hidden" form={toggleStateForm} name="personId">
 		<Form.Control>
 			{#snippet children({ props })}
-				<Input {...props} type="hidden" value={guarantorDialogStore.personId} />
-			{/snippet}
-		</Form.Control>
-		<Form.FieldErrors />
-	</Form.Field>
-	<Form.Field class="hidden" form={toggleStateForm} name="guarantorId">
-		<Form.Control>
-			{#snippet children({ props })}
-				<Input {...props} type="hidden" value={guarantorDialogStore.guarantorId} />
+				<Input {...props} type="hidden" value={toggleStateFormStore.personId} />
 			{/snippet}
 		</Form.Control>
 		<Form.FieldErrors />
 	</Form.Field>
 </form>
+
+<!-- Hidden form used to POST action for toggling guest state -->
+<form method="POST" action="?/toggleGuestState" use:toggleGuestStateEnhance>
+	<Form.Field class="hidden" form={toggleGuestStateForm} name="personId">
+		<Form.Control>
+			{#snippet children({ props })}
+				<Input {...props} type="hidden" value={toggleStateFormStore.personId} />
+			{/snippet}
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
+	<Form.Field class="hidden" form={toggleGuestStateForm} name="guarantorId">
+		<Form.Control>
+			{#snippet children({ props })}
+				<Input {...props} type="hidden" value={selectedGuarantorId} />
+			{/snippet}
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
+</form>
+
+<!-- Hidden form used to POST action for showing guests -->
+<form method="POST" action="?/showGuests" use:showGuestsEnhance>
+	<Form.Field class="hidden" form={showGuestsForm} name="guarantorId">
+		<Form.Control>
+			{#snippet children({ props })}
+				<Input {...props} type="hidden" value={showGuestsFormStore.guarantorId} />
+			{/snippet}
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
+</form>
+
+<!-- Dialog for showing table of inside guests -->
+<Dialog.Root bind:open={showGuestsFormStore.dialogOpen}>
+	<Dialog.Content class="sm:max-w-md">
+		<Dialog.Header>
+			<Dialog.Title>Inside guests</Dialog.Title>
+		</Dialog.Header>
+		<DataTableGuests data={insideGuests} columns={columnsGuests} />
+		<Dialog.Footer>
+			<!-- TODO: Exit all guests, exit particular guest
+			<Button type="button">
+				<CheckCheck />
+				<span>Confirm</span>
+			</Button>
+			-->
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>

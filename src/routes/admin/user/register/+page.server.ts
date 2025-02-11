@@ -41,7 +41,7 @@ export const actions: Actions = {
 				form,
 				message: 'Successfully registered user!'
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return fail(400, {
 				form,
 				message: `Failed to register: ${(err as Error).message}`

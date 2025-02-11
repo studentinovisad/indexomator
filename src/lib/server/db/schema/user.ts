@@ -12,9 +12,7 @@ export const userTable = pgTable('user', {
 	id: serial('id').primaryKey(),
 	username: text('username').notNull().unique(),
 	passwordHash: text('password_hash').notNull(),
-	disabled: boolean('disabled').default(false).notNull(),
-	schedStart: text('schedStart').default('00:00').notNull(),
-	schedEnd: text('schedEnd').default('24:00').notNull()
+	disabled: boolean('disabled').default(false).notNull()
 });
 
 export const ratelimitTable = pgTable(
