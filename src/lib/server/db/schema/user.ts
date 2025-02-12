@@ -29,7 +29,7 @@ export const ratelimitTable = pgTable(
 	})
 );
 
-export const scheduleTable = pgTable('schedule',
+export const shiftTable = pgTable('shift',
 				     {
 	userId: integer('user_id')
 	.notNull()
