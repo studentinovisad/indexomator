@@ -18,14 +18,10 @@
 		personState,
 		building,
 		userBuilding,
-<<<<<<< HEAD
-		isBanned,
-		toggleStateFormSubmit
-=======
+		banned,
 		toggleStateFormSubmit,
 		toggleGuestStateFormSubmit,
 		showGuestsFormSubmit
->>>>>>> main
 	}: {
 		personId: number;
 		guarantorFname: string | null;
@@ -35,7 +31,7 @@
 		personState: State;
 		building: string | null;
 		userBuilding: string;
-		isBanned: boolean;
+		banned: boolean;
 		toggleStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void;
 		toggleGuestStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void;
 		showGuestsFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void;
@@ -43,70 +39,14 @@
 
 	const inside = $derived(personState === StateInside);
 	const sameBuilding = $derived(userBuilding === building);
-	const isBannedPerson = $derived(isBanned);
-	const admitButtonText = $derived(isBannedPerson ? 'This person is banned' : 'Admit');
+	const admitText = $derived(banned ? 'This person is banned' : 'Admit');
 </script>
 
-<<<<<<< HEAD
 {#if inside && sameBuilding}
 	{#if guarantorFname && guarantorLname && guarantorIdentifier}
 		<Tooltip.Provider>
 			<Tooltip.Root>
 				<Tooltip.Trigger
-					onclick={() => {
-						guarantorDialogStore.personId = personId;
-						guarantorDialogStore.guarantorId = undefined;
-						tick().then(() => toggleStateFormSubmit());
-					}}
-					class={cn(
-						'w-full',
-						buttonVariants({ variant: 'outline' }),
-						isBannedPerson && 'opacity-50 cursor-not-allowed'
-					)}
-					disabled={isBannedPerson}
-				>
-					<LogOut />
-					<span class="hidden sm:block">Release</span>
-				</Tooltip.Trigger>
-				<Tooltip.Content>
-					{#if isBannedPerson}
-						<span class="text-red-500">This person is banned</span>
-					{:else}
-						<span>{guarantorFname} {guarantorLname} ({guarantorIdentifier})</span>
-					{/if}
-				</Tooltip.Content>
-			</Tooltip.Root>
-		</Tooltip.Provider>
-	{:else}
-=======
-<div class="flex space-x-1 sm:space-x-2">
-	{#if inside && sameBuilding}
-		{#if guarantorFname && guarantorLname && guarantorIdentifier}
-			<Tooltip.Provider>
-				<Tooltip.Root>
-					<Tooltip.Trigger
-						onclick={() => {
-							toggleStateFormStore.personId = personId;
-							tick().then(() => {
-								if (personType === Guest) {
-									toggleGuestStateFormSubmit();
-								} else {
-									toggleStateFormSubmit();
-								}
-							});
-						}}
-						class={cn('w-full', buttonVariants({ variant: 'outline' }))}
-					>
-						<LogOut />
-						<span class="hidden sm:block">Release</span>
-					</Tooltip.Trigger>
-					<Tooltip.Content>
-						<span>{guarantorFname} {guarantorLname} ({guarantorIdentifier})</span>
-					</Tooltip.Content>
-				</Tooltip.Root>
-			</Tooltip.Provider>
-		{:else}
-			<Button
 				onclick={() => {
 					toggleStateFormStore.personId = personId;
 					tick().then(() => {
@@ -117,120 +57,94 @@
 						}
 					});
 				}}
-				variant="outline"
-				class="w-full"
-			>
-				<LogOut />
-				<span class="hidden sm:block">Release</span>
-			</Button>
-		{/if}
-	{:else if personType !== Guest}
->>>>>>> main
-		<Button
-			onclick={() => {
-				toggleStateFormStore.personId = personId;
-				tick().then(() => toggleStateFormSubmit());
-			}}
-			variant="outline"
-			class={cn('w-full', isBannedPerson && 'opacity-50 cursor-not-allowed')}
-			disabled={isBannedPerson}
-		>
-			{#if inside}
-				<ArrowLeftRight />
-				<span class="hidden sm:block">Transfer</span>
-			{:else}
-				<LogIn />
-				<span class="hidden sm:block">Admit</span>
-			{/if}
-		</Button>
+					class={cn(
+						'w-full',
+						buttonVariants({ variant: 'outline' }),
+						banned && 'opacity-50 cursor-not-allowed'
+					)}
+					disabled={banned}
+				>
+					<LogOut />
+					<span class="hidden sm:block">Release</span>
+				</Tooltip.Trigger>
+				<Tooltip.Content>
+					{#if banned}
+						<span class="text-red-500">This person is banned</span>
+					{:else}
+						<span>{guarantorFname} {guarantorLname} ({guarantorIdentifier})</span>
+					{/if}
+				</Tooltip.Content>
+			</Tooltip.Root>
+		</Tooltip.Provider>
 	{:else}
 		<Button
 			onclick={() => {
-				toggleStateFormStore.dialogOpen = true;
 				toggleStateFormStore.personId = personId;
+				tick().then(() => {
+					if (personType === Guest) {
+						toggleGuestStateFormSubmit();
+					} else {
+						toggleStateFormSubmit();
+					}
+				});
 			}}
-			type="button"
 			variant="outline"
 			class="w-full"
 		>
-			{#if inside}
-				<ArrowLeftRight />
-				<span class="hidden sm:block">Transfer</span>
-			{:else}
-				<LogIn />
-				<span class="hidden sm:block">Admit</span>
-			{/if}
+			<LogOut />
+			<span class="hidden sm:block">Release</span>
 		</Button>
 	{/if}
-<<<<<<< HEAD
 {:else if personType !== Guest}
 	<Button
 		onclick={() => {
-			guarantorDialogStore.personId = personId;
-			guarantorDialogStore.guarantorId = undefined;
+			toggleStateFormStore.personId = personId;
 			tick().then(() => toggleStateFormSubmit());
 		}}
 		variant="outline"
-		class={cn('w-full', isBannedPerson && 'opacity-50 cursor-not-allowed')}
-		disabled={isBannedPerson}
+		class={cn('w-full', banned && 'opacity-50 cursor-not-allowed')}
+		disabled={banned}
 	>
 		{#if inside}
 			<ArrowLeftRight />
 			<span class="hidden sm:block">Transfer</span>
 		{:else}
 			<LogIn />
-			<span class="hidden sm:block">{admitButtonText}</span>
+			<span class="hidden sm:block">{admitText}</span>
 		{/if}
 	</Button>
 {:else}
-	<Tooltip.Provider>
-		<Tooltip.Root>
-			<Tooltip.Trigger asChild>
-				<Button
-					onclick={() => {
-						if (!isBannedPerson) {
-							guarantorDialogStore.dialogOpen = true;
-							guarantorDialogStore.personId = personId;
-						}
-					}}
-					type="button"
-					variant="outline"
-					class={cn('w-full', isBannedPerson && 'opacity-50 cursor-not-allowed')}
-					disabled={isBannedPerson}
-				>
-					{#if inside}
-						<ArrowLeftRight />
-						<span class="hidden sm:block">Transfer</span>
-					{:else}
-						<LogIn />
-						<span class="hidden sm:block">{admitButtonText}</span>
-					{/if}
-				</Button>
-			</Tooltip.Trigger>
-			{#if isBannedPerson}
-				<Tooltip.Content>
-					<span class="text-red-500">This person is banned</span>
-				</Tooltip.Content>
-			{/if}
-		</Tooltip.Root>
-	</Tooltip.Provider>
+	<Button
+		onclick={() => {
+			toggleStateFormStore.dialogOpen = true;
+			toggleStateFormStore.personId = personId;
+		}}
+		type="button"
+		variant="outline"
+		class="w-full"
+	>
+		{#if inside}
+			<ArrowLeftRight />
+			<span class="hidden sm:block">Transfer</span>
+		{:else}
+			<LogIn />
+			<span class="hidden sm:block">{admitText}</span>
+		{/if}
+	</Button>
 {/if}
-=======
 
-	{#if personType !== Guest}
-		<Button
-			onclick={() => {
-				showGuestsFormStore.dialogOpen = true;
-				showGuestsFormStore.guarantorId = personId;
-				tick().then(() => showGuestsFormSubmit());
-			}}
-			type="button"
-			variant="outline"
-			class="w-full"
-		>
-			<Handshake />
-			<span class="hidden sm:block">Show guests</span>
-		</Button>
-	{/if}
-</div>
->>>>>>> main
+{#if personType !== Guest}
+	<Button
+		onclick={() => {
+			showGuestsFormStore.dialogOpen = true;
+			showGuestsFormStore.guarantorId = personId;
+			tick().then(() => showGuestsFormSubmit());
+		}}
+		type="button"
+		variant="outline"
+		class="w-full"
+	>
+		<Handshake />
+		<span class="hidden sm:block">Show guests</span>
+	</Button>
+{/if}

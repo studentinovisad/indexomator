@@ -97,7 +97,7 @@ export async function getPersons(
 							lname: person.lname,
 							department: person.department,
 							university: person.university,
-							isBanned: person.isBanned,
+							banned: person.banned,
 							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 							entryBuilding: personEntry.building,
 							entryGuarantorId: personEntry.guarantorId,
@@ -166,7 +166,7 @@ export async function getPersons(
 							lname: person.lname,
 							department: person.department,
 							university: person.university,
-							isBanned: person.isBanned,
+							banned: person.banned,
 							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 							entryBuilding: personEntry.building,
 							entryGuarantorId: personEntry.guarantorId,
@@ -210,7 +210,7 @@ export async function getPersons(
 				guarantorLname: inside ? p.entryGuarantorLname : null,
 				guarantorIdentifier: inside ? p.entryGuarantorIdentifier : null,
 				state: inside ? StateInside : StateOutside,
-				isBanned: p.isBanned
+				banned: p.banned
 			};
 		});
 	} catch (err) {
@@ -793,7 +793,7 @@ export async function createPerson(
 				guarantorFname,
 				guarantorLname,
 				guarantorIdentifier,
-				isBanned: false,
+				banned: false,
 				state: StateInside // Because the person was just created, they are inside
 			};
 		});
@@ -823,14 +823,14 @@ export async function togglePersonState(
 
 	try {
 		return await db.transaction(async (tx) => {
-			//Server side check just in case
-			const [{ isBanned }] = await tx
-			.select({ isBanned: person.isBanned })
+			// Check if the person is banned
+			const [{ banned }] = await tx
+			.select({ banned: person.banned })
 			.from(person)
 			.where(eq(person.id, id))
 			.limit(1);
 
-		if (isBanned) {
+		if (banned) {
 			throw new Error('Person is banned and cannot change state');
 		}
 			// Check if the guarantor is valid
@@ -1043,53 +1043,54 @@ export async function getPersonTypes(db: Database): Promise<PersonType[]> {
 	}
 }
 
-export async function banPerson(db: Database, personId: string): Promise<void> {
+export async function banPerson(db: Database, identifier: string, ban: boolean): Promise<void> {
     try {
         await db.transaction(async (tx) => {
-            // Find the person's ID using their identifier
-            const personRecord = await tx
-                .select({ personId: person.id })
-                .from(person)
-                .where(eq(person.identifier, personId))
-                .limit(1);
+				const personRecord = await tx
+					.select({ personId: person.id, banned: person.banned })
+					.from(person)
+					.where(eq(person.identifier, identifier))
+					.limit(1);
 
-            if (personRecord.length === 0) {
-                throw new Error(`Person with identifier ${personId} not found`);
-            }
+				if (personRecord.length === 0) {
+					throw new Error(`Person with identifier ${identifier} not found`);
+				}
 
-            const personDbId = personRecord[0].personId;
+				const { personId: personDbId, banned } = personRecord[0];
 
-            const lastEntry = await tx
-                .select({
-                    personId: personEntry.personId,
-                    building: personEntry.building,
-                    maxEntryTimestamp: max(personEntry.timestamp),
-                    maxExitTimestamp: max(personExit.timestamp)
-                })
-                .from(personEntry)
-                .leftJoin(personExit, eq(personExit.personId, personEntry.personId))
-                .where(eq(personEntry.personId, personDbId))
-                .groupBy(personEntry.personId, personEntry.building)
-                .having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-                    or(isNull(maxExitTimestamp), gt(maxEntryTimestamp, maxExitTimestamp))
-                )
-                .limit(1);
+				if (banned === ban) {
+					throw new Error(`Person with identifier ${identifier} is already in the requested state.`);
+				}
+				if (ban){
+					const lastEntry = await tx
+						.select({
+							personId: personEntry.personId,
+							building: personEntry.building,
+							maxEntryTimestamp: max(personEntry.timestamp),
+							maxExitTimestamp: max(personExit.timestamp)
+						})
+						.from(personEntry)
+						.leftJoin(personExit, eq(personExit.personId, personEntry.personId))
+						.where(eq(personEntry.personId, personDbId))
+						.groupBy(personEntry.personId)
+						.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
+							or(isNull(maxExitTimestamp), gt(maxEntryTimestamp, maxExitTimestamp))
+						)
+						.limit(1);
 
-            if (lastEntry.length > 0) {
-                await tx.insert(personExit).values({
-                    personId: personDbId,
-                    building: lastEntry[0].building
-                });
-            }
-
-            await tx.update(person).set({ isBanned: true }).where(eq(person.id, personDbId));
+					if (lastEntry.length > 0) {
+						await tx.insert(personExit).values({
+							personId: personDbId,
+							building: lastEntry[0].building
+						});
+					}
+				}
+            await tx.update(person).set({ banned: ban }).where(eq(person.id, personDbId));
         });
     } catch (err) {
         throw new Error(`Failed to ban person in database: ${(err as Error).message}`);
     }
 }
-
-
 
 export async function removePersonsFromBuilding(
 	db: Database,

@@ -45,5 +45,5 @@ export type Person = {
 	guarantorLname: string | null;
 	guarantorIdentifier: string | null;
 	state: State;
-	isBanned: boolean;
+	banned: boolean;
 };

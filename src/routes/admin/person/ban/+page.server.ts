@@ -2,8 +2,7 @@ import { fail, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { formSchema } from './schema';
-// import type { PageServerLoad } from './$types';
-import { getPersons, banPerson } from '$lib/server/db/person';
+import { banPerson } from '$lib/server/db/person';
 import { validateSecret } from '$lib/server/secret';
 import type { PageServerLoad } from './$types';
 
@@ -36,9 +35,8 @@ export const actions: Actions = {
 		}
 
 		try {
-			const { personId } = form.data;
-			console.log('personId:', personId);
-			await banPerson(database, personId);
+			const { identifier } = form.data;
+			await banPerson(database, identifier, form.data.action === 'ban');
 		} catch (err: unknown) {
 			console.debug(`Failed to ban student: ${(err as Error).message}`);
 			return fail(400, {

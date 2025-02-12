@@ -19,7 +19,7 @@ export const person = pgTable(
 			onDelete: 'restrict',
 			onUpdate: 'cascade'
 		}),
-		isBanned: boolean('is_banned').notNull().default(false)
+		banned: boolean('banned').notNull().default(false)
 	},
 	(table) => ({
 		identifierUniversity: unique('person_identifier_university_id_unique')

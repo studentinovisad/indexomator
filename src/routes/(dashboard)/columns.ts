@@ -53,16 +53,12 @@ export function createColumns(
 					guarantorIdentifier: person.guarantorIdentifier,
 					personType: person.type,
 					personState: person.state,
-					building: person.building,
+					building: person.building, 
 					userBuilding,
-<<<<<<< HEAD
-					isBanned: row.original.isBanned,
-					toggleStateFormSubmit
-=======
+					banned: person.banned,
 					toggleStateFormSubmit,
 					toggleGuestStateFormSubmit,
 					showGuestsFormSubmit
->>>>>>> main
 				});
 			},
 			enableSorting: false,
