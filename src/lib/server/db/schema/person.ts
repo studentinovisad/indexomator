@@ -1,4 +1,13 @@
-import { pgTable, serial, integer, text, timestamp, primaryKey, boolean, unique } from 'drizzle-orm/pg-core';
+import {
+	pgTable,
+	serial,
+	integer,
+	text,
+	timestamp,
+	primaryKey,
+	boolean,
+	unique
+} from 'drizzle-orm/pg-core';
 import { building } from './building';
 import { department } from './department';
 import { university } from './university';
@@ -25,7 +34,7 @@ export const person = pgTable(
 		identifierUniversity: unique('person_identifier_university_id_unique')
 			.on(table.identifier, table.university)
 			.nullsNotDistinct()
-	}),
+	})
 );
 
 export const personEntry = pgTable(

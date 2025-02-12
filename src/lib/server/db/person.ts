@@ -820,19 +820,18 @@ export async function togglePersonState(
 		throw new Error('Invalid creator (empty)');
 	}
 
-
 	try {
 		return await db.transaction(async (tx) => {
 			// Check if the person is banned
 			const [{ banned }] = await tx
-			.select({ banned: person.banned })
-			.from(person)
-			.where(eq(person.id, id))
-			.limit(1);
+				.select({ banned: person.banned })
+				.from(person)
+				.where(eq(person.id, id))
+				.limit(1);
 
-		if (banned) {
-			throw new Error('Person is banned and cannot change state');
-		}
+			if (banned) {
+				throw new Error('Person is banned and cannot change state');
+			}
 			// Check if the guarantor is valid
 			if (guarantorId) {
 				try {
@@ -1044,52 +1043,52 @@ export async function getPersonTypes(db: Database): Promise<PersonType[]> {
 }
 
 export async function banPerson(db: Database, identifier: string, ban: boolean): Promise<void> {
-    try {
-        await db.transaction(async (tx) => {
-				const personRecord = await tx
-					.select({ personId: person.id, banned: person.banned })
-					.from(person)
-					.where(eq(person.identifier, identifier))
+	try {
+		await db.transaction(async (tx) => {
+			const personRecord = await tx
+				.select({ personId: person.id, banned: person.banned })
+				.from(person)
+				.where(eq(person.identifier, identifier))
+				.limit(1);
+
+			if (personRecord.length === 0) {
+				throw new Error(`Person with identifier ${identifier} not found`);
+			}
+
+			const { personId: personDbId, banned } = personRecord[0];
+
+			if (banned === ban) {
+				throw new Error(`Person with identifier ${identifier} is already in the requested state.`);
+			}
+			if (ban) {
+				const lastEntry = await tx
+					.select({
+						personId: personEntry.personId,
+						building: personEntry.building,
+						maxEntryTimestamp: max(personEntry.timestamp),
+						maxExitTimestamp: max(personExit.timestamp)
+					})
+					.from(personEntry)
+					.leftJoin(personExit, eq(personExit.personId, personEntry.personId))
+					.where(eq(personEntry.personId, personDbId))
+					.groupBy(personEntry.personId)
+					.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
+						or(isNull(maxExitTimestamp), gt(maxEntryTimestamp, maxExitTimestamp))
+					)
 					.limit(1);
 
-				if (personRecord.length === 0) {
-					throw new Error(`Person with identifier ${identifier} not found`);
+				if (lastEntry.length > 0) {
+					await tx.insert(personExit).values({
+						personId: personDbId,
+						building: lastEntry[0].building
+					});
 				}
-
-				const { personId: personDbId, banned } = personRecord[0];
-
-				if (banned === ban) {
-					throw new Error(`Person with identifier ${identifier} is already in the requested state.`);
-				}
-				if (ban){
-					const lastEntry = await tx
-						.select({
-							personId: personEntry.personId,
-							building: personEntry.building,
-							maxEntryTimestamp: max(personEntry.timestamp),
-							maxExitTimestamp: max(personExit.timestamp)
-						})
-						.from(personEntry)
-						.leftJoin(personExit, eq(personExit.personId, personEntry.personId))
-						.where(eq(personEntry.personId, personDbId))
-						.groupBy(personEntry.personId)
-						.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-							or(isNull(maxExitTimestamp), gt(maxEntryTimestamp, maxExitTimestamp))
-						)
-						.limit(1);
-
-					if (lastEntry.length > 0) {
-						await tx.insert(personExit).values({
-							personId: personDbId,
-							building: lastEntry[0].building
-						});
-					}
-				}
-            await tx.update(person).set({ banned: ban }).where(eq(person.id, personDbId));
-        });
-    } catch (err) {
-        throw new Error(`Failed to ban person in database: ${(err as Error).message}`);
-    }
+			}
+			await tx.update(person).set({ banned: ban }).where(eq(person.id, personDbId));
+		});
+	} catch (err) {
+		throw new Error(`Failed to ban person in database: ${(err as Error).message}`);
+	}
 }
 
 export async function removePersonsFromBuilding(

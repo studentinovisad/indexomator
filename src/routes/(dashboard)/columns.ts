@@ -53,7 +53,7 @@ export function createColumns(
 					guarantorIdentifier: person.guarantorIdentifier,
 					personType: person.type,
 					personState: person.state,
-					building: person.building, 
+					building: person.building,
 					userBuilding,
 					banned: person.banned,
 					toggleStateFormSubmit,

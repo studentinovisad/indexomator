@@ -47,20 +47,20 @@
 		<Tooltip.Provider>
 			<Tooltip.Root>
 				<Tooltip.Trigger
-				onclick={() => {
-					toggleStateFormStore.personId = personId;
-					tick().then(() => {
-						if (personType === Guest) {
-							toggleGuestStateFormSubmit();
-						} else {
-							toggleStateFormSubmit();
-						}
-					});
-				}}
+					onclick={() => {
+						toggleStateFormStore.personId = personId;
+						tick().then(() => {
+							if (personType === Guest) {
+								toggleGuestStateFormSubmit();
+							} else {
+								toggleStateFormSubmit();
+							}
+						});
+					}}
 					class={cn(
 						'w-full',
 						buttonVariants({ variant: 'outline' }),
-						banned && 'opacity-50 cursor-not-allowed'
+						banned && 'cursor-not-allowed opacity-50'
 					)}
 					disabled={banned}
 				>
@@ -102,7 +102,7 @@
 			tick().then(() => toggleStateFormSubmit());
 		}}
 		variant="outline"
-		class={cn('w-full', banned && 'opacity-50 cursor-not-allowed')}
+		class={cn('w-full', banned && 'cursor-not-allowed opacity-50')}
 		disabled={banned}
 	>
 		{#if inside}

@@ -32,13 +32,13 @@
 			<form method="POST" action="?/ban" use:formEnhance>
 				<Card.Root>
 					<Card.Header>
-						<Card.Title class="text-2xl">Ban / Pardon person </Card.Title>
+						<Card.Title class="text-2xl">Ban / Pardon person</Card.Title>
 						<Card.Description>
 							Type in the identifier of the person you want to ban or pardon.
 						</Card.Description>
 					</Card.Header>
 					<Card.Content class="grid gap-4">
-						<Form.Field form={form} name="identifier">
+						<Form.Field {form} name="identifier">
 							<Form.Control>
 								{#snippet children({ props })}
 									<Form.Label>Identifier</Form.Label>
@@ -47,7 +47,7 @@
 							</Form.Control>
 							<Form.FieldErrors />
 						</Form.Field>
-						<Form.Field form={form} name="secret">
+						<Form.Field {form} name="secret">
 							<Form.Control>
 								{#snippet children({ props })}
 									<Form.Label>Secret</Form.Label>
@@ -56,7 +56,7 @@
 							</Form.Control>
 							<Form.FieldErrors />
 						</Form.Field>
-						<Form.Field form={form} name="action" class="mx-auto">
+						<Form.Field {form} name="action" class="mx-auto">
 							<Form.Control>
 								{#snippet children({ props })}
 									<Form.Button {...props} value="ban" variant="destructive">Ban</Form.Button>
