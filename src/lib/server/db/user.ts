@@ -52,7 +52,7 @@ export async function getUserByUsername(
 			.where(eq(userTable.username, username));
 
 		return user;
-	} catch (err: unknown) {
+	} catch (err) {
 		throw new Error(
 			`Failed to get user id and password hash from database: ${(err as Error).message}`
 		);

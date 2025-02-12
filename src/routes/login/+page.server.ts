@@ -94,7 +94,7 @@ export const actions: Actions = {
 
 			// Invalidate sessions that exceed the maximum number of sessions
 			await invalidateExcessSessions(database, id);
-		} catch (err: unknown) {
+		} catch (err) {
 			console.warn(`Failed to login: ${(err as Error).message}`);
 			return fail(401, {
 				logInForm,
