@@ -48,7 +48,7 @@ export async function getUserByUsername(db: Database, username: string): Promise
 		return user;
 	} catch (err) {
 		throw new Error(
-			`Failed to get user id and password hash from database: ${(err as Error).message}`
+			`Failed to get user by username ${username}: ${(err as Error).message}`
 		);
 	}
 }
