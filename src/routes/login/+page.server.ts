@@ -76,8 +76,9 @@ export const actions: Actions = {
 				throw new LoginError('user is disabled: contact the administrator', true);
 			}
 
-			if(!await isUserScheduled(database, id)) {
-				throw new LoginError('you are not scheduled', false);
+			const scheduled = await isUserScheduled(database, id);
+			if(!scheduled) {
+				throw new LoginError('user is not scheduled', false);
 			}
 
 			// Check if the password matches
