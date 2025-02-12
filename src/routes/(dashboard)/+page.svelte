@@ -36,6 +36,9 @@
 	import { toggleStateFormStore } from '$lib/stores/toggleState.svelte';
 	import type { Guest } from '$lib/types/person';
 	import { showGuestsFormStore } from '$lib/stores/showGuests.svelte';
+	import successSFX from '$lib/assets/sfx/success.mp3';
+	import warningSFX from '$lib/assets/sfx/warning.mp3';
+	import errorSFX from '$lib/assets/sfx/error.mp3';
 
 	let { data, form: actionData } = $props();
 
@@ -97,12 +100,15 @@
 				if (msg) {
 					if (!actionData?.warning) {
 						toast.success(msg);
+						new Audio(successSFX).play();
 					} else {
 						toast.warning(msg);
+						new Audio(warningSFX).play();
 					}
 				}
 			} else {
 				if (msg) toast.error(msg);
+				new Audio(errorSFX).play();
 			}
 		}
 	});
@@ -115,8 +121,10 @@
 			if (f.valid && page.status === 200) {
 				resetSearchAndGuarantorSearch();
 				if (msg) toast.success(msg);
+				new Audio(successSFX).play();
 			} else {
 				if (msg) toast.error(msg);
+				new Audio(errorSFX).play();
 			}
 		}
 	});
