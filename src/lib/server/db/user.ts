@@ -39,17 +39,11 @@ export async function createUser(db: Database, username: string, password: strin
 	}
 }
 
-export async function getUserByUsername(
-	db: Database,
-	username: string
-): Promise<User> {
+export async function getUserByUsername(db: Database, username: string): Promise<User> {
 	assertValidString(username, 'Invalid username');
 
 	try {
-		const [user] = await db
-			.select()
-			.from(userTable)
-			.where(eq(userTable.username, username));
+		const [user] = await db.select().from(userTable).where(eq(userTable.username, username));
 
 		return user;
 	} catch (err) {

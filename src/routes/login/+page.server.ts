@@ -77,7 +77,7 @@ export const actions: Actions = {
 			}
 
 			const scheduled = await isUserScheduled(database, id);
-			if(!scheduled) {
+			if (!scheduled) {
 				throw new LoginError('user is not scheduled', false);
 			}
 
