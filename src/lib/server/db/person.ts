@@ -299,7 +299,9 @@ export async function getGuarantors(
 						.where(
 							and(
 								not(eq(person.type, Guest)),
-								gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours),
+								guarantorEligibilityHours !== 0
+									? gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
+									: undefined,
 								or(
 									...[
 										...fuzzySearchFilters([person.identifier], nonEmptySearchQuery),
@@ -333,7 +335,9 @@ export async function getGuarantors(
 						.where(
 							and(
 								not(eq(person.type, Guest)),
-								gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
+								guarantorEligibilityHours !== 0
+									? gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
+									: undefined
 							)
 						)
 						.orderBy(({ identifier }) => [identifier])
@@ -632,42 +636,44 @@ async function validGuarantor(db: Database, guarantorId: number): Promise<void> 
 		throw new Error('Guarantor reached maximum number of inside guests');
 	}
 
-	// Check guarantor total hours spent
-	const timestampPairsSubquery = db
-		.select({
-			personId: personEntry.personId,
-			entryTimestamp: personEntry.timestamp,
-			exitTimestamp: min(personExit.timestamp).as('exit_timestamp')
-		})
-		.from(personEntry)
-		.innerJoin(personExit, eq(personExit.personId, personEntry.personId))
-		.where(
-			and(eq(personEntry.personId, guarantorId), gt(personExit.timestamp, personEntry.timestamp))
-		)
-		.groupBy(personEntry.personId, personEntry.timestamp)
-		.as('timestamp_pairs');
-
-	const hoursSpentSubQuery = db
-		.with(timestampPairsSubquery)
-		.select({
-			hoursSpent: sql<number>`
-					extract(epoch from (${timestampPairsSubquery.exitTimestamp} - ${timestampPairsSubquery.entryTimestamp})) / 3600`.as(
-				'hours_spent'
+	// Check guarantor total hours spent (if required)
+	if (guarantorEligibilityHours !== 0) {
+		const timestampPairsSubquery = db
+			.select({
+				personId: personEntry.personId,
+				entryTimestamp: personEntry.timestamp,
+				exitTimestamp: min(personExit.timestamp).as('exit_timestamp')
+			})
+			.from(personEntry)
+			.innerJoin(personExit, eq(personExit.personId, personEntry.personId))
+			.where(
+				and(eq(personEntry.personId, guarantorId), gt(personExit.timestamp, personEntry.timestamp))
 			)
-		})
-		.from(timestampPairsSubquery)
-		.as('hours_spent');
+			.groupBy(personEntry.personId, personEntry.timestamp)
+			.as('timestamp_pairs');
 
-	const [{ totalHoursSpent }] = await db
-		.select({
-			totalHoursSpent: sum(hoursSpentSubQuery.hoursSpent).mapWith(Number).as('total_hours_spent')
-		})
-		.from(hoursSpentSubQuery)
-		.where(lt(hoursSpentSubQuery.hoursSpent, hoursSpentCutoffHours));
+		const hoursSpentSubQuery = db
+			.with(timestampPairsSubquery)
+			.select({
+				hoursSpent: sql<number>`
+					extract(epoch from (${timestampPairsSubquery.exitTimestamp} - ${timestampPairsSubquery.entryTimestamp})) / 3600`.as(
+					'hours_spent'
+				)
+			})
+			.from(timestampPairsSubquery)
+			.as('hours_spent');
 
-	// Guarantor total hours spent must be greater than or equal to guarantorEligibilityHours
-	if (totalHoursSpent < guarantorEligibilityHours) {
-		throw new Error(`Guarantor doesn't have enough hours (${guarantorEligibilityHours})`);
+		const [{ totalHoursSpent }] = await db
+			.select({
+				totalHoursSpent: sum(hoursSpentSubQuery.hoursSpent).mapWith(Number).as('total_hours_spent')
+			})
+			.from(hoursSpentSubQuery)
+			.where(lt(hoursSpentSubQuery.hoursSpent, hoursSpentCutoffHours));
+
+		// Guarantor total hours spent must be greater than or equal to guarantorEligibilityHours
+		if (totalHoursSpent < guarantorEligibilityHours) {
+			throw new Error(`Guarantor doesn't have enough hours (${guarantorEligibilityHours})`);
+		}
 	}
 }
 
