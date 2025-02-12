@@ -1,11 +1,13 @@
 import { renderComponent } from '$lib/components/ui/data-table';
-import type { Person } from '$lib/types/person';
+import type { Guest, Person } from '$lib/types/person';
 import type { ColumnDef } from '@tanstack/table-core';
 import DataTableActions from './data-table-actions.svelte';
 
 export function createColumns(
 	userBuilding: string,
-	toggleStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void
+	toggleStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void,
+	toggleGuestStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void,
+	showGuestsFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void
 ): ColumnDef<Person>[] {
 	return [
 		{
@@ -42,24 +44,51 @@ export function createColumns(
 		},
 		{
 			id: 'actions',
-			header: 'Toggle State',
-			cell: ({ row }) => {
+			header: 'Actions',
+			cell: ({ row: { original: person } }) => {
 				return renderComponent(DataTableActions, {
-					personId: row.original.id,
-					guarantorFname: row.original.guarantorFname,
-					guarantorLname: row.original.guarantorLname,
-					guarantorIdentifier: row.original.guarantorIdentifier,
-					personType: row.original.type,
-					personState: row.original.state,
-					building: row.original.building,
+					personId: person.id,
+					guarantorFname: person.guarantorFname,
+					guarantorLname: person.guarantorLname,
+					guarantorIdentifier: person.guarantorIdentifier,
+					personType: person.type,
+					personState: person.state,
+					building: person.building,
 					userBuilding,
+<<<<<<< HEAD
 					isBanned: row.original.isBanned,
 					toggleStateFormSubmit
+=======
+					toggleStateFormSubmit,
+					toggleGuestStateFormSubmit,
+					showGuestsFormSubmit
+>>>>>>> main
 				});
 			},
 			enableSorting: false,
 			enableColumnFilter: false,
 			enableGrouping: false
+		}
+	];
+}
+
+export function createColumnsGuests(): ColumnDef<Guest>[] {
+	return [
+		{
+			accessorKey: 'fname',
+			header: 'First name'
+		},
+		{
+			accessorKey: 'lname',
+			header: 'Last name'
+		},
+		{
+			accessorKey: 'identifier',
+			header: 'Identifier'
+		},
+		{
+			accessorKey: 'university',
+			header: 'University'
 		}
 	];
 }

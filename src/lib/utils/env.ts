@@ -5,6 +5,9 @@ export const indexRegex = env.PUBLIC_INDEX_REGEX ?? /^\d{1,4}[a-zA-Z]?\/(?:\d{2}
 export const guarantorEligibilityHours = Number.parseInt(
 	env.PUBLIC_GUARANTOR_ELIGIBILITY_HOURS ?? '0'
 );
+export const guarantorMaxGuests = env.PUBLIC_GUARANTOR_MAX_GUESTS
+	? Number.parseInt(env.PUBLIC_GUARANTOR_MAX_GUESTS)
+	: undefined;
 
 export const rectorateMode = env.PUBLIC_RECTORATE_MODE === 'true' ? true : false;
 

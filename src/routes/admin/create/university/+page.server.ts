@@ -41,7 +41,7 @@ export const actions: Actions = {
 				form,
 				message: 'Successfully created university!'
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return fail(500, {
 				form,
 				message: `Failed to create university: ${(err as Error).message}`

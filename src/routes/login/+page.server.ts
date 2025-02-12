@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			logInForm,
 			buildings
 		};
-	} catch (err: unknown) {
+	} catch (err) {
 		return error(500, `Failed to load data: ${(err as Error).message}`);
 	}
 };
@@ -80,7 +80,7 @@ export const actions: Actions = {
 
 			// Invalidate sessions that exceed the maximum number of sessions
 			await invalidateExcessSessions(database, id);
-		} catch (err: unknown) {
+		} catch (err) {
 			// WARN: Don't return the real error message back to user since this is publicly available
 			console.warn(`Failed to login: ${(err as Error).message}`);
 			return fail(401, {

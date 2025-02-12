@@ -29,7 +29,7 @@ export const load: PageServerLoad = async ({ locals: { database } }) => {
 			personsCountPerDepartment,
 			personsCountPerUniversity
 		};
-	} catch (err: unknown) {
+	} catch (err) {
 		return error(500, `Failed to load data: ${(err as Error).message}`);
 	}
 };
@@ -57,7 +57,7 @@ export const actions: Actions = {
 				personsCountPerUniversity,
 				message: 'Successfully refreshed statistics!'
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return fail(500, {
 				message: `Failed to refresh statistics: ${(err as Error).message}`
 			});

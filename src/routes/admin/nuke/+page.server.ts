@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ locals: { database } }) => {
 			buildings,
 			personTypes
 		};
-	} catch (err: unknown) {
+	} catch (err) {
 		return error(500, `Failed to load data: ${(err as Error).message}`);
 	}
 };
@@ -54,7 +54,7 @@ export const actions: Actions = {
 				form,
 				message: 'Successfully nuked building! 💥'
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return fail(500, {
 				form,
 				message: `Failed to nuke building: ${(err as Error).message}`
