@@ -23,7 +23,6 @@ import { sqlConcat, sqlLeast, sqlLevenshteinDistance } from './utils';
 import { isInside } from '../isInside';
 import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
 import { building } from './schema/building';
-import type { RowList } from 'postgres';
 import {
 	Employee,
 	Guest,
@@ -1042,49 +1041,47 @@ export async function getPersonTypes(db: Database): Promise<PersonType[]> {
 	}
 }
 
-export async function banPerson(db: Database, identifier: string, ban: boolean): Promise<void> {
+export async function banPerson(db: Database, identifier: string, newBan: boolean): Promise<void> {
 	try {
 		await db.transaction(async (tx) => {
-			const personRecord = await tx
+			const [{ personId: personDbId, banned }] = await tx
 				.select({ personId: person.id, banned: person.banned })
 				.from(person)
 				.where(eq(person.identifier, identifier))
 				.limit(1);
 
-			if (personRecord.length === 0) {
-				throw new Error(`Person with identifier ${identifier} not found`);
-			}
-
-			const { personId: personDbId, banned } = personRecord[0];
-
-			if (banned === ban) {
+			if (banned === newBan) {
 				throw new Error(`Person with identifier ${identifier} is already in the requested state.`);
 			}
-			if (ban) {
+			if (newBan) {
 				const lastEntry = await tx
 					.select({
 						personId: personEntry.personId,
 						building: personEntry.building,
-						maxEntryTimestamp: max(personEntry.timestamp),
-						maxExitTimestamp: max(personExit.timestamp)
+						maxEntryTimestamp: personEntry.timestamp
 					})
 					.from(personEntry)
-					.leftJoin(personExit, eq(personExit.personId, personEntry.personId))
 					.where(eq(personEntry.personId, personDbId))
-					.groupBy(personEntry.personId)
-					.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-						or(isNull(maxExitTimestamp), gt(maxEntryTimestamp, maxExitTimestamp))
-					)
+					.orderBy(desc(personEntry.timestamp))
 					.limit(1);
-
-				if (lastEntry.length > 0) {
+			
+					const lastExit = await tx
+					.select({
+						maxExitTimestamp: max(personExit.timestamp)
+					})
+					.from(personExit)
+					.where(eq(personExit.personId, personDbId));
+			
+				const latestExitTimestamp = lastExit[0]?.maxExitTimestamp;
+			
+				if (lastEntry.length > 0 && (latestExitTimestamp === null || lastEntry[0].maxEntryTimestamp > latestExitTimestamp)) {
 					await tx.insert(personExit).values({
 						personId: personDbId,
 						building: lastEntry[0].building
 					});
 				}
-			}
-			await tx.update(person).set({ banned: ban }).where(eq(person.id, personDbId));
+			}			
+			await tx.update(person).set({ banned: newBan }).where(eq(person.id, personDbId));
 		});
 	} catch (err) {
 		throw new Error(`Failed to ban person in database: ${(err as Error).message}`);
