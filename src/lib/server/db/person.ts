@@ -1064,23 +1064,26 @@ export async function banPerson(db: Database, identifier: string, newBan: boolea
 					.where(eq(personEntry.personId, personDbId))
 					.orderBy(desc(personEntry.timestamp))
 					.limit(1);
-			
-					const lastExit = await tx
+
+				const lastExit = await tx
 					.select({
 						maxExitTimestamp: max(personExit.timestamp)
 					})
 					.from(personExit)
 					.where(eq(personExit.personId, personDbId));
-			
+
 				const latestExitTimestamp = lastExit[0]?.maxExitTimestamp;
-			
-				if (lastEntry.length > 0 && (latestExitTimestamp === null || lastEntry[0].maxEntryTimestamp > latestExitTimestamp)) {
+
+				if (
+					lastEntry.length > 0 &&
+					(latestExitTimestamp === null || lastEntry[0].maxEntryTimestamp > latestExitTimestamp)
+				) {
 					await tx.insert(personExit).values({
 						personId: personDbId,
 						building: lastEntry[0].building
 					});
 				}
-			}			
+			}
 			await tx.update(person).set({ banned: newBan }).where(eq(person.id, personDbId));
 		});
 	} catch (err) {
