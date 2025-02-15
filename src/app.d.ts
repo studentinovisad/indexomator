@@ -8,6 +8,7 @@ declare global {
 			database: Database;
 			user: User | null;
 			session: Session | null;
+			adminAuthenticated: boolean;
 		}
 	}
 }

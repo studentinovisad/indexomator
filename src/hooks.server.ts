@@ -10,11 +10,18 @@ const { database } = await connectDatabase();
 export const handle: Handle = async ({ event, resolve }) => {
 	// Set the database in locals for the rest of the request
 	event.locals.database = database;
-
 	// Allow access to the admin pages without authentication (secret is required)
-	if (event.url.pathname.startsWith('/admin')) {
-		return resolve(event);
-	}
+    if (event.locals.adminAuthenticated === undefined) {
+        event.locals.adminAuthenticated = false;
+    }
+
+    // Restrict access to admin routes unless authenticated
+    if (event.url.pathname.startsWith('/admin')) {
+        if (!event.locals.adminAuthenticated && event.url.pathname !== '/admin/login') {
+            throw redirect(302, '/admin/login');
+        }
+        return resolve(event);
+    }
 
 	const token = event.cookies.get('session') ?? null;
 
