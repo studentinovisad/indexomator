@@ -614,7 +614,7 @@ export async function createGuest(
 }
 
 // Checks if a guarantor exists in the database and is not a guest
-async function validGuarantor(db: Database, guarantorId: number): Promise<void> {
+async function validGuarantor(db: Database, guarantorId: number, transfer: boolean): Promise<void> {
 	// Check guarantor type
 	const [{ type }] = await db
 		.select({ type: person.type })
@@ -632,7 +632,8 @@ async function validGuarantor(db: Database, guarantorId: number): Promise<void> 
 
 	// Check if guarantor has used all his guarantee slots
 	const insideGuestCount = await getInsideGuestCount(db, guarantorId);
-	if (guarantorMaxGuests && insideGuestCount >= guarantorMaxGuests) {
+	const adjustedInsideGuestCount = transfer ? insideGuestCount - 1 : insideGuestCount;
+	if (guarantorMaxGuests && adjustedInsideGuestCount >= guarantorMaxGuests) {
 		throw new Error('Guarantor reached maximum number of inside guests');
 	}
 
@@ -745,7 +746,7 @@ export async function createPerson(
 			// Check if the guarantor is valid
 			if (guarantorId) {
 				try {
-					await validGuarantor(tx, guarantorId);
+					await validGuarantor(tx, guarantorId, false);
 				} catch (err) {
 					throw new Error(`Invalid guarantor: ${(err as Error).message}`);
 				}
@@ -834,7 +835,7 @@ export async function togglePersonState(
 				.orderBy(desc(personEntry.timestamp))
 				.limit(1);
 
-			// Get the person timestamp
+			// Get the person exit timestamp
 			const exits = await tx
 				.select({
 					exitTimestamp: personExit.timestamp
@@ -876,7 +877,7 @@ export async function togglePersonState(
 					// Check if the guarantor is valid
 					if (guarantorId) {
 						try {
-							await validGuarantor(tx, guarantorId);
+							await validGuarantor(tx, guarantorId, true);
 						} catch (err) {
 							throw new Error(`Invalid guarantor: ${(err as Error).message}`);
 						}
@@ -917,7 +918,7 @@ export async function togglePersonState(
 				// Check if the guarantor is valid
 				if (guarantorId) {
 					try {
-						await validGuarantor(tx, guarantorId);
+						await validGuarantor(tx, guarantorId, false);
 					} catch (err) {
 						throw new Error(`Invalid guarantor: ${(err as Error).message}`);
 					}
