@@ -873,7 +873,16 @@ export async function togglePersonState(
 						}
 					}
 
+					// (Transfer) Release the person
+					await tx.insert(personExit).values({
+						personId: id,
+						building,
+						creator
+					});
+
 					// Check if the guarantor is valid
+					// This calculates the current guests inside for guarantor,
+					// which is why we release the person beforehand
 					if (guarantorId) {
 						try {
 							await validGuarantor(tx, guarantorId);
@@ -882,18 +891,14 @@ export async function togglePersonState(
 						}
 					}
 
-					// Transfer the person
-					await tx.insert(personExit).values({
-						personId: id,
-						building,
-						creator
-					});
+					// (Transfer) Admit the person
 					await tx.insert(personEntry).values({
 						personId: id,
 						building,
 						creator,
 						guarantorId
 					});
+
 					return StateInside;
 				}
 			} else {
