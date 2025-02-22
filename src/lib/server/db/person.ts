@@ -614,7 +614,7 @@ export async function createGuest(
 }
 
 // Checks if a guarantor exists in the database and is not a guest
-async function validGuarantor(db: Database, guarantorId: number, transfer: boolean): Promise<void> {
+async function validGuarantor(db: Database, guarantorId: number): Promise<void> {
 	// Check guarantor type
 	const [{ type }] = await db
 		.select({ type: person.type })
@@ -632,8 +632,7 @@ async function validGuarantor(db: Database, guarantorId: number, transfer: boole
 
 	// Check if guarantor has used all his guarantee slots
 	const insideGuestCount = await getInsideGuestCount(db, guarantorId);
-	const adjustedInsideGuestCount = transfer ? insideGuestCount - 1 : insideGuestCount;
-	if (guarantorMaxGuests && adjustedInsideGuestCount >= guarantorMaxGuests) {
+	if (guarantorMaxGuests && insideGuestCount >= guarantorMaxGuests) {
 		throw new Error('Guarantor reached maximum number of inside guests');
 	}
 
@@ -746,7 +745,7 @@ export async function createPerson(
 			// Check if the guarantor is valid
 			if (guarantorId) {
 				try {
-					await validGuarantor(tx, guarantorId, false);
+					await validGuarantor(tx, guarantorId);
 				} catch (err) {
 					throw new Error(`Invalid guarantor: ${(err as Error).message}`);
 				}
@@ -874,27 +873,32 @@ export async function togglePersonState(
 						}
 					}
 
-					// Check if the guarantor is valid
-					if (guarantorId) {
-						try {
-							await validGuarantor(tx, guarantorId, true);
-						} catch (err) {
-							throw new Error(`Invalid guarantor: ${(err as Error).message}`);
-						}
-					}
-
-					// Transfer the person
+					// (Transfer) Release the person
 					await tx.insert(personExit).values({
 						personId: id,
 						building,
 						creator
 					});
+
+					// Check if the guarantor is valid
+					// This calculates the current guests inside for guarantor,
+					// which is why we release the person beforehand
+					if (guarantorId) {
+						try {
+							await validGuarantor(tx, guarantorId);
+						} catch (err) {
+							throw new Error(`Invalid guarantor: ${(err as Error).message}`);
+						}
+					}
+
+					// (Transfer) Admit the person
 					await tx.insert(personEntry).values({
 						personId: id,
 						building,
 						creator,
 						guarantorId
 					});
+
 					return StateInside;
 				}
 			} else {
@@ -918,7 +922,7 @@ export async function togglePersonState(
 				// Check if the guarantor is valid
 				if (guarantorId) {
 					try {
-						await validGuarantor(tx, guarantorId, false);
+						await validGuarantor(tx, guarantorId);
 					} catch (err) {
 						throw new Error(`Invalid guarantor: ${(err as Error).message}`);
 					}
