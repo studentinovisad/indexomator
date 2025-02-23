@@ -6,12 +6,13 @@ export async function getUniversities(db: Database): Promise<University[]> {
 	return await db.select().from(university).orderBy(university.name);
 }
 
-export async function createUniversity(db: Database, name: string): Promise<void> {
+export async function createUniversity(db: Database, universityName: string): Promise<void> {
 	// Assert that name is valid
-	if (name === null || name === undefined || name === '') {
+	if (universityName === '') {
 		throw new Error('Invalid name');
 	}
 
+	const name = universityName.trim();
 	await db.insert(university).values({
 		name
 	});
