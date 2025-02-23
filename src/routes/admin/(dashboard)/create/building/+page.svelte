@@ -41,15 +41,6 @@
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Field {form} name="secret">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Form.Label>Secret</Form.Label>
-						<Input type="password" {...props} bind:value={$formData.secret} />
-					{/snippet}
-				</Form.Control>
-				<Form.FieldErrors />
-			</Form.Field>
 			<Form.Button>Submit</Form.Button>
 		</Card.Content>
 	</Card.Root>

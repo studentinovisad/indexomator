@@ -37,7 +37,7 @@
 			}
 		}
 	});
-	const { form: formAllData, enhance: formAllEnhance } = formAll;
+	const { enhance: formAllEnhance } = formAll;
 </script>
 
 <div class="flex w-full items-center justify-center px-4 pt-[5dvh] sm:pt-[10dvh]">
@@ -65,16 +65,7 @@
 							</Form.Control>
 							<Form.FieldErrors />
 						</Form.Field>
-						<Form.Field form={formOne} name="secret">
-							<Form.Control>
-								{#snippet children({ props })}
-									<Form.Label>Secret</Form.Label>
-									<Input type="password" {...props} bind:value={$formOneData.secret} />
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
-						<Form.Field form={formAll} name="action" class="mx-auto">
+						<Form.Field form={formOne} name="action" class="mx-auto">
 							<Form.Control>
 								{#snippet children({ props })}
 									<Form.Button {...props} value="disable">Disable</Form.Button>
@@ -95,15 +86,6 @@
 						<Card.Description>Either disable or enable all users.</Card.Description>
 					</Card.Header>
 					<Card.Content class="grid gap-4">
-						<Form.Field form={formAll} name="secret">
-							<Form.Control>
-								{#snippet children({ props })}
-									<Form.Label>Secret</Form.Label>
-									<Input type="password" {...props} bind:value={$formAllData.secret} />
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
 						<Form.Field form={formAll} name="action" class="mx-auto">
 							<Form.Control>
 								{#snippet children({ props })}

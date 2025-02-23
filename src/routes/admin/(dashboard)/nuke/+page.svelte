@@ -2,7 +2,6 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Form from '$lib/components/ui/form';
 	import * as Select from '$lib/components/ui/select';
-	import { Input } from '$lib/components/ui/input/index.js';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
@@ -65,15 +64,6 @@
 								{/each}
 							</Select.Content>
 						</Select.Root>
-					{/snippet}
-				</Form.Control>
-				<Form.FieldErrors />
-			</Form.Field>
-			<Form.Field {form} name="secret">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Form.Label>Secret</Form.Label>
-						<Input type="password" {...props} bind:value={$formData.secret} />
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />

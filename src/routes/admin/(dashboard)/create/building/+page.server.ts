@@ -4,7 +4,6 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { formSchema } from './schema';
 import type { PageServerLoad } from './$types';
 import { createBuilding } from '$lib/server/db/building';
-import { validateSecret } from '$lib/server/secret';
 
 export const load: PageServerLoad = async () => {
 	const form = await superValidate(zod(formSchema));
@@ -21,14 +20,6 @@ export const actions: Actions = {
 			return fail(400, {
 				form,
 				message: 'Invalid form inputs'
-			});
-		}
-
-		const secretOk = await validateSecret(form.data.secret);
-		if (!secretOk) {
-			return fail(401, {
-				form,
-				message: 'Invalid secret'
 			});
 		}
 

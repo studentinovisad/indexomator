@@ -1,5 +1,4 @@
 import { createUser } from '$lib/server/db/user';
-import { validateSecret } from '$lib/server/secret';
 import { fail, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
@@ -21,14 +20,6 @@ export const actions: Actions = {
 			return fail(400, {
 				form,
 				message: 'Invalid form inputs'
-			});
-		}
-
-		const secretOk = await validateSecret(form.data.secret);
-		if (!secretOk) {
-			return fail(401, {
-				form,
-				message: 'Invalid secret'
 			});
 		}
 
