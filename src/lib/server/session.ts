@@ -9,24 +9,38 @@ export function generateSessionToken(): string {
 	return token;
 }
 
-export function setSessionTokenCookie(
-	event: RequestEvent,
-	token: string,
-	timestamp: Date,
-	admin?: boolean
-): void {
-	const cookieName = admin ? 'admin_session' : 'session';
-	event.cookies.set(cookieName, token, {
+const sessionCookieName = 'session';
+export function setSessionTokenCookie(event: RequestEvent, token: string, timestamp: Date): void {
+	event.cookies.set(sessionCookieName, token, {
 		httpOnly: true,
 		sameSite: 'lax',
 		path: '/',
 		expires: new Date(timestamp.getTime() + inactivityTimeout)
 	});
 }
+export function deleteSessionTokenCookie(event: RequestEvent): void {
+	event.cookies.delete(sessionCookieName, {
+		httpOnly: true,
+		sameSite: 'lax',
+		path: '/'
+	});
+}
 
-export function deleteSessionTokenCookie(event: RequestEvent, admin?: boolean): void {
-	const cookieName = admin ? 'admin_session' : 'session';
-	event.cookies.delete(cookieName, {
+const adminSessionCookieName = 'admin_session';
+export function setAdminSessionTokenCookie(
+	event: RequestEvent,
+	token: string,
+	timestamp: Date
+): void {
+	event.cookies.set(adminSessionCookieName, token, {
+		httpOnly: true,
+		sameSite: 'lax',
+		path: '/',
+		expires: new Date(timestamp.getTime() + inactivityTimeout)
+	});
+}
+export function deleteAdminSessionTokenCookie(event: RequestEvent): void {
+	event.cookies.delete(adminSessionCookieName, {
 		httpOnly: true,
 		sameSite: 'lax',
 		path: '/'
