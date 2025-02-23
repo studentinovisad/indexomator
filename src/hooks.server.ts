@@ -16,7 +16,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// Set the database in locals for the rest of the request
 	event.locals.database = database;
 
-	// Allow access to the admin pages without authentication (secret is required)
+	// Use admin session for admin routes
 	if (event.url.pathname.startsWith('/admin')) {
 		const token = event.cookies.get('admin_session') ?? null;
 
@@ -30,27 +30,27 @@ export const handle: Handle = async ({ event, resolve }) => {
 			return resolve(event);
 		}
 
-		// Validate session token
+		// Validate admin session token
 		const adminSession = await validateAdminSessionToken(database, token);
 		if (adminSession !== null) {
-			// If session is valid, ensure the token is up-to-date
+			// If admin session is valid, ensure the token is up-to-date
 			setAdminSessionTokenCookie(event, token, adminSession.timestamp);
 
-			// Redirect to the home page after login
+			// Redirect to the admin home page after login
 			if (event.url.pathname === '/admin/login') {
 				return redirect(302, '/admin');
 			}
 		} else {
-			// If session is invalid, delete the session cookie
+			// If admin session is invalid, delete the session cookie
 			deleteAdminSessionTokenCookie(event);
 
-			// Redirect to the login page after session expiry
+			// Redirect to the admin login page after admin session expiry
 			if (event.url.pathname !== '/admin/login') {
 				return redirect(302, '/admin/login');
 			}
 		}
 
-		// Set session and user in locals for the rest of the request
+		// Set admin session in locals for the rest of the request
 		event.locals.adminSession = adminSession;
 
 		// Continue with resolving the request
