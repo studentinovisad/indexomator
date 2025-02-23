@@ -1,5 +1,4 @@
 import { updateUserDisabled, updateAllUserDisabled } from '$lib/server/db/user';
-import { validateSecret } from '$lib/server/secret';
 import { fail, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
@@ -26,17 +25,8 @@ export const actions: Actions = {
 			});
 		}
 
-		const { username, secret, action } = formOne.data;
+		const { username, action } = formOne.data;
 		const newDisable = action === 'disable';
-
-		// Check if the secret is correct
-		const secretOk = await validateSecret(secret);
-		if (!secretOk) {
-			return fail(401, {
-				formOne,
-				message: 'Invalid secret'
-			});
-		}
 
 		try {
 			await updateUserDisabled(database, username, newDisable);
@@ -61,17 +51,8 @@ export const actions: Actions = {
 			});
 		}
 
-		const { secret, action } = formAll.data;
+		const { action } = formAll.data;
 		const newDisable = action === 'disable';
-
-		// Check if the secret is correct
-		const secretOk = await validateSecret(secret);
-		if (!secretOk) {
-			return fail(401, {
-				formAll,
-				message: 'Invalid secret'
-			});
-		}
 
 		try {
 			await updateAllUserDisabled(database, newDisable);

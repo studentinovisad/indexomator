@@ -28,24 +28,15 @@
 <form method="POST" class="flex h-[90dvh] w-full items-center justify-center px-4" use:enhance>
 	<Card.Root class="mx-auto w-full max-w-sm">
 		<Card.Header>
-			<Card.Title class="text-2xl">Create department</Card.Title>
-			<Card.Description>Enter the name of the new department to create.</Card.Description>
+			<Card.Title class="text-2xl">Create building</Card.Title>
+			<Card.Description>Enter the name of the new building to create.</Card.Description>
 		</Card.Header>
 		<Card.Content class="grid gap-4">
-			<Form.Field {form} name="department">
+			<Form.Field {form} name="building">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>Department</Form.Label>
-						<Input {...props} bind:value={$formData.department} />
-					{/snippet}
-				</Form.Control>
-				<Form.FieldErrors />
-			</Form.Field>
-			<Form.Field {form} name="secret">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Form.Label>Secret</Form.Label>
-						<Input type="password" {...props} bind:value={$formData.secret} />
+						<Form.Label>Building</Form.Label>
+						<Input {...props} bind:value={$formData.building} />
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />

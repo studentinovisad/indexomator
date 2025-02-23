@@ -22,35 +22,27 @@
 			}
 		}
 	});
+
 	const { form: formData, enhance } = form;
 </script>
 
 <form method="POST" class="flex h-[90dvh] w-full items-center justify-center px-4" use:enhance>
 	<Card.Root class="mx-auto w-full max-w-sm">
 		<Card.Header>
-			<Card.Title class="text-2xl">Create building</Card.Title>
-			<Card.Description>Enter the name of the new building to create.</Card.Description>
+			<Card.Title class="text-2xl">Create university</Card.Title>
+			<Card.Description>Enter the name of the new university to create.</Card.Description>
 		</Card.Header>
 		<Card.Content class="grid gap-4">
-			<Form.Field {form} name="building">
+			<Form.Field {form} name="university">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>Building</Form.Label>
-						<Input {...props} bind:value={$formData.building} />
+						<Form.Label>University</Form.Label>
+						<Input {...props} bind:value={$formData.university} />
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Form.Field {form} name="secret">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Form.Label>Secret</Form.Label>
-						<Input type="password" {...props} bind:value={$formData.secret} />
-					{/snippet}
-				</Form.Control>
-				<Form.FieldErrors />
-			</Form.Field>
-			<Form.Button>Submit</Form.Button>
+			<Form.Button type="submit">Submit</Form.Button>
 		</Card.Content>
 	</Card.Root>
 </form>

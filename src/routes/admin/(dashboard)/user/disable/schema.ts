@@ -3,7 +3,6 @@ import { z } from 'zod';
 
 export const formOneSchema = z.object({
 	username: z.string().regex(indexRegExp, indexRegExpMsg),
-	secret: z.string().min(32).max(255),
 	action: z
 		.string()
 		.default('disable') // Has to have default in order to pass client validation
@@ -12,7 +11,6 @@ export const formOneSchema = z.object({
 export type FormOneSchema = typeof formOneSchema;
 
 export const formAllSchema = z.object({
-	secret: z.string().min(32).max(255),
 	action: z
 		.string()
 		.default('disable') // Has to have default in order to pass client validation

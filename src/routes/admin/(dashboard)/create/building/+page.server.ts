@@ -3,8 +3,7 @@ import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { formSchema } from './schema';
 import type { PageServerLoad } from './$types';
-import { createUniversity } from '$lib/server/db/university';
-import { validateSecret } from '$lib/server/secret';
+import { createBuilding } from '$lib/server/db/building';
 
 export const load: PageServerLoad = async () => {
 	const form = await superValidate(zod(formSchema));
@@ -24,27 +23,19 @@ export const actions: Actions = {
 			});
 		}
 
-		const secretOk = await validateSecret(form.data.secret);
-		if (!secretOk) {
-			return fail(401, {
-				form,
-				message: 'Invalid secret'
-			});
-		}
-
-		const { university } = form.data;
+		const { building } = form.data;
 
 		try {
-			await createUniversity(database, university);
+			await createBuilding(database, building);
 
 			return {
 				form,
-				message: 'Successfully created university!'
+				message: 'Successfully created building!'
 			};
 		} catch (err) {
 			return fail(500, {
 				form,
-				message: `Failed to create university: ${(err as Error).message}`
+				message: `Failed to create building: ${(err as Error).message}`
 			});
 		}
 	}

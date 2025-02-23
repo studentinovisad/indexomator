@@ -1,10 +1,9 @@
+import { createUser } from '$lib/server/db/user';
 import { fail, type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import { formSchema } from './schema';
 import type { PageServerLoad } from './$types';
-import { createDepartment } from '$lib/server/db/department';
-import { validateSecret } from '$lib/server/secret';
+import { formSchema } from './schema';
 
 export const load: PageServerLoad = async () => {
 	const form = await superValidate(zod(formSchema));
@@ -24,27 +23,19 @@ export const actions: Actions = {
 			});
 		}
 
-		const secretOk = await validateSecret(form.data.secret);
-		if (!secretOk) {
-			return fail(401, {
-				form,
-				message: 'Invalid secret'
-			});
-		}
-
-		const { department } = form.data;
+		const { username, password } = form.data;
 
 		try {
-			await createDepartment(database, department);
+			await createUser(database, username, password);
 
 			return {
 				form,
-				message: 'Successfully created department!'
+				message: 'Successfully registered user!'
 			};
 		} catch (err) {
-			return fail(500, {
+			return fail(400, {
 				form,
-				message: `Failed to create department: ${(err as Error).message}`
+				message: `Failed to register: ${(err as Error).message}`
 			});
 		}
 	}
