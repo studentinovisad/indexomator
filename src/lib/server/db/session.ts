@@ -1,11 +1,10 @@
 import type { Database } from './connect';
 import { and, desc, eq, notInArray } from 'drizzle-orm';
-import { encodeHexLowerCase } from '@oslojs/encoding';
-import { sha256 } from '@oslojs/crypto/sha2';
 import { userTable } from './schema/user';
 import { adminSessionTable, sessionTable } from './schema/session';
 import type { Session, AdminSession, User } from '$lib/types/db';
 import { adminInactivityTimeout, inactivityTimeout, maxActiveSessions } from '$lib/server/env';
+import { hashSessionToken } from '../session';
 
 export type SessionValidationResult =
 	| { session: Session; user: User }
@@ -30,7 +29,7 @@ export async function createSession(
 	}
 
 	try {
-		const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+		const sessionId = hashSessionToken(token);
 		const [result] = await db
 			.insert(sessionTable)
 			.values({ id: sessionId, userId, building })
@@ -49,7 +48,7 @@ export async function createAdminSession(db: Database, token: string): Promise<A
 	}
 
 	try {
-		const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+		const sessionId = hashSessionToken(token);
 		const [result] = await db.insert(adminSessionTable).values({ id: sessionId }).returning();
 
 		return result;
@@ -68,7 +67,7 @@ export async function validateSessionToken(
 	}
 
 	try {
-		const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+		const sessionId = hashSessionToken(token);
 
 		const result = await db
 			.select({ user: userTable, session: sessionTable })
@@ -108,7 +107,7 @@ export async function validateAdminSessionToken(
 	}
 
 	try {
-		const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+		const sessionId = hashSessionToken(token);
 
 		const result = await db
 			.select({ adminSession: adminSessionTable })

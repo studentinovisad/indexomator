@@ -1,12 +1,17 @@
 import type { RequestEvent } from '@sveltejs/kit';
-import { encodeBase32LowerCaseNoPadding } from '@oslojs/encoding';
+import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from '@oslojs/encoding';
 import { inactivityTimeout } from '$lib/server/env';
+import { sha256 } from '@oslojs/crypto/sha2';
 
 export function generateSessionToken(): string {
 	const bytes = new Uint8Array(20);
 	const randomBytes = crypto.getRandomValues(bytes);
 	const token = encodeBase32LowerCaseNoPadding(randomBytes);
 	return token;
+}
+
+export function hashSessionToken(token: string): string {
+	return encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 }
 
 const sessionCookieName = 'session';
