@@ -1,5 +1,5 @@
 {
-	"id": "2a20fc45-9e30-40b8-886b-d2eeedbf804c",
+	"id": "540aef9a-775d-42b7-95e6-6cf4223d4672",
 	"prevId": "d1039bff-9dd6-437b-988b-9c681e041f17",
 	"version": "7",
 	"dialect": "postgresql",
@@ -30,7 +30,10 @@
 					"nullsNotDistinct": false,
 					"columns": ["name"]
 				}
-			}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
 		},
 		"public.department": {
 			"name": "department",
@@ -58,7 +61,10 @@
 					"nullsNotDistinct": false,
 					"columns": ["name"]
 				}
-			}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
 		},
 		"public.person": {
 			"name": "person",
@@ -105,13 +111,6 @@
 					"type": "text",
 					"primaryKey": false,
 					"notNull": false
-				},
-				"is_banned": {
-					"name": "is_banned",
-					"type": "boolean",
-					"primaryKey": false,
-					"notNull": true,
-					"default": false
 				}
 			},
 			"indexes": {},
@@ -142,7 +141,10 @@
 					"nullsNotDistinct": true,
 					"columns": ["identifier", "university"]
 				}
-			}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
 		},
 		"public.person_entry": {
 			"name": "person_entry",
@@ -225,7 +227,10 @@
 					"columns": ["person_id", "timestamp"]
 				}
 			},
-			"uniqueConstraints": {}
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
 		},
 		"public.person_exit": {
 			"name": "person_exit",
@@ -293,7 +298,36 @@
 					"columns": ["person_id", "timestamp"]
 				}
 			},
-			"uniqueConstraints": {}
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.admin_session": {
+			"name": "admin_session",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"timestamp": {
+					"name": "timestamp",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
 		},
 		"public.session": {
 			"name": "session",
@@ -347,7 +381,10 @@
 				}
 			},
 			"compositePrimaryKeys": {},
-			"uniqueConstraints": {}
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
 		},
 		"public.university": {
 			"name": "university",
@@ -375,7 +412,10 @@
 					"nullsNotDistinct": false,
 					"columns": ["name"]
 				}
-			}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
 		},
 		"public.ratelimit": {
 			"name": "ratelimit",
@@ -419,7 +459,10 @@
 					"columns": ["user_id", "timestamp"]
 				}
 			},
-			"uniqueConstraints": {}
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
 		},
 		"public.user": {
 			"name": "user",
@@ -460,11 +503,18 @@
 					"nullsNotDistinct": false,
 					"columns": ["username"]
 				}
-			}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
 		}
 	},
 	"enums": {},
 	"schemas": {},
+	"sequences": {},
+	"roles": {},
+	"policies": {},
+	"views": {},
 	"_meta": {
 		"columns": {},
 		"schemas": {},

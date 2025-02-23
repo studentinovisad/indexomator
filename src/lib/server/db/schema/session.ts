@@ -12,3 +12,8 @@ export const sessionTable = pgTable('session', {
 		.references(() => building.name),
 	timestamp: timestamp('timestamp').defaultNow().notNull()
 });
+
+export const adminSessionTable = pgTable('admin_session', {
+	id: text('id').primaryKey(),
+	timestamp: timestamp('timestamp').defaultNow().notNull()
+});
