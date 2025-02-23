@@ -18,10 +18,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	// Use admin session for admin routes
 	if (event.url.pathname.startsWith('/admin')) {
-		const token = event.cookies.get('admin_session') ?? null;
+		const token = event.cookies.get('admin_session');
 
 		// If no token exists, set admin session to null
-		if (token === null) {
+		if (token === undefined) {
 			event.locals.adminSession = null;
 			// Redirect to the login page
 			if (event.url.pathname !== '/admin/login') {
@@ -56,10 +56,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 		// Continue with resolving the request
 		return resolve(event);
 	} else {
-		const token = event.cookies.get('session') ?? null;
+		const token = event.cookies.get('session');
 
 		// If no token exists, set user and session to null
-		if (token === null) {
+		if (token === undefined) {
 			event.locals.user = null;
 			event.locals.session = null;
 			// Redirect to the login page
