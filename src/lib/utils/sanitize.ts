@@ -1,9 +1,9 @@
-export function sanitizeString(value: string): string {
-	return value.trim().toLowerCase().replaceAll('-', ' ').toWellFormed();
+export function sanitizeString(input: string): string {
+	return input.trim().toLowerCase().replaceAll('-', ' ').toWellFormed();
 }
 
-export function capitalizeString(value: string): string {
-	return value
+export function capitalizeString(input: string): string {
+	return input
 		.split(' ')
 		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
 		.join(' ');
