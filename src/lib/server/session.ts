@@ -4,25 +4,31 @@ import { inactivityTimeout } from '$lib/server/env';
 
 export function generateSessionToken(): string {
 	const bytes = new Uint8Array(20);
-	crypto.getRandomValues(bytes);
-	const token = encodeBase32LowerCaseNoPadding(bytes);
+	const randomBytes = crypto.getRandomValues(bytes);
+	const token = encodeBase32LowerCaseNoPadding(randomBytes);
 	return token;
 }
 
-export function setSessionTokenCookie(event: RequestEvent, token: string, timestamp: Date): void {
-	event.cookies.set('session', token, {
+export function setSessionTokenCookie(
+	event: RequestEvent,
+	token: string,
+	timestamp: Date,
+	admin?: boolean
+): void {
+	const cookieName = admin ? 'admin_session' : 'session';
+	event.cookies.set(cookieName, token, {
 		httpOnly: true,
 		sameSite: 'lax',
-		expires: new Date(timestamp.getTime() + inactivityTimeout),
-		path: '/'
+		path: '/',
+		expires: new Date(timestamp.getTime() + inactivityTimeout)
 	});
 }
 
-export function deleteSessionTokenCookie(event: RequestEvent): void {
-	event.cookies.set('session', '', {
+export function deleteSessionTokenCookie(event: RequestEvent, admin?: boolean): void {
+	const cookieName = admin ? 'admin_session' : 'session';
+	event.cookies.delete(cookieName, {
 		httpOnly: true,
 		sameSite: 'lax',
-		maxAge: 0,
 		path: '/'
 	});
 }
