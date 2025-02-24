@@ -47,15 +47,8 @@ export function createColumns(
 			header: 'Actions',
 			cell: ({ row: { original: person } }) => {
 				return renderComponent(DataTableActions, {
-					personId: person.id,
-					guarantorFname: person.guarantorFname,
-					guarantorLname: person.guarantorLname,
-					guarantorIdentifier: person.guarantorIdentifier,
-					personType: person.type,
-					personState: person.state,
-					building: person.building,
+					person,
 					userBuilding,
-					banned: person.banned,
 					toggleStateFormSubmit,
 					toggleGuestStateFormSubmit,
 					showGuestsFormSubmit
