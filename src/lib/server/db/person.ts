@@ -1072,9 +1072,11 @@ export async function setPersonBannedStatus(
 				.from(person)
 				.where(eq(person.id, id))
 				.limit(1);
-				if (newBan === banned) {
-					throw new Error(`Person with identifier ${personDbId} is already ${banned ? 'banned' : 'pardoned'}`);
-				}
+			if (newBan === banned) {
+				throw new Error(
+					`Person with identifier ${personDbId} is already ${banned ? 'banned' : 'pardoned'}`
+				);
+			}
 			if (newBan) {
 				// Get the person entry timestamp and building
 				const [{ entryTimestamp, entryBuilding }] = await tx
