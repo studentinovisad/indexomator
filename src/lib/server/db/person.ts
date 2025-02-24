@@ -1064,19 +1064,18 @@ export async function setPersonBannedStatus(
 	action: 'ban' | 'pardon'
 ): Promise<void> {
 	const newBan = action === 'ban';
+	const actionMsg = action === 'ban' ? 'banned' : 'pardoned';
 
 	try {
 		await db.transaction(async (tx) => {
-			const [{ personId: personDbId, banned }] = await tx
-				.select({ personId: person.id, banned: person.banned })
+			const [{ banned }] = await tx
+				.select({ banned: person.banned })
 				.from(person)
-				.where(eq(person.id, id))
-				.limit(1);
+				.where(eq(person.id, id));
 			if (newBan === banned) {
-				throw new Error(
-					`Person with identifier ${personDbId} is already ${banned ? 'banned' : 'pardoned'}`
-				);
+				throw new Error(`Person is already ${actionMsg}`);
 			}
+
 			if (newBan) {
 				// Get the person entry timestamp and building
 				const [{ entryTimestamp, entryBuilding }] = await tx
@@ -1112,7 +1111,7 @@ export async function setPersonBannedStatus(
 			await tx.update(person).set({ banned: newBan }).where(eq(person.id, id));
 		});
 	} catch (err) {
-		throw new Error(`Failed to ban person in database: ${(err as Error).message}`);
+		throw new Error(`Failed to ${action} person in database: ${(err as Error).message}`);
 	}
 }
 
