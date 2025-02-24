@@ -1,9 +1,17 @@
-import { pgTable, serial, integer, text, timestamp, primaryKey, unique } from 'drizzle-orm/pg-core';
+import {
+	pgTable,
+	serial,
+	integer,
+	text,
+	timestamp,
+	primaryKey,
+	boolean,
+	unique
+} from 'drizzle-orm/pg-core';
+import { building } from './building';
 import { department } from './department';
 import { university } from './university';
-import { building } from './building';
 import { userTable } from './user';
-
 export const person = pgTable(
 	'person',
 	{
@@ -19,7 +27,8 @@ export const person = pgTable(
 		university: text('university').references(() => university.name, {
 			onDelete: 'restrict',
 			onUpdate: 'cascade'
-		})
+		}),
+		banned: boolean('banned').notNull().default(false)
 	},
 	(table) => ({
 		identifierUniversity: unique('person_identifier_university_id_unique')

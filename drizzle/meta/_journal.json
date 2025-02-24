@@ -85,6 +85,13 @@
 			"when": 1740320096548,
 			"tag": "0011_familiar_marvel_zombies",
 			"breakpoints": true
+		},
+		{
+			"idx": 12,
+			"version": "7",
+			"when": 1740355060997,
+			"tag": "0012_tough_titania",
+			"breakpoints": true
 		}
 	]
 }

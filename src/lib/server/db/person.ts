@@ -96,6 +96,7 @@ export async function getPersons(
 							lname: person.lname,
 							department: person.department,
 							university: person.university,
+							banned: person.banned,
 							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 							entryBuilding: personEntry.building,
 							entryGuarantorId: personEntry.guarantorId,
@@ -164,6 +165,7 @@ export async function getPersons(
 							lname: person.lname,
 							department: person.department,
 							university: person.university,
+							banned: person.banned,
 							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 							entryBuilding: personEntry.building,
 							entryGuarantorId: personEntry.guarantorId,
@@ -206,7 +208,8 @@ export async function getPersons(
 				guarantorFname: inside ? p.entryGuarantorFname : null,
 				guarantorLname: inside ? p.entryGuarantorLname : null,
 				guarantorIdentifier: inside ? p.entryGuarantorIdentifier : null,
-				state: inside ? StateInside : StateOutside
+				state: inside ? StateInside : StateOutside,
+				banned: p.banned
 			};
 		});
 	} catch (err) {
@@ -298,6 +301,7 @@ export async function getGuarantors(
 						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
 						.where(
 							and(
+								eq(person.banned, false),
 								not(eq(person.type, Guest)),
 								guarantorEligibilityHours !== 0
 									? gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
@@ -334,6 +338,7 @@ export async function getGuarantors(
 						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
 						.where(
 							and(
+								eq(person.banned, false),
 								not(eq(person.type, Guest)),
 								guarantorEligibilityHours !== 0
 									? gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
@@ -616,13 +621,18 @@ export async function createGuest(
 // Checks if a guarantor exists in the database and is not a guest
 async function validGuarantor(db: Database, guarantorId: number): Promise<void> {
 	// Check guarantor type
-	const [{ type }] = await db
-		.select({ type: person.type })
+	const [{ banned, type }] = await db
+		.select({ banned: person.banned, type: person.type })
 		.from(person)
 		.where(eq(person.id, guarantorId));
 
 	if (!isPersonType(type)) {
 		throw new Error('Invalid type from DB (not PersonType)');
+	}
+
+	// Guarantor must not be banned
+	if (banned) {
+		throw new Error("Guarantor can't be banned");
 	}
 
 	// Guarantor must not be a guest
@@ -795,6 +805,7 @@ export async function createPerson(
 				guarantorFname,
 				guarantorLname,
 				guarantorIdentifier,
+				banned: false,
 				state: StateInside // Because the person was just created, they are inside
 			};
 		});
@@ -823,6 +834,24 @@ export async function togglePersonState(
 
 	try {
 		return await db.transaction(async (tx) => {
+			// Check if the person is banned
+			const [{ banned }] = await tx
+				.select({ banned: person.banned })
+				.from(person)
+				.where(eq(person.id, id));
+			if (banned) {
+				throw new Error('Person is banned and cannot change state');
+			}
+
+			// Check if the guarantor is valid
+			if (guarantorId) {
+				try {
+					await validGuarantor(tx, guarantorId);
+				} catch (err) {
+					throw new Error(`Invalid guarantor: ${(err as Error).message}`);
+				}
+			}
+
 			// Get the person entry timestamp and building
 			const [{ entryTimestamp, entryBuilding }] = await tx
 				.select({
@@ -1026,6 +1055,63 @@ export async function getPersonTypes(db: Database): Promise<PersonType[]> {
 		}, [] as PersonType[]);
 	} catch (err) {
 		throw new Error(`Failed to get persons types from database: ${(err as Error).message}`);
+	}
+}
+
+export async function setPersonBannedStatus(
+	db: Database,
+	id: number,
+	action: 'ban' | 'pardon'
+): Promise<void> {
+	const newBan = action === 'ban';
+	const actionMsg = action === 'ban' ? 'banned' : 'pardoned';
+
+	try {
+		await db.transaction(async (tx) => {
+			const [{ banned }] = await tx
+				.select({ banned: person.banned })
+				.from(person)
+				.where(eq(person.id, id));
+			if (newBan === banned) {
+				throw new Error(`Person is already ${actionMsg}`);
+			}
+
+			if (newBan) {
+				// Get the person entry timestamp and building
+				const [{ entryTimestamp, entryBuilding }] = await tx
+					.select({
+						entryTimestamp: personEntry.timestamp,
+						entryBuilding: personEntry.building
+					})
+					.from(personEntry)
+					.where(eq(personEntry.personId, id))
+					.orderBy(desc(personEntry.timestamp))
+					.limit(1);
+
+				// Get the person exit timestamp
+				const exits = await tx
+					.select({
+						exitTimestamp: personExit.timestamp
+					})
+					.from(personExit)
+					.where(eq(personExit.personId, id))
+					.orderBy(desc(personExit.timestamp))
+					.limit(1);
+				const [{ exitTimestamp }] = exits.length === 1 ? exits : [{ exitTimestamp: null }];
+
+				if (isInside(entryTimestamp, exitTimestamp)) {
+					// Release the person
+					await tx.insert(personExit).values({
+						personId: id,
+						building: entryBuilding
+					});
+				}
+			}
+
+			await tx.update(person).set({ banned: newBan }).where(eq(person.id, id));
+		});
+	} catch (err) {
+		throw new Error(`Failed to ${action} person in database: ${(err as Error).message}`);
 	}
 }
 
