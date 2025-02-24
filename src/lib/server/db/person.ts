@@ -301,6 +301,7 @@ export async function getGuarantors(
 						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
 						.where(
 							and(
+								eq(person.banned, false),
 								not(eq(person.type, Guest)),
 								guarantorEligibilityHours !== 0
 									? gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
@@ -337,6 +338,7 @@ export async function getGuarantors(
 						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
 						.where(
 							and(
+								eq(person.banned, false),
 								not(eq(person.type, Guest)),
 								guarantorEligibilityHours !== 0
 									? gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
@@ -619,13 +621,18 @@ export async function createGuest(
 // Checks if a guarantor exists in the database and is not a guest
 async function validGuarantor(db: Database, guarantorId: number): Promise<void> {
 	// Check guarantor type
-	const [{ type }] = await db
-		.select({ type: person.type })
+	const [{ banned, type }] = await db
+		.select({ banned: person.banned, type: person.type })
 		.from(person)
 		.where(eq(person.id, guarantorId));
 
 	if (!isPersonType(type)) {
 		throw new Error('Invalid type from DB (not PersonType)');
+	}
+
+	// Guarantor must not be banned
+	if (banned) {
+		throw new Error("Guarantor can't be banned");
 	}
 
 	// Guarantor must not be a guest
@@ -831,12 +838,11 @@ export async function togglePersonState(
 			const [{ banned }] = await tx
 				.select({ banned: person.banned })
 				.from(person)
-				.where(eq(person.id, id))
-				.limit(1);
-
+				.where(eq(person.id, id));
 			if (banned) {
 				throw new Error('Person is banned and cannot change state');
 			}
+
 			// Check if the guarantor is valid
 			if (guarantorId) {
 				try {
@@ -1052,50 +1058,48 @@ export async function getPersonTypes(db: Database): Promise<PersonType[]> {
 	}
 }
 
-export async function banPerson(db: Database, identifier: string, newBan: boolean): Promise<void> {
+export async function setPersonBannedStatus(
+	db: Database,
+	id: number,
+	action: 'ban' | 'pardon'
+): Promise<void> {
+	const banned = action === 'ban';
+
 	try {
 		await db.transaction(async (tx) => {
-			const [{ personId: personDbId, banned }] = await tx
-				.select({ personId: person.id, banned: person.banned })
-				.from(person)
-				.where(eq(person.identifier, identifier))
-				.limit(1);
-
-			if (banned === newBan) {
-				throw new Error(`Person with identifier ${identifier} is already in the requested state.`);
-			}
-			if (newBan) {
-				const lastEntry = await tx
+			if (banned) {
+				// Get the person entry timestamp and building
+				const [{ entryTimestamp, entryBuilding }] = await tx
 					.select({
-						personId: personEntry.personId,
-						building: personEntry.building,
-						maxEntryTimestamp: personEntry.timestamp
+						entryTimestamp: personEntry.timestamp,
+						entryBuilding: personEntry.building
 					})
 					.from(personEntry)
-					.where(eq(personEntry.personId, personDbId))
+					.where(eq(personEntry.personId, id))
 					.orderBy(desc(personEntry.timestamp))
 					.limit(1);
 
-				const lastExit = await tx
+				// Get the person exit timestamp
+				const exits = await tx
 					.select({
-						maxExitTimestamp: max(personExit.timestamp)
+						exitTimestamp: personExit.timestamp
 					})
 					.from(personExit)
-					.where(eq(personExit.personId, personDbId));
+					.where(eq(personExit.personId, id))
+					.orderBy(desc(personExit.timestamp))
+					.limit(1);
+				const [{ exitTimestamp }] = exits.length === 1 ? exits : [{ exitTimestamp: null }];
 
-				const latestExitTimestamp = lastExit[0]?.maxExitTimestamp;
-
-				if (
-					lastEntry.length > 0 &&
-					(latestExitTimestamp === null || lastEntry[0].maxEntryTimestamp > latestExitTimestamp)
-				) {
+				if (isInside(entryTimestamp, exitTimestamp)) {
+					// Release the person
 					await tx.insert(personExit).values({
-						personId: personDbId,
-						building: lastEntry[0].building
+						personId: id,
+						building: entryBuilding
 					});
 				}
 			}
-			await tx.update(person).set({ banned: newBan }).where(eq(person.id, personDbId));
+
+			await tx.update(person).set({ banned: banned }).where(eq(person.id, id));
 		});
 	} catch (err) {
 		throw new Error(`Failed to ban person in database: ${(err as Error).message}`);
