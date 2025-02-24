@@ -32,7 +32,12 @@ import {
 	type Person,
 	type PersonType
 } from '$lib/types/person';
-import { guarantorEligibilityHours, guarantorMaxGuests, optionalGuarantor } from '$lib/utils/env';
+import {
+	guarantorEligibilityHours,
+	guarantorMaxGuests,
+	optionalGuarantor,
+	rectorateMode
+} from '$lib/utils/env';
 import { hoursSpentCutoffHours } from '$lib/server/env';
 
 type searchOptions = {
@@ -481,7 +486,7 @@ export async function getPersonsCountPerUniversity(db: Database): Promise<
 				count: count()
 			})
 			.from(person)
-			.where(eq(person.type, Guest))
+			.where(!rectorateMode ? eq(person.type, Guest) : undefined)
 			.groupBy(person.type, person.university)
 			.orderBy(({ count }) => count);
 
