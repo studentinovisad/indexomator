@@ -1,11 +1,15 @@
-import { indexRegExp, indexRegExpMsg } from '$lib/utils/regexp';
 import { z } from 'zod';
 
-export const formSchema = z.object({
-	identifier: z.string().regex(indexRegExp, indexRegExpMsg),
+export const banFormSchema = z.object({
+	personId: z.number(),
 	action: z
 		.string()
 		.default('ban')
 		.refine((value) => value === 'ban' || value === 'pardon', "Must be 'ban' or 'pardon'")
 });
-export type FormSchema = typeof formSchema;
+export type BanFormSchema = typeof banFormSchema;
+
+export const searchFormSchema = z.object({
+	searchQuery: z.string().optional()
+});
+export type SearchFormSchema = typeof searchFormSchema;
