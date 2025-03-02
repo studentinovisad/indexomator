@@ -36,6 +36,7 @@
 						<Tooltip.Trigger
 							onclick={() => {
 								toggleStateFormStore.personId = person.id;
+								toggleStateFormStore.action = 'release';
 								tick().then(() => {
 									if (person.type === Guest) {
 										toggleGuestStateFormSubmit();
@@ -45,6 +46,7 @@
 								});
 							}}
 							class={cn('w-full', buttonVariants({ variant: 'outline' }))}
+							value={"release"}
 						>
 							<LogOut />
 							<span class="hidden sm:block">Release</span>
@@ -61,6 +63,7 @@
 				<Button
 					onclick={() => {
 						toggleStateFormStore.personId = person.id;
+						toggleStateFormStore.action = 'release';
 						tick().then(() => {
 							if (person.type === Guest) {
 								toggleGuestStateFormSubmit();
@@ -71,6 +74,7 @@
 					}}
 					variant="outline"
 					class="w-full"
+					value={"release"}
 				>
 					<LogOut />
 					<span class="hidden sm:block">Release</span>
@@ -80,10 +84,12 @@
 			<Button
 				onclick={() => {
 					toggleStateFormStore.personId = person.id;
+					toggleStateFormStore.action = 'admit';
 					tick().then(() => toggleStateFormSubmit());
 				}}
 				variant="outline"
 				class="w-full"
+				value={"admit"}
 			>
 				{#if inside}
 					<ArrowLeftRight />
@@ -98,10 +104,12 @@
 				onclick={() => {
 					toggleStateFormStore.dialogOpen = true;
 					toggleStateFormStore.personId = person.id;
+					toggleStateFormStore.action = 'admit';
 				}}
 				type="button"
 				variant="outline"
 				class="w-full"
+				value={"admit"}
 			>
 				{#if inside}
 					<ArrowLeftRight />

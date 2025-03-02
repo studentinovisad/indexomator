@@ -355,6 +355,14 @@
 		</Form.Control>
 		<Form.FieldErrors />
 	</Form.Field>
+	<Form.Field class="hidden" form={toggleStateForm} name="action">
+		<Form.Control>
+			{#snippet children({ props })}
+				<Input {...props} type="hidden" value={toggleStateFormStore.action} />
+			{/snippet}
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
 </form>
 
 <!-- Hidden form used to POST action for toggling guest state -->
@@ -371,6 +379,14 @@
 		<Form.Control>
 			{#snippet children({ props })}
 				<Input {...props} type="hidden" value={selectedGuarantorId} />
+			{/snippet}
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
+	<Form.Field class="hidden" form={toggleStateForm} name="action">
+		<Form.Control>
+			{#snippet children({ props })}
+				<Input {...props} type="hidden" value={toggleStateFormStore.action} />
 			{/snippet}
 		</Form.Control>
 		<Form.FieldErrors />

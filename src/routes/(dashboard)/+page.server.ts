@@ -117,6 +117,7 @@ export const actions: Actions = {
 				message: 'Invalid form inputs'
 			});
 		}
+		console.log(toggleStateForm.data);
 
 		if (session === null || user === null) {
 			return fail(401, {
@@ -125,12 +126,12 @@ export const actions: Actions = {
 			});
 		}
 
-		const { personId } = toggleStateForm.data;
+		const { personId, action } = toggleStateForm.data;
 		const { building } = session;
 		const { username } = user;
 
 		try {
-			await togglePersonState(database, personId, building, username);
+			await togglePersonState(database, personId, building, username, action);
 
 			const insideGuestCount = await getInsideGuestCount(database, personId);
 			if (insideGuestCount > 0) {
@@ -168,12 +169,12 @@ export const actions: Actions = {
 			});
 		}
 
-		const { personId, guarantorId } = toggleGuestStateForm.data;
+		const { personId, guarantorId, action } = toggleGuestStateForm.data;
 		const { building } = session;
 		const { username } = user;
 
 		try {
-			await togglePersonState(database, personId, building, username, guarantorId);
+			await togglePersonState(database, personId, building, username, action, guarantorId);
 
 			return {
 				toggleGuestStateForm,
