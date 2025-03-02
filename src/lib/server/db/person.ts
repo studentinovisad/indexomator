@@ -838,6 +838,9 @@ export async function togglePersonState(
 		throw new Error('Invalid creator (empty)');
 	}
 
+	if (action !== 'admit' && action !== 'release') {
+		throw new Error('Invalid action');
+	}
 	
 	try {
 		return await db.transaction(async (tx) => {

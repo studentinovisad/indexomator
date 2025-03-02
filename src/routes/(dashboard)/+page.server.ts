@@ -117,7 +117,6 @@ export const actions: Actions = {
 				message: 'Invalid form inputs'
 			});
 		}
-		console.log(toggleStateForm.data);
 
 		if (session === null || user === null) {
 			return fail(401, {
