@@ -5,5 +5,5 @@ export const toggleStateFormStore: {
 } = $state({
 	dialogOpen: false,
 	personId: undefined,
-	action: "admit",
+	action: 'admit'
 });

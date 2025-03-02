@@ -14,9 +14,9 @@ export type GuarantorSearchFormSchema = typeof guarantorSearchFormSchema;
 export const toggleStateFormSchema = z.object({
 	personId: z.number(),
 	action: z
-	.string()
-	.default('admit')
-	.refine((value) => value === 'admit' || value === 'release', "Must be 'admit' or 'release'")
+		.string()
+		.default('admit')
+		.refine((value) => value === 'admit' || value === 'release', "Must be 'admit' or 'release'")
 });
 export type ToggleStateFormSchema = typeof toggleStateFormSchema;
 
@@ -24,9 +24,9 @@ export const toggleGuestStateFormSchema = z.object({
 	personId: z.number(),
 	guarantorId: optionalGuarantor ? z.number().optional() : z.number(),
 	action: z
-	.string()
-	.default('admit')
-	.refine((value) => value === 'admit' || value === 'release', "Must be 'admit' or 'release'")
+		.string()
+		.default('admit')
+		.refine((value) => value === 'admit' || value === 'release', "Must be 'admit' or 'release'")
 });
 export type ToggleGuestStateFormSchema = typeof toggleGuestStateFormSchema;
 

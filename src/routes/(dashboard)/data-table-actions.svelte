@@ -46,7 +46,7 @@
 								});
 							}}
 							class={cn('w-full', buttonVariants({ variant: 'outline' }))}
-							value={"release"}
+							value={'release'}
 						>
 							<LogOut />
 							<span class="hidden sm:block">Release</span>
@@ -74,7 +74,7 @@
 					}}
 					variant="outline"
 					class="w-full"
-					value={"release"}
+					value={'release'}
 				>
 					<LogOut />
 					<span class="hidden sm:block">Release</span>
@@ -89,7 +89,7 @@
 				}}
 				variant="outline"
 				class="w-full"
-				value={"admit"}
+				value={'admit'}
 			>
 				{#if inside}
 					<ArrowLeftRight />
@@ -109,7 +109,7 @@
 				type="button"
 				variant="outline"
 				class="w-full"
-				value={"admit"}
+				value={'admit'}
 			>
 				{#if inside}
 					<ArrowLeftRight />

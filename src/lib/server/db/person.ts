@@ -841,7 +841,7 @@ export async function togglePersonState(
 	if (action !== 'admit' && action !== 'release') {
 		throw new Error('Invalid action');
 	}
-	
+
 	try {
 		return await db.transaction(async (tx) => {
 			// Check if the person is banned
@@ -886,8 +886,7 @@ export async function togglePersonState(
 
 			// Toggle the person state
 			if (isInside(entryTimestamp, exitTimestamp)) {
-				if (action !== 'release')
-					throw new Error('Person is already inside');
+				if (action !== 'release') throw new Error('Person is already inside');
 				if (building === entryBuilding) {
 					// Release the person
 					await tx.insert(personExit).values({
@@ -943,8 +942,7 @@ export async function togglePersonState(
 					return StateInside;
 				}
 			} else {
-				if (action !== 'admit')
-					throw new Error('Person is already outside');
+				if (action !== 'admit') throw new Error('Person is already outside');
 				// Check if the guarantor is set (if required)
 				if (!optionalGuarantor && guarantorId === undefined) {
 					// Get the person type
