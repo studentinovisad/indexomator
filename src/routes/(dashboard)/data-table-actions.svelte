@@ -84,12 +84,12 @@
 			<Button
 				onclick={() => {
 					toggleStateFormStore.personId = person.id;
-					toggleStateFormStore.action = inside? 'transfer' : 'admit';
+					toggleStateFormStore.action = inside ? 'transfer' : 'admit';
 					tick().then(() => toggleStateFormSubmit());
 				}}
 				variant="outline"
 				class="w-full"
-				value={inside? 'transfer' : 'admit'}
+				value={inside ? 'transfer' : 'admit'}
 			>
 				{#if inside}
 					<ArrowLeftRight />
@@ -104,12 +104,12 @@
 				onclick={() => {
 					toggleStateFormStore.dialogOpen = true;
 					toggleStateFormStore.personId = person.id;
-					toggleStateFormStore.action = inside? 'transfer' : 'admit';
+					toggleStateFormStore.action = inside ? 'transfer' : 'admit';
 				}}
 				type="button"
 				variant="outline"
 				class="w-full"
-				value={inside? 'transfer' : 'admit'}
+				value={inside ? 'transfer' : 'admit'}
 			>
 				{#if inside}
 					<ArrowLeftRight />

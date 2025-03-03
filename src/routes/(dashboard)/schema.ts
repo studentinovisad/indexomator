@@ -16,7 +16,10 @@ export const toggleStateFormSchema = z.object({
 	action: z
 		.string()
 		.default('admit')
-		.refine((value) => value === 'admit' || value === 'release' || value === 'transfer', "Must be 'admit', 'release' or 'transfer'")
+		.refine(
+			(value) => value === 'admit' || value === 'release' || value === 'transfer',
+			"Must be 'admit', 'release' or 'transfer'"
+		)
 });
 export type ToggleStateFormSchema = typeof toggleStateFormSchema;
 
@@ -26,7 +29,10 @@ export const toggleGuestStateFormSchema = z.object({
 	action: z
 		.string()
 		.default('admit')
-		.refine((value) => value === 'admit' || value === 'release' || value === 'transfer', "Must be 'admit', 'release' or 'transfer'")
+		.refine(
+			(value) => value === 'admit' || value === 'release' || value === 'transfer',
+			"Must be 'admit', 'release' or 'transfer'"
+		)
 });
 export type ToggleGuestStateFormSchema = typeof toggleGuestStateFormSchema;
 
