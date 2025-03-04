@@ -883,7 +883,8 @@ export async function togglePersonState(
 			// Toggle the person state
 			if (isInside(entryTimestamp, exitTimestamp)) {
 				if (building === entryBuilding) {
-					if (action !== 'release') throw new Error('Person is already inside');
+					if (action !== 'release')
+						throw new Error(`Can't perform ${action}, person is already inside`);
 					// Release the person
 					await tx.insert(personExit).values({
 						personId: id,
@@ -892,7 +893,8 @@ export async function togglePersonState(
 					});
 					return StateOutside;
 				} else {
-					if (action !== 'transfer') throw new Error('Person is already in another building');
+					if (action !== 'transfer')
+						throw new Error(`Can't perform ${action}, person is already in another building`);
 					// Check if the guarantor is set (if required)
 					if (!optionalGuarantor && guarantorId === undefined) {
 						// Get the person type
@@ -939,7 +941,8 @@ export async function togglePersonState(
 					return StateInside;
 				}
 			} else {
-				if (action !== 'admit') throw new Error('Person is already outside');
+				if (action !== 'admit')
+					throw new Error(`Can't perform ${action}, person is already outside`);
 				// Check if the guarantor is set (if required)
 				if (!optionalGuarantor && guarantorId === undefined) {
 					// Get the person type
