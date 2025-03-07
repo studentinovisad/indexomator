@@ -894,7 +894,7 @@ export async function togglePersonState(
 					return StateOutside;
 				} else {
 					if (action !== 'transfer')
-						throw new Error(`Can't perform ${action}, person is already in another building`);
+						throw new Error(`Can't perform ${action}, person has already been transfered`);
 					// Check if the guarantor is set (if required)
 					if (!optionalGuarantor && guarantorId === undefined) {
 						// Get the person type
