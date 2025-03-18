@@ -13,7 +13,8 @@ import {
 	sum,
 	desc,
 	lt,
-	gte
+	gte,
+	isNotNull
 } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { person, personEntry, personExit } from './schema/person';
@@ -529,7 +530,10 @@ export async function getPersonsCountPerBuilding(db: Database): Promise<
 			.leftJoin(personExit, eq(personExit.personId, person.id))
 			.groupBy(person.id, person.type, personEntry.building)
 			.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-				or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				and(
+					isNotNull(maxEntryTimestamp),
+					or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				)
 			)
 			.as('person_inside');
 
@@ -858,7 +862,7 @@ export async function togglePersonState(
 			}
 
 			// Get the person entry timestamp and building
-			const [{ entryTimestamp, entryBuilding }] = await tx
+			const entries = await tx
 				.select({
 					entryTimestamp: personEntry.timestamp,
 					entryBuilding: personEntry.building
@@ -867,6 +871,8 @@ export async function togglePersonState(
 				.where(eq(personEntry.personId, id))
 				.orderBy(desc(personEntry.timestamp))
 				.limit(1);
+			const [{ entryTimestamp, entryBuilding }] =
+				entries.length === 1 ? entries : [{ entryTimestamp: null, entryBuilding: null }];
 
 			// Get the person exit timestamp
 			const exits = await tx
@@ -995,7 +1001,10 @@ export async function getInsideGuests(db: Database, guarantorId: number): Promis
 			.where(eq(personEntry.guarantorId, guarantorId))
 			.groupBy(person.id)
 			.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-				or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				and(
+					isNotNull(maxEntryTimestamp),
+					or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				)
 			)
 			.orderBy(({ university, fname, lname, identifier }) => [
 				university,
@@ -1030,7 +1039,10 @@ export async function getInsideGuestCount(db: Database, guarantorId: number): Pr
 			.where(eq(personEntry.guarantorId, guarantorId))
 			.groupBy(person.id)
 			.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-				or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				and(
+					isNotNull(maxEntryTimestamp),
+					or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				)
 			)
 			.as('guests_inside');
 
@@ -1151,7 +1163,10 @@ export async function removePersonsFromBuilding(
 				.where(and(eq(personEntry.building, building), eq(person.type, type)))
 				.groupBy(person.id, person.type, personEntry.building)
 				.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-					or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+					and(
+						isNotNull(maxEntryTimestamp),
+						or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+					)
 				);
 
 			// Return if no one is found inside the building
