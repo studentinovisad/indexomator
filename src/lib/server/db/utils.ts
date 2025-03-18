@@ -1,5 +1,19 @@
 import { diacriticsMap } from '$lib/utils/diacritics';
-import { sql, type Column, type SQL } from 'drizzle-orm';
+import { sql, type Column, type SQL, type AnyColumn, type SQLWrapper } from 'drizzle-orm';
+
+export function ascNulls(
+	column: SQLWrapper | AnyColumn,
+	nullsLast: boolean = true
+): SQL<SQLWrapper | AnyColumn> {
+	return nullsLast ? sql`${column} asc nulls last` : sql`${column} asc`;
+}
+
+export function descNulls(
+	column: SQLWrapper | AnyColumn,
+	nullsLast: boolean = true
+): SQL<SQLWrapper | AnyColumn> {
+	return nullsLast ? sql`${column} desc nulls last` : sql`${column} desc`;
+}
 
 type LevenshteinOptions = {
 	insertCost: number;

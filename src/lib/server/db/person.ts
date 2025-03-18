@@ -20,7 +20,7 @@ import { alias } from 'drizzle-orm/pg-core';
 import { person, personEntry, personExit } from './schema/person';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
-import { sqlConcat, sqlLeast, sqlLevenshteinDistance } from './utils';
+import { descNulls, sqlConcat, sqlLeast, sqlLevenshteinDistance } from './utils';
 import { isInside } from '../isInside';
 import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
 import { building } from './schema/building';
@@ -157,7 +157,7 @@ export async function getPersons(
 						.orderBy(({ leastDistance, leastDistanceIdentifier, entryTimestamp, identifier }) => [
 							leastDistance,
 							leastDistanceIdentifier,
-							desc(entryTimestamp),
+							descNulls(entryTimestamp),
 							identifier
 						])
 						.limit(limit)
@@ -190,7 +190,7 @@ export async function getPersons(
 								eq(personEntry.timestamp, maxEntrySubquery.maxEntryTimestamp)
 							)
 						)
-						.orderBy(({ entryTimestamp, identifier }) => [desc(entryTimestamp), identifier])
+						.orderBy(({ entryTimestamp, identifier }) => [descNulls(entryTimestamp), identifier])
 						.leftJoin(guarantor, eq(guarantor.id, personEntry.guarantorId))
 						.limit(limit)
 						.offset(offset);
