@@ -573,9 +573,11 @@ export async function createEmployee(
 	lname: string,
 	department: string | undefined,
 	building: string,
-	creator: string
+	creator: string,
+	entry: boolean
 ): Promise<Person> {
 	return await createPerson(db, identifier, Employee, fname, lname, building, creator, {
+		entry,
 		department
 	});
 }
@@ -588,9 +590,11 @@ export async function createStudent(
 	lname: string,
 	department: string | undefined,
 	building: string,
-	creator: string
+	creator: string,
+	entry: boolean
 ): Promise<Person> {
 	return await createPerson(db, identifier, Student, fname, lname, building, creator, {
+		entry,
 		department
 	});
 }
@@ -603,9 +607,11 @@ export async function createStudentRectorateMode(
 	lname: string,
 	university: string | undefined,
 	building: string,
-	creator: string
+	creator: string,
+	entry: boolean
 ): Promise<Person> {
 	return await createPerson(db, identifier, Student, fname, lname, building, creator, {
+		entry,
 		university
 	});
 }
@@ -619,9 +625,11 @@ export async function createGuest(
 	university: string | undefined,
 	building: string,
 	creator: string,
-	guarantorId: number | undefined
+	guarantorId: number | undefined,
+	entry: boolean
 ): Promise<Person> {
 	return await createPerson(db, identifier, Guest, fname, lname, building, creator, {
+		entry,
 		university,
 		guarantorId
 	});
@@ -706,6 +714,7 @@ export async function createPerson(
 	building: string,
 	creator: string,
 	opts: {
+		entry: boolean;
 		department?: string;
 		university?: string;
 		guarantorId?: number;
@@ -777,12 +786,15 @@ export async function createPerson(
 				.returning({ id: person.id });
 
 			// Create the person entry
-			await tx.insert(personEntry).values({
-				personId: id,
-				building,
-				creator,
-				guarantorId
-			});
+			if (opts.entry) {
+				await tx.insert(personEntry).values({
+					personId: id,
+					building,
+					creator,
+					guarantorId
+				});
+			}
+			const state = opts.entry ? StateInside : StateOutside;
 
 			const [{ guarantorFname, guarantorLname, guarantorIdentifier }] = guarantorId
 				? await tx
@@ -815,7 +827,7 @@ export async function createPerson(
 				guarantorLname,
 				guarantorIdentifier,
 				banned: false,
-				state: StateInside // Because the person was just created, they are inside
+				state
 			};
 		});
 	} catch (err) {

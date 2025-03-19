@@ -7,7 +7,8 @@ export const createFormSchema = z.object({
 	lname: z.string().min(1).max(50).regex(nameRegExp, nameRegExpMsg),
 	identifier: z.string().min(4),
 	university: optionalUniversity ? z.string().optional() : z.string(),
-	guarantorId: optionalGuarantor ? z.number().optional() : z.number()
+	guarantorId: optionalGuarantor ? z.number().optional() : z.number(),
+	entry: z.boolean().default(true)
 });
 export type CreateFormSchema = typeof createFormSchema;
 

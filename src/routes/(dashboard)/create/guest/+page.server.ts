@@ -47,7 +47,7 @@ export const actions: Actions = {
 			});
 		}
 
-		const { identifier, fname, lname, university, guarantorId } = createForm.data;
+		const { identifier, fname, lname, university, guarantorId, entry } = createForm.data;
 		const { building } = session;
 		const { username: creator } = user;
 
@@ -60,7 +60,8 @@ export const actions: Actions = {
 				university,
 				building,
 				creator,
-				guarantorId
+				guarantorId,
+				entry
 			);
 
 			return {

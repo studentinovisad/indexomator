@@ -40,12 +40,21 @@ export const actions: Actions = {
 			});
 		}
 
-		const { identifier, fname, lname, department } = createForm.data;
+		const { identifier, fname, lname, department, entry } = createForm.data;
 		const { building } = session;
 		const { username: creator } = user;
 
 		try {
-			await createEmployee(database, identifier, fname, lname, department, building, creator);
+			await createEmployee(
+				database,
+				identifier,
+				fname,
+				lname,
+				department,
+				building,
+				creator,
+				entry
+			);
 
 			return {
 				createForm,

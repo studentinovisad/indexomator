@@ -6,6 +6,7 @@
 	import * as Command from '$lib/components/ui/command/index.js';
 	import CommandInput from '$lib/components/custom/command/command-input.svelte';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
@@ -194,6 +195,20 @@
 					</Popover.Content>
 				</Popover.Root>
 				<Form.FieldErrors />
+			</Form.Field>
+			<Form.Field
+				form={createForm}
+				name="entry"
+				class="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"
+			>
+				<Form.Control>
+					{#snippet children({ props })}
+						<Checkbox {...props} bind:checked={$createFormData.entry} />
+						<div class="space-y-1 leading-none">
+							<Form.Label>Enter the guest immediately upon creation</Form.Label>
+						</div>
+					{/snippet}
+				</Form.Control>
 			</Form.Field>
 			<Form.Button>Submit</Form.Button>
 		</Card.Content>
