@@ -10,6 +10,7 @@ export const createFormSchema = z.object({
 		.refine((value) => z.string().email().safeParse(value).success || /^\d{4}$/.test(value), {
 			message: 'Identifier must be a valid email or a 4-digit number'
 		}),
-	department: optionalDepartment ? z.string().optional() : z.string()
+	department: optionalDepartment ? z.string().optional() : z.string(),
+	entry: z.boolean().default(true)
 });
 export type CreateFormSchema = typeof createFormSchema;
