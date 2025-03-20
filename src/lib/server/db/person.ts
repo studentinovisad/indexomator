@@ -13,13 +13,14 @@ import {
 	sum,
 	desc,
 	lt,
-	gte
+	gte,
+	isNotNull
 } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { person, personEntry, personExit } from './schema/person';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
-import { sqlConcat, sqlLeast, sqlLevenshteinDistance } from './utils';
+import { descNulls, sqlConcat, sqlLeast, sqlLevenshteinDistance } from './utils';
 import { isInside } from '../isInside';
 import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
 import { building } from './schema/building';
@@ -156,7 +157,7 @@ export async function getPersons(
 						.orderBy(({ leastDistance, leastDistanceIdentifier, entryTimestamp, identifier }) => [
 							leastDistance,
 							leastDistanceIdentifier,
-							desc(entryTimestamp),
+							descNulls(entryTimestamp),
 							identifier
 						])
 						.limit(limit)
@@ -189,7 +190,7 @@ export async function getPersons(
 								eq(personEntry.timestamp, maxEntrySubquery.maxEntryTimestamp)
 							)
 						)
-						.orderBy(({ entryTimestamp, identifier }) => [desc(entryTimestamp), identifier])
+						.orderBy(({ entryTimestamp, identifier }) => [descNulls(entryTimestamp), identifier])
 						.leftJoin(guarantor, eq(guarantor.id, personEntry.guarantorId))
 						.limit(limit)
 						.offset(offset);
@@ -529,7 +530,10 @@ export async function getPersonsCountPerBuilding(db: Database): Promise<
 			.leftJoin(personExit, eq(personExit.personId, person.id))
 			.groupBy(person.id, person.type, personEntry.building)
 			.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-				or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				and(
+					isNotNull(maxEntryTimestamp),
+					or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				)
 			)
 			.as('person_inside');
 
@@ -569,9 +573,11 @@ export async function createEmployee(
 	lname: string,
 	department: string | undefined,
 	building: string,
-	creator: string
+	creator: string,
+	entry: boolean
 ): Promise<Person> {
 	return await createPerson(db, identifier, Employee, fname, lname, building, creator, {
+		entry,
 		department
 	});
 }
@@ -584,9 +590,11 @@ export async function createStudent(
 	lname: string,
 	department: string | undefined,
 	building: string,
-	creator: string
+	creator: string,
+	entry: boolean
 ): Promise<Person> {
 	return await createPerson(db, identifier, Student, fname, lname, building, creator, {
+		entry,
 		department
 	});
 }
@@ -599,9 +607,11 @@ export async function createStudentRectorateMode(
 	lname: string,
 	university: string | undefined,
 	building: string,
-	creator: string
+	creator: string,
+	entry: boolean
 ): Promise<Person> {
 	return await createPerson(db, identifier, Student, fname, lname, building, creator, {
+		entry,
 		university
 	});
 }
@@ -615,9 +625,11 @@ export async function createGuest(
 	university: string | undefined,
 	building: string,
 	creator: string,
-	guarantorId: number | undefined
+	guarantorId: number | undefined,
+	entry: boolean
 ): Promise<Person> {
 	return await createPerson(db, identifier, Guest, fname, lname, building, creator, {
+		entry,
 		university,
 		guarantorId
 	});
@@ -702,6 +714,7 @@ export async function createPerson(
 	building: string,
 	creator: string,
 	opts: {
+		entry: boolean;
 		department?: string;
 		university?: string;
 		guarantorId?: number;
@@ -773,12 +786,15 @@ export async function createPerson(
 				.returning({ id: person.id });
 
 			// Create the person entry
-			await tx.insert(personEntry).values({
-				personId: id,
-				building,
-				creator,
-				guarantorId
-			});
+			if (opts.entry) {
+				await tx.insert(personEntry).values({
+					personId: id,
+					building,
+					creator,
+					guarantorId
+				});
+			}
+			const state = opts.entry ? StateInside : StateOutside;
 
 			const [{ guarantorFname, guarantorLname, guarantorIdentifier }] = guarantorId
 				? await tx
@@ -811,7 +827,7 @@ export async function createPerson(
 				guarantorLname,
 				guarantorIdentifier,
 				banned: false,
-				state: StateInside // Because the person was just created, they are inside
+				state
 			};
 		});
 	} catch (err) {
@@ -859,7 +875,7 @@ export async function togglePersonState(
 			}
 
 			// Get the person entry timestamp and building
-			const [{ entryTimestamp, entryBuilding }] = await tx
+			const entries = await tx
 				.select({
 					entryTimestamp: personEntry.timestamp,
 					entryBuilding: personEntry.building
@@ -868,6 +884,8 @@ export async function togglePersonState(
 				.where(eq(personEntry.personId, id))
 				.orderBy(desc(personEntry.timestamp))
 				.limit(1);
+			const [{ entryTimestamp, entryBuilding }] =
+				entries.length === 1 ? entries : [{ entryTimestamp: null, entryBuilding: null }];
 
 			// Get the person exit timestamp
 			const exits = await tx
@@ -1002,7 +1020,10 @@ export async function getInsideGuests(db: Database, guarantorId: number): Promis
 			.where(eq(personEntry.guarantorId, guarantorId))
 			.groupBy(person.id)
 			.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-				or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				and(
+					isNotNull(maxEntryTimestamp),
+					or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				)
 			)
 			.orderBy(({ university, fname, lname, identifier }) => [
 				university,
@@ -1037,7 +1058,10 @@ export async function getInsideGuestCount(db: Database, guarantorId: number): Pr
 			.where(eq(personEntry.guarantorId, guarantorId))
 			.groupBy(person.id)
 			.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-				or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				and(
+					isNotNull(maxEntryTimestamp),
+					or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				)
 			)
 			.as('guests_inside');
 
@@ -1158,7 +1182,10 @@ export async function removePersonsFromBuilding(
 				.where(and(eq(personEntry.building, building), eq(person.type, type)))
 				.groupBy(person.id, person.type, personEntry.building)
 				.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-					or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+					and(
+						isNotNull(maxEntryTimestamp),
+						or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+					)
 				);
 
 			// Return if no one is found inside the building

@@ -15,6 +15,7 @@ export const createFormSchema = z.object({
 		? optionalDepartment
 			? z.string().optional()
 			: z.string()
-		: z.string().optional()
+		: z.string().optional(),
+	entry: z.boolean().default(true)
 });
 export type CreateFormSchema = typeof createFormSchema;
