@@ -901,18 +901,27 @@ export async function togglePersonState(
 			// Toggle the person state
 			if (isInside(entryTimestamp, exitTimestamp)) {
 				if (building === entryBuilding) {
-					if (action !== 'release')
-						throw new Error(`Can't perform ${action}, person is already inside`);
+					if (action !== 'release') {
+						throw new Error(
+							`Can't perform ${action} as another was already triggered (interface isn't synced with the server)`
+						);
+					}
+
 					// Release the person
 					await tx.insert(personExit).values({
 						personId: id,
 						building,
 						creator
 					});
+
 					return StateOutside;
 				} else {
-					if (action !== 'transfer')
-						throw new Error(`Can't perform ${action}, person has already been transfered`);
+					if (action !== 'transfer') {
+						throw new Error(
+							`Can't perform ${action} as another was already triggered (interface isn't synced with the server)`
+						);
+					}
+
 					// Check if the guarantor is set (if required)
 					if (!optionalGuarantor && guarantorId === undefined) {
 						// Get the person type
@@ -959,8 +968,12 @@ export async function togglePersonState(
 					return StateInside;
 				}
 			} else {
-				if (action !== 'admit')
-					throw new Error(`Can't perform ${action}, person is already outside`);
+				if (action !== 'admit') {
+					throw new Error(
+						`Can't perform ${action} as another was already triggered (interface isn't synced with the server)`
+					);
+				}
+
 				// Check if the guarantor is set (if required)
 				if (!optionalGuarantor && guarantorId === undefined) {
 					// Get the person type
@@ -994,6 +1007,7 @@ export async function togglePersonState(
 					creator,
 					guarantorId
 				});
+
 				return StateInside;
 			}
 		});
