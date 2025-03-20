@@ -903,7 +903,7 @@ export async function togglePersonState(
 				if (building === entryBuilding) {
 					if (action !== 'release') {
 						throw new Error(
-							`Can't perform ${action} as another was already triggered (interface isn't synced with the server)`
+							`Can't perform ${action} as another was already triggered (interface isn't synced with the server, please refresh the page)`
 						);
 					}
 
@@ -918,7 +918,7 @@ export async function togglePersonState(
 				} else {
 					if (action !== 'transfer') {
 						throw new Error(
-							`Can't perform ${action} as another was already triggered (interface isn't synced with the server)`
+							`Can't perform ${action} as another was already triggered (interface isn't synced with the server, please refresh the page)`
 						);
 					}
 
@@ -970,7 +970,7 @@ export async function togglePersonState(
 			} else {
 				if (action !== 'admit') {
 					throw new Error(
-						`Can't perform ${action} as another was already triggered (interface isn't synced with the server)`
+						`Can't perform ${action} as another was already triggered (interface isn't synced with the server, please refresh the page)`
 					);
 				}
 
