@@ -865,15 +865,6 @@ export async function togglePersonState(
 				throw new Error('Person is banned and cannot change state');
 			}
 
-			// Check if the guarantor is valid
-			if (guarantorId) {
-				try {
-					await validGuarantor(tx, guarantorId);
-				} catch (err) {
-					throw new Error(`Invalid guarantor: ${(err as Error).message}`);
-				}
-			}
-
 			// Get the person entry timestamp and building
 			const entries = await tx
 				.select({
