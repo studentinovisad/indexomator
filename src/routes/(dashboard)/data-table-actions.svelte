@@ -102,9 +102,9 @@
 		{:else}
 			<Button
 				onclick={() => {
-					toggleStateFormStore.dialogOpen = true;
 					toggleStateFormStore.personId = person.id;
 					toggleStateFormStore.action = inside ? 'transfer' : 'admit';
+					toggleStateFormStore.dialogOpen = true; // Opens the guarantor selection dialog
 				}}
 				type="button"
 				variant="outline"
@@ -124,9 +124,9 @@
 		{#if person.type !== Guest}
 			<Button
 				onclick={() => {
-					showGuestsFormStore.dialogOpen = true;
 					showGuestsFormStore.guarantorId = person.id;
 					tick().then(() => showGuestsFormSubmit());
+					showGuestsFormStore.dialogOpen = true; // Opens the guests preview dialog
 				}}
 				type="button"
 				variant="outline"
