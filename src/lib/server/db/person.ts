@@ -841,6 +841,7 @@ export async function togglePersonState(
 	id: number,
 	building: string,
 	creator: string,
+	action: 'admit' | 'release' | 'transfer',
 	guarantorId?: number
 ): Promise<State> {
 	// Assert building is valid
@@ -862,15 +863,6 @@ export async function togglePersonState(
 				.where(eq(person.id, id));
 			if (banned) {
 				throw new Error('Person is banned and cannot change state');
-			}
-
-			// Check if the guarantor is valid
-			if (guarantorId) {
-				try {
-					await validGuarantor(tx, guarantorId);
-				} catch (err) {
-					throw new Error(`Invalid guarantor: ${(err as Error).message}`);
-				}
 			}
 
 			// Get the person entry timestamp and building
@@ -900,14 +892,27 @@ export async function togglePersonState(
 			// Toggle the person state
 			if (isInside(entryTimestamp, exitTimestamp)) {
 				if (building === entryBuilding) {
+					if (action !== 'release') {
+						throw new Error(
+							`Can't perform ${action} as another was already triggered (interface isn't synced with the server, please refresh the page)`
+						);
+					}
+
 					// Release the person
 					await tx.insert(personExit).values({
 						personId: id,
 						building,
 						creator
 					});
+
 					return StateOutside;
 				} else {
+					if (action !== 'transfer') {
+						throw new Error(
+							`Can't perform ${action} as another was already triggered (interface isn't synced with the server, please refresh the page)`
+						);
+					}
+
 					// Check if the guarantor is set (if required)
 					if (!optionalGuarantor && guarantorId === undefined) {
 						// Get the person type
@@ -954,6 +959,12 @@ export async function togglePersonState(
 					return StateInside;
 				}
 			} else {
+				if (action !== 'admit') {
+					throw new Error(
+						`Can't perform ${action} as another was already triggered (interface isn't synced with the server, please refresh the page)`
+					);
+				}
+
 				// Check if the guarantor is set (if required)
 				if (!optionalGuarantor && guarantorId === undefined) {
 					// Get the person type
@@ -987,6 +998,7 @@ export async function togglePersonState(
 					creator,
 					guarantorId
 				});
+
 				return StateInside;
 			}
 		});

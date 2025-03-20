@@ -36,6 +36,7 @@
 						<Tooltip.Trigger
 							onclick={() => {
 								toggleStateFormStore.personId = person.id;
+								toggleStateFormStore.action = 'release';
 								tick().then(() => {
 									if (person.type === Guest) {
 										toggleGuestStateFormSubmit();
@@ -45,6 +46,7 @@
 								});
 							}}
 							class={cn('w-full', buttonVariants({ variant: 'outline' }))}
+							value={'release'}
 						>
 							<LogOut />
 							<span class="hidden sm:block">Release</span>
@@ -61,6 +63,7 @@
 				<Button
 					onclick={() => {
 						toggleStateFormStore.personId = person.id;
+						toggleStateFormStore.action = 'release';
 						tick().then(() => {
 							if (person.type === Guest) {
 								toggleGuestStateFormSubmit();
@@ -71,6 +74,7 @@
 					}}
 					variant="outline"
 					class="w-full"
+					value={'release'}
 				>
 					<LogOut />
 					<span class="hidden sm:block">Release</span>
@@ -80,10 +84,12 @@
 			<Button
 				onclick={() => {
 					toggleStateFormStore.personId = person.id;
+					toggleStateFormStore.action = inside ? 'transfer' : 'admit';
 					tick().then(() => toggleStateFormSubmit());
 				}}
 				variant="outline"
 				class="w-full"
+				value={inside ? 'transfer' : 'admit'}
 			>
 				{#if inside}
 					<ArrowLeftRight />
@@ -96,12 +102,14 @@
 		{:else}
 			<Button
 				onclick={() => {
-					toggleStateFormStore.dialogOpen = true;
 					toggleStateFormStore.personId = person.id;
+					toggleStateFormStore.action = inside ? 'transfer' : 'admit';
+					toggleStateFormStore.dialogOpen = true; // Opens the guarantor selection dialog
 				}}
 				type="button"
 				variant="outline"
 				class="w-full"
+				value={inside ? 'transfer' : 'admit'}
 			>
 				{#if inside}
 					<ArrowLeftRight />
@@ -116,9 +124,9 @@
 		{#if person.type !== Guest}
 			<Button
 				onclick={() => {
-					showGuestsFormStore.dialogOpen = true;
 					showGuestsFormStore.guarantorId = person.id;
 					tick().then(() => showGuestsFormSubmit());
+					showGuestsFormStore.dialogOpen = true; // Opens the guests preview dialog
 				}}
 				type="button"
 				variant="outline"

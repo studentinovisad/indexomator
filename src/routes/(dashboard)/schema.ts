@@ -12,13 +12,27 @@ export const guarantorSearchFormSchema = z.object({
 export type GuarantorSearchFormSchema = typeof guarantorSearchFormSchema;
 
 export const toggleStateFormSchema = z.object({
-	personId: z.number()
+	personId: z.number(),
+	action: z
+		.string()
+		.default('admit')
+		.refine(
+			(value) => value === 'admit' || value === 'release' || value === 'transfer',
+			"Must be 'admit', 'release' or 'transfer'"
+		)
 });
 export type ToggleStateFormSchema = typeof toggleStateFormSchema;
 
 export const toggleGuestStateFormSchema = z.object({
 	personId: z.number(),
-	guarantorId: optionalGuarantor ? z.number().optional() : z.number()
+	guarantorId: optionalGuarantor ? z.number().optional() : z.number(),
+	action: z
+		.string()
+		.default('admit')
+		.refine(
+			(value) => value === 'admit' || value === 'release' || value === 'transfer',
+			"Must be 'admit', 'release' or 'transfer'"
+		)
 });
 export type ToggleGuestStateFormSchema = typeof toggleGuestStateFormSchema;
 
