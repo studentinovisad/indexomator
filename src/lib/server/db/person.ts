@@ -1119,7 +1119,7 @@ export async function setPersonBannedStatus(
 
 			if (newBan) {
 				// Get the person entry timestamp and building
-				const [{ entryTimestamp, entryBuilding }] = await tx
+				const entries = await tx
 					.select({
 						entryTimestamp: personEntry.timestamp,
 						entryBuilding: personEntry.building
@@ -1128,6 +1128,8 @@ export async function setPersonBannedStatus(
 					.where(eq(personEntry.personId, id))
 					.orderBy(desc(personEntry.timestamp))
 					.limit(1);
+				const [{ entryTimestamp, entryBuilding }] =
+					entries.length === 1 ? entries : [{ entryTimestamp: null, entryBuilding: null }];
 
 				// Get the person exit timestamp
 				const exits = await tx
@@ -1141,6 +1143,10 @@ export async function setPersonBannedStatus(
 				const [{ exitTimestamp }] = exits.length === 1 ? exits : [{ exitTimestamp: null }];
 
 				if (isInside(entryTimestamp, exitTimestamp)) {
+					if (entryBuilding === null) {
+						throw new Error('Person is inside but no entry building found');
+					}
+
 					// Release the person
 					await tx.insert(personExit).values({
 						personId: id,
