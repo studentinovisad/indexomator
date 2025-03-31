@@ -46,8 +46,8 @@ importers:
         specifier: ^22.13.14
         version: 22.13.14
       autoprefixer:
-        specifier: ^10.4.20
-        version: 10.4.20(postcss@8.5.1)
+        specifier: ^10.4.21
+        version: 10.4.21(postcss@8.5.1)
       bits-ui:
         specifier: 1.0.0-next.91
         version: 1.0.0-next.91(svelte@5.25.3)
@@ -1402,8 +1402,8 @@ packages:
   arktype@2.0.4:
     resolution: {integrity: sha512-S68rWVDnJauwH7/QCm8zCUM3aTe9Xk6oRihdcc3FSUAtxCo/q1Fwq46JhcwB5Ufv1YStwdQRz+00Y/URlvbhAQ==}
 
-  autoprefixer@10.4.20:
-    resolution: {integrity: sha512-XY25y5xSv/wEoqzDyXXME4AFfkZI0P23z6Fs3YgymDnKJkCGOnkL0iTxCa85UTqaSgfcqyf3UA6+c7wUvx/16g==}
+  autoprefixer@10.4.21:
+    resolution: {integrity: sha512-O+A6LWV5LDHSJD3LjHYoNi4VLsj/Whi7k6zG12xTYaU4cQ8oxQGckXNX8cRHK5yOZ/ppVHe0ZBXGzSV9jXdVbQ==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
     peerDependencies:
@@ -1456,8 +1456,8 @@ packages:
     resolution: {integrity: sha512-8WB3Jcas3swSvjIeA2yvCJ+Miyz5l1ZmB6HFb9R1317dt9LCQoswg/BGrmAmkWVEszSrrg4RwmO46qIm2OEnSA==}
     engines: {node: '>=16'}
 
-  caniuse-lite@1.0.30001698:
-    resolution: {integrity: sha512-xJ3km2oiG/MbNU8G6zIq6XRZ6HtAOVXsbOrP/blGazi52kc5Yy7b6sDA5O+FbROzRrV7BSTllLHuNvmawYUJjw==}
+  caniuse-lite@1.0.30001707:
+    resolution: {integrity: sha512-3qtRjw/HQSMlDWf+X79N206fepf4SOOU6SQLMaq/0KkZLmSjPxAkBOQQ+FxbHKfHmYLZFfdWsO3KA90ceHPSnw==}
 
   chalk@4.1.2:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
@@ -1639,8 +1639,8 @@ packages:
   effect@3.12.10:
     resolution: {integrity: sha512-fGg3sEN+l1rffWJvXICBTqyyzpa4y1uNo3aI/JLezJDmDk0Qj/WHiy6wVe0cecdr0eFU0XkZcFu2TWpgV8kBiw==}
 
-  electron-to-chromium@1.5.96:
-    resolution: {integrity: sha512-8AJUW6dh75Fm/ny8+kZKJzI1pgoE8bKLZlzDU2W1ENd+DXKJrx7I7l9hb8UWR4ojlnb5OlixMt00QWiYJoVw1w==}
+  electron-to-chromium@1.5.128:
+    resolution: {integrity: sha512-bo1A4HH/NS522Ws0QNFIzyPcyUUNV/yyy70Ho1xqfGYzPUme2F/xr4tlEOuM6/A538U1vDA7a4XfCd1CKRegKQ==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -2554,8 +2554,8 @@ packages:
   undici-types@6.20.0:
     resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
 
-  update-browserslist-db@1.1.2:
-    resolution: {integrity: sha512-PPypAm5qvlD7XMZC3BujecnaOxwhrtoFR+Dqkk5Aa/6DssiH0ibKoketaj9w8LP7Bont1rYeoV5plxD7RTEPRg==}
+  update-browserslist-db@1.1.3:
+    resolution: {integrity: sha512-UxhIZQ+QInVdunkDAaiazvvT/+fXL5Osr0JZlJulepYu6Jd7qJtDZjlur0emRlT71EN3ScPoE7gvsuIKKNavKw==}
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
@@ -3630,10 +3630,10 @@ snapshots:
       '@ark/util': 0.39.0
     optional: true
 
-  autoprefixer@10.4.20(postcss@8.5.1):
+  autoprefixer@10.4.21(postcss@8.5.1):
     dependencies:
       browserslist: 4.24.4
-      caniuse-lite: 1.0.30001698
+      caniuse-lite: 1.0.30001707
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.1.1
@@ -3672,10 +3672,10 @@ snapshots:
 
   browserslist@4.24.4:
     dependencies:
-      caniuse-lite: 1.0.30001698
-      electron-to-chromium: 1.5.96
+      caniuse-lite: 1.0.30001707
+      electron-to-chromium: 1.5.128
       node-releases: 2.0.19
-      update-browserslist-db: 1.1.2(browserslist@4.24.4)
+      update-browserslist-db: 1.1.3(browserslist@4.24.4)
 
   buffer-from@1.1.2: {}
 
@@ -3686,7 +3686,7 @@ snapshots:
   camelcase@8.0.0:
     optional: true
 
-  caniuse-lite@1.0.30001698: {}
+  caniuse-lite@1.0.30001707: {}
 
   chalk@4.1.2:
     dependencies:
@@ -3779,7 +3779,7 @@ snapshots:
       fast-check: 3.23.2
     optional: true
 
-  electron-to-chromium@1.5.96: {}
+  electron-to-chromium@1.5.128: {}
 
   emoji-regex@8.0.0: {}
 
@@ -4772,7 +4772,7 @@ snapshots:
 
   undici-types@6.20.0: {}
 
-  update-browserslist-db@1.1.2(browserslist@4.24.4):
+  update-browserslist-db@1.1.3(browserslist@4.24.4):
     dependencies:
       browserslist: 4.24.4
       escalade: 3.2.0
