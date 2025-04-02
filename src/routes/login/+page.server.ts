@@ -1,5 +1,6 @@
+import { isUserScheduled } from '$lib/server/db/schedule';
 import { createSession, invalidateExcessSessions } from '$lib/server/db/session';
-import { checkUserRatelimit, getUserIdAndPasswordHash, isUserDisabled } from '$lib/server/db/user';
+import { checkUserRatelimit, getUserByUsername } from '$lib/server/db/user';
 import { verifyPasswordHash } from '$lib/server/password';
 import { generateSessionToken, setSessionTokenCookie } from '$lib/server/session';
 import { error, fail, redirect, type Actions } from '@sveltejs/kit';
@@ -9,6 +10,14 @@ import { logInFormSchema } from './schema';
 import type { PageServerLoad } from './$types';
 import { getBuildings } from '$lib/server/db/building';
 import { ratelimitMaxAttempts, ratelimitTimeout } from '$lib/server/env';
+
+class LoginError extends Error {
+	sensitive: boolean;
+	constructor(name: string, sensitive: boolean) {
+		super(name);
+		this.sensitive = sensitive;
+	}
+}
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const { database } = locals;
@@ -46,7 +55,7 @@ export const actions: Actions = {
 
 		try {
 			// Check if the username exists
-			const { id, passwordHash } = await getUserIdAndPasswordHash(database, username);
+			const { id, passwordHash, disabled } = await getUserByUsername(database, username);
 
 			// Check if the ratelimit has been hit
 			const ratelimited = await checkUserRatelimit(
@@ -63,14 +72,19 @@ export const actions: Actions = {
 				});
 			}
 
+			if (disabled) {
+				throw new LoginError('user is disabled: contact the administrator', true);
+			}
+
+			const scheduled = await isUserScheduled(database, id);
+			if (!scheduled) {
+				throw new LoginError('user is not scheduled', false);
+			}
+
 			// Check if the password matches
 			const validPassword = await verifyPasswordHash(passwordHash, password);
 			if (!validPassword) {
-				throw new Error('Incorrect password');
-			}
-
-			if (await isUserDisabled(database, id)) {
-				throw new Error('user is disabled: contact the administrator');
+				throw new LoginError('Incorrect password', true);
 			}
 
 			// Create a new session token
@@ -81,11 +95,13 @@ export const actions: Actions = {
 			// Invalidate sessions that exceed the maximum number of sessions
 			await invalidateExcessSessions(database, id);
 		} catch (err) {
-			// WARN: Don't return the real error message back to user since this is publicly available
 			console.warn(`Failed to login: ${(err as Error).message}`);
 			return fail(401, {
 				logInForm,
-				message: 'Invalid username or password'
+				message:
+					!(err instanceof LoginError) || err.sensitive
+						? 'Invalid username or password'
+						: err.message
 			});
 		}
 
