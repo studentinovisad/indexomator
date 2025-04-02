@@ -13,13 +13,14 @@ import {
 	sum,
 	desc,
 	lt,
-	gte
+	gte,
+	isNotNull
 } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { person, personEntry, personExit } from './schema/person';
 import { StateInside, StateOutside, type State } from '$lib/types/state';
 import { fuzzySearchFilters } from './fuzzysearch';
-import { sqlConcat, sqlLeast, sqlLevenshteinDistance } from './utils';
+import { descNulls, sqlConcat, sqlLeast, sqlLevenshteinDistance } from './utils';
 import { isInside } from '../isInside';
 import { capitalizeString, sanitizeString } from '$lib/utils/sanitize';
 import { building } from './schema/building';
@@ -32,7 +33,12 @@ import {
 	type Person,
 	type PersonType
 } from '$lib/types/person';
-import { guarantorEligibilityHours, guarantorMaxGuests, optionalGuarantor } from '$lib/utils/env';
+import {
+	guarantorEligibilityHours,
+	guarantorMaxGuests,
+	optionalGuarantor,
+	rectorateMode
+} from '$lib/utils/env';
 import { hoursSpentCutoffHours } from '$lib/server/env';
 
 type searchOptions = {
@@ -96,6 +102,7 @@ export async function getPersons(
 							lname: person.lname,
 							department: person.department,
 							university: person.university,
+							banned: person.banned,
 							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 							entryBuilding: personEntry.building,
 							entryGuarantorId: personEntry.guarantorId,
@@ -150,7 +157,7 @@ export async function getPersons(
 						.orderBy(({ leastDistance, leastDistanceIdentifier, entryTimestamp, identifier }) => [
 							leastDistance,
 							leastDistanceIdentifier,
-							desc(entryTimestamp),
+							descNulls(entryTimestamp),
 							identifier
 						])
 						.limit(limit)
@@ -164,6 +171,7 @@ export async function getPersons(
 							lname: person.lname,
 							department: person.department,
 							university: person.university,
+							banned: person.banned,
 							entryTimestamp: maxEntrySubquery.maxEntryTimestamp,
 							entryBuilding: personEntry.building,
 							entryGuarantorId: personEntry.guarantorId,
@@ -182,7 +190,7 @@ export async function getPersons(
 								eq(personEntry.timestamp, maxEntrySubquery.maxEntryTimestamp)
 							)
 						)
-						.orderBy(({ entryTimestamp, identifier }) => [desc(entryTimestamp), identifier])
+						.orderBy(({ entryTimestamp, identifier }) => [descNulls(entryTimestamp), identifier])
 						.leftJoin(guarantor, eq(guarantor.id, personEntry.guarantorId))
 						.limit(limit)
 						.offset(offset);
@@ -206,7 +214,8 @@ export async function getPersons(
 				guarantorFname: inside ? p.entryGuarantorFname : null,
 				guarantorLname: inside ? p.entryGuarantorLname : null,
 				guarantorIdentifier: inside ? p.entryGuarantorIdentifier : null,
-				state: inside ? StateInside : StateOutside
+				state: inside ? StateInside : StateOutside,
+				banned: p.banned
 			};
 		});
 	} catch (err) {
@@ -298,8 +307,11 @@ export async function getGuarantors(
 						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
 						.where(
 							and(
+								eq(person.banned, false),
 								not(eq(person.type, Guest)),
-								gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours),
+								guarantorEligibilityHours !== 0
+									? gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
+									: undefined,
 								or(
 									...[
 										...fuzzySearchFilters([person.identifier], nonEmptySearchQuery),
@@ -332,8 +344,11 @@ export async function getGuarantors(
 						.leftJoin(totalHoursSpentSubQuery, eq(totalHoursSpentSubQuery.personId, person.id))
 						.where(
 							and(
+								eq(person.banned, false),
 								not(eq(person.type, Guest)),
-								gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
+								guarantorEligibilityHours !== 0
+									? gte(totalHoursSpentSubQuery.totalHoursSpent, guarantorEligibilityHours)
+									: undefined
 							)
 						)
 						.orderBy(({ identifier }) => [identifier])
@@ -472,7 +487,7 @@ export async function getPersonsCountPerUniversity(db: Database): Promise<
 				count: count()
 			})
 			.from(person)
-			.where(eq(person.type, Guest))
+			.where(!rectorateMode ? eq(person.type, Guest) : undefined)
 			.groupBy(person.type, person.university)
 			.orderBy(({ count }) => count);
 
@@ -515,7 +530,10 @@ export async function getPersonsCountPerBuilding(db: Database): Promise<
 			.leftJoin(personExit, eq(personExit.personId, person.id))
 			.groupBy(person.id, person.type, personEntry.building)
 			.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-				or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				and(
+					isNotNull(maxEntryTimestamp),
+					or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				)
 			)
 			.as('person_inside');
 
@@ -555,9 +573,11 @@ export async function createEmployee(
 	lname: string,
 	department: string | undefined,
 	building: string,
-	creator: string
+	creator: string,
+	entry: boolean
 ): Promise<Person> {
 	return await createPerson(db, identifier, Employee, fname, lname, building, creator, {
+		entry,
 		department
 	});
 }
@@ -570,9 +590,11 @@ export async function createStudent(
 	lname: string,
 	department: string | undefined,
 	building: string,
-	creator: string
+	creator: string,
+	entry: boolean
 ): Promise<Person> {
 	return await createPerson(db, identifier, Student, fname, lname, building, creator, {
+		entry,
 		department
 	});
 }
@@ -585,9 +607,11 @@ export async function createStudentRectorateMode(
 	lname: string,
 	university: string | undefined,
 	building: string,
-	creator: string
+	creator: string,
+	entry: boolean
 ): Promise<Person> {
 	return await createPerson(db, identifier, Student, fname, lname, building, creator, {
+		entry,
 		university
 	});
 }
@@ -601,9 +625,11 @@ export async function createGuest(
 	university: string | undefined,
 	building: string,
 	creator: string,
-	guarantorId: number | undefined
+	guarantorId: number | undefined,
+	entry: boolean
 ): Promise<Person> {
 	return await createPerson(db, identifier, Guest, fname, lname, building, creator, {
+		entry,
 		university,
 		guarantorId
 	});
@@ -612,13 +638,18 @@ export async function createGuest(
 // Checks if a guarantor exists in the database and is not a guest
 async function validGuarantor(db: Database, guarantorId: number): Promise<void> {
 	// Check guarantor type
-	const [{ type }] = await db
-		.select({ type: person.type })
+	const [{ banned, type }] = await db
+		.select({ banned: person.banned, type: person.type })
 		.from(person)
 		.where(eq(person.id, guarantorId));
 
 	if (!isPersonType(type)) {
 		throw new Error('Invalid type from DB (not PersonType)');
+	}
+
+	// Guarantor must not be banned
+	if (banned) {
+		throw new Error("Guarantor can't be banned");
 	}
 
 	// Guarantor must not be a guest
@@ -632,42 +663,44 @@ async function validGuarantor(db: Database, guarantorId: number): Promise<void> 
 		throw new Error('Guarantor reached maximum number of inside guests');
 	}
 
-	// Check guarantor total hours spent
-	const timestampPairsSubquery = db
-		.select({
-			personId: personEntry.personId,
-			entryTimestamp: personEntry.timestamp,
-			exitTimestamp: min(personExit.timestamp).as('exit_timestamp')
-		})
-		.from(personEntry)
-		.innerJoin(personExit, eq(personExit.personId, personEntry.personId))
-		.where(
-			and(eq(personEntry.personId, guarantorId), gt(personExit.timestamp, personEntry.timestamp))
-		)
-		.groupBy(personEntry.personId, personEntry.timestamp)
-		.as('timestamp_pairs');
-
-	const hoursSpentSubQuery = db
-		.with(timestampPairsSubquery)
-		.select({
-			hoursSpent: sql<number>`
-					extract(epoch from (${timestampPairsSubquery.exitTimestamp} - ${timestampPairsSubquery.entryTimestamp})) / 3600`.as(
-				'hours_spent'
+	// Check guarantor total hours spent (if required)
+	if (guarantorEligibilityHours !== 0) {
+		const timestampPairsSubquery = db
+			.select({
+				personId: personEntry.personId,
+				entryTimestamp: personEntry.timestamp,
+				exitTimestamp: min(personExit.timestamp).as('exit_timestamp')
+			})
+			.from(personEntry)
+			.innerJoin(personExit, eq(personExit.personId, personEntry.personId))
+			.where(
+				and(eq(personEntry.personId, guarantorId), gt(personExit.timestamp, personEntry.timestamp))
 			)
-		})
-		.from(timestampPairsSubquery)
-		.as('hours_spent');
+			.groupBy(personEntry.personId, personEntry.timestamp)
+			.as('timestamp_pairs');
 
-	const [{ totalHoursSpent }] = await db
-		.select({
-			totalHoursSpent: sum(hoursSpentSubQuery.hoursSpent).mapWith(Number).as('total_hours_spent')
-		})
-		.from(hoursSpentSubQuery)
-		.where(lt(hoursSpentSubQuery.hoursSpent, hoursSpentCutoffHours));
+		const hoursSpentSubQuery = db
+			.with(timestampPairsSubquery)
+			.select({
+				hoursSpent: sql<number>`
+					extract(epoch from (${timestampPairsSubquery.exitTimestamp} - ${timestampPairsSubquery.entryTimestamp})) / 3600`.as(
+					'hours_spent'
+				)
+			})
+			.from(timestampPairsSubquery)
+			.as('hours_spent');
 
-	// Guarantor total hours spent must be greater than or equal to guarantorEligibilityHours
-	if (totalHoursSpent < guarantorEligibilityHours) {
-		throw new Error(`Guarantor doesn't have enough hours (${guarantorEligibilityHours})`);
+		const [{ totalHoursSpent }] = await db
+			.select({
+				totalHoursSpent: sum(hoursSpentSubQuery.hoursSpent).mapWith(Number).as('total_hours_spent')
+			})
+			.from(hoursSpentSubQuery)
+			.where(lt(hoursSpentSubQuery.hoursSpent, hoursSpentCutoffHours));
+
+		// Guarantor total hours spent must be greater than or equal to guarantorEligibilityHours
+		if (totalHoursSpent < guarantorEligibilityHours) {
+			throw new Error(`Guarantor doesn't have enough hours (${guarantorEligibilityHours})`);
+		}
 	}
 }
 
@@ -681,6 +714,7 @@ export async function createPerson(
 	building: string,
 	creator: string,
 	opts: {
+		entry: boolean;
 		department?: string;
 		university?: string;
 		guarantorId?: number;
@@ -752,12 +786,15 @@ export async function createPerson(
 				.returning({ id: person.id });
 
 			// Create the person entry
-			await tx.insert(personEntry).values({
-				personId: id,
-				building,
-				creator,
-				guarantorId
-			});
+			if (opts.entry) {
+				await tx.insert(personEntry).values({
+					personId: id,
+					building,
+					creator,
+					guarantorId
+				});
+			}
+			const state = opts.entry ? StateInside : StateOutside;
 
 			const [{ guarantorFname, guarantorLname, guarantorIdentifier }] = guarantorId
 				? await tx
@@ -789,7 +826,8 @@ export async function createPerson(
 				guarantorFname,
 				guarantorLname,
 				guarantorIdentifier,
-				state: StateInside // Because the person was just created, they are inside
+				banned: false,
+				state
 			};
 		});
 	} catch (err) {
@@ -803,6 +841,7 @@ export async function togglePersonState(
 	id: number,
 	building: string,
 	creator: string,
+	action: 'admit' | 'release' | 'transfer',
 	guarantorId?: number
 ): Promise<State> {
 	// Assert building is valid
@@ -817,8 +856,17 @@ export async function togglePersonState(
 
 	try {
 		return await db.transaction(async (tx) => {
+			// Check if the person is banned
+			const [{ banned }] = await tx
+				.select({ banned: person.banned })
+				.from(person)
+				.where(eq(person.id, id));
+			if (banned) {
+				throw new Error('Person is banned and cannot change state');
+			}
+
 			// Get the person entry timestamp and building
-			const [{ entryTimestamp, entryBuilding }] = await tx
+			const entries = await tx
 				.select({
 					entryTimestamp: personEntry.timestamp,
 					entryBuilding: personEntry.building
@@ -827,8 +875,10 @@ export async function togglePersonState(
 				.where(eq(personEntry.personId, id))
 				.orderBy(desc(personEntry.timestamp))
 				.limit(1);
+			const [{ entryTimestamp, entryBuilding }] =
+				entries.length === 1 ? entries : [{ entryTimestamp: null, entryBuilding: null }];
 
-			// Get the person timestamp
+			// Get the person exit timestamp
 			const exits = await tx
 				.select({
 					exitTimestamp: personExit.timestamp
@@ -842,14 +892,27 @@ export async function togglePersonState(
 			// Toggle the person state
 			if (isInside(entryTimestamp, exitTimestamp)) {
 				if (building === entryBuilding) {
+					if (action !== 'release') {
+						throw new Error(
+							`Can't perform ${action} as another was already triggered (interface isn't synced with the server, please refresh the page)`
+						);
+					}
+
 					// Release the person
 					await tx.insert(personExit).values({
 						personId: id,
 						building,
 						creator
 					});
+
 					return StateOutside;
 				} else {
+					if (action !== 'transfer') {
+						throw new Error(
+							`Can't perform ${action} as another was already triggered (interface isn't synced with the server, please refresh the page)`
+						);
+					}
+
 					// Check if the guarantor is set (if required)
 					if (!optionalGuarantor && guarantorId === undefined) {
 						// Get the person type
@@ -867,7 +930,16 @@ export async function togglePersonState(
 						}
 					}
 
+					// (Transfer) Release the person
+					await tx.insert(personExit).values({
+						personId: id,
+						building,
+						creator
+					});
+
 					// Check if the guarantor is valid
+					// This calculates the current guests inside for guarantor,
+					// which is why we release the person beforehand
 					if (guarantorId) {
 						try {
 							await validGuarantor(tx, guarantorId);
@@ -876,21 +948,23 @@ export async function togglePersonState(
 						}
 					}
 
-					// Transfer the person
-					await tx.insert(personExit).values({
-						personId: id,
-						building,
-						creator
-					});
+					// (Transfer) Admit the person
 					await tx.insert(personEntry).values({
 						personId: id,
 						building,
 						creator,
 						guarantorId
 					});
+
 					return StateInside;
 				}
 			} else {
+				if (action !== 'admit') {
+					throw new Error(
+						`Can't perform ${action} as another was already triggered (interface isn't synced with the server, please refresh the page)`
+					);
+				}
+
 				// Check if the guarantor is set (if required)
 				if (!optionalGuarantor && guarantorId === undefined) {
 					// Get the person type
@@ -924,6 +998,7 @@ export async function togglePersonState(
 					creator,
 					guarantorId
 				});
+
 				return StateInside;
 			}
 		});
@@ -950,7 +1025,10 @@ export async function getInsideGuests(db: Database, guarantorId: number): Promis
 			.where(eq(personEntry.guarantorId, guarantorId))
 			.groupBy(person.id)
 			.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-				or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				and(
+					isNotNull(maxEntryTimestamp),
+					or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				)
 			)
 			.orderBy(({ university, fname, lname, identifier }) => [
 				university,
@@ -985,7 +1063,10 @@ export async function getInsideGuestCount(db: Database, guarantorId: number): Pr
 			.where(eq(personEntry.guarantorId, guarantorId))
 			.groupBy(person.id)
 			.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-				or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				and(
+					isNotNull(maxEntryTimestamp),
+					or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+				)
 			)
 			.as('guests_inside');
 
@@ -1015,6 +1096,69 @@ export async function getPersonTypes(db: Database): Promise<PersonType[]> {
 		}, [] as PersonType[]);
 	} catch (err) {
 		throw new Error(`Failed to get persons types from database: ${(err as Error).message}`);
+	}
+}
+
+export async function setPersonBannedStatus(
+	db: Database,
+	id: number,
+	action: 'ban' | 'pardon'
+): Promise<void> {
+	const newBan = action === 'ban';
+	const actionMsg = action === 'ban' ? 'banned' : 'pardoned';
+
+	try {
+		await db.transaction(async (tx) => {
+			const [{ banned }] = await tx
+				.select({ banned: person.banned })
+				.from(person)
+				.where(eq(person.id, id));
+			if (newBan === banned) {
+				throw new Error(`Person is already ${actionMsg}`);
+			}
+
+			if (newBan) {
+				// Get the person entry timestamp and building
+				const entries = await tx
+					.select({
+						entryTimestamp: personEntry.timestamp,
+						entryBuilding: personEntry.building
+					})
+					.from(personEntry)
+					.where(eq(personEntry.personId, id))
+					.orderBy(desc(personEntry.timestamp))
+					.limit(1);
+				const [{ entryTimestamp, entryBuilding }] =
+					entries.length === 1 ? entries : [{ entryTimestamp: null, entryBuilding: null }];
+
+				// Get the person exit timestamp
+				const exits = await tx
+					.select({
+						exitTimestamp: personExit.timestamp
+					})
+					.from(personExit)
+					.where(eq(personExit.personId, id))
+					.orderBy(desc(personExit.timestamp))
+					.limit(1);
+				const [{ exitTimestamp }] = exits.length === 1 ? exits : [{ exitTimestamp: null }];
+
+				if (isInside(entryTimestamp, exitTimestamp)) {
+					if (entryBuilding === null) {
+						throw new Error('Person is inside but no entry building found');
+					}
+
+					// Release the person
+					await tx.insert(personExit).values({
+						personId: id,
+						building: entryBuilding
+					});
+				}
+			}
+
+			await tx.update(person).set({ banned: newBan }).where(eq(person.id, id));
+		});
+	} catch (err) {
+		throw new Error(`Failed to ${action} person in database: ${(err as Error).message}`);
 	}
 }
 
@@ -1049,7 +1193,10 @@ export async function removePersonsFromBuilding(
 				.where(and(eq(personEntry.building, building), eq(person.type, type)))
 				.groupBy(person.id, person.type, personEntry.building)
 				.having(({ maxEntryTimestamp, maxExitTimestamp }) =>
-					or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+					and(
+						isNotNull(maxEntryTimestamp),
+						or(isNull(maxExitTimestamp), gte(maxEntryTimestamp, maxExitTimestamp))
+					)
 				);
 
 			// Return if no one is found inside the building

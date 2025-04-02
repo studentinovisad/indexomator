@@ -6,6 +6,6 @@ export const nameRegExpMsg = 'String must be 1-2 word(s) seperated by space or d
 export const indexRegExp = new RegExp(indexRegex);
 export const indexRegExpMsg = 'String must follow Student ID format';
 
-export const wordRegExp = /^[\w\-+/\\|][\w\-+/\\|\s]*$/;
+export const wordRegExp = /^[a-zA-ZčČćĆǆǄđĐšŠžŽ\-+/\\|][a-zA-ZčČćĆǆǄđĐšŠžŽ\-+/\\|\s]*$/;
 export const wordRegExpMsg =
 	'String can consist of letters, numbers, symbols (_, -, +, /, \\, |) and whitespaces';

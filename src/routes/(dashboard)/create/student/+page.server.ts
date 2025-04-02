@@ -47,7 +47,7 @@ export const actions: Actions = {
 			});
 		}
 
-		const { identifier, fname, lname, department, university } = createForm.data;
+		const { identifier, fname, lname, department, university, entry } = createForm.data;
 		const { building } = session;
 		const { username: creator } = user;
 
@@ -60,10 +60,20 @@ export const actions: Actions = {
 					lname,
 					university,
 					building,
-					creator
+					creator,
+					entry
 				);
 			} else {
-				await createStudent(database, identifier, fname, lname, department, building, creator);
+				await createStudent(
+					database,
+					identifier,
+					fname,
+					lname,
+					department,
+					building,
+					creator,
+					entry
+				);
 			}
 
 			return {

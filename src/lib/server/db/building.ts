@@ -6,12 +6,13 @@ export async function getBuildings(db: Database): Promise<Building[]> {
 	return await db.select().from(building).orderBy(building.name);
 }
 
-export async function createBuilding(db: Database, name: string): Promise<void> {
+export async function createBuilding(db: Database, buildingName: string): Promise<void> {
 	// Assert that name is valid
-	if (name === null || name === undefined || name === '') {
+	if (buildingName === '') {
 		throw new Error('Invalid name');
 	}
 
+	const name = buildingName.trim();
 	await db.insert(building).values({
 		name
 	});

@@ -30,9 +30,14 @@
 	});
 	const { form: logInFormData, enhance: logInFormEnhance } = logInForm;
 
+	const buildings = $derived(data.buildings);
 	let showPassword = $state(false);
 
 	onMount(() => {
+		if (buildings.length === 1) {
+			$logInFormData.building = buildings[0].name;
+		}
+
 		toast('This site has to use some necessary cookies to function normally.', {
 			icon: Cookie,
 			action: {
@@ -110,10 +115,10 @@
 							<Form.Label>Building</Form.Label>
 							<Select.Root type="single" bind:value={$logInFormData.building} name={props.name}>
 								<Select.Trigger {...props}>
-									{$logInFormData.building ?? 'Select Building'}
+									{$logInFormData.building !== '' ? $logInFormData.building : 'Select Building'}
 								</Select.Trigger>
 								<Select.Content>
-									{#each data.buildings as { id, name } (id)}
+									{#each buildings as { id, name } (id)}
 										<Select.Item value={name} label={name} />
 									{/each}
 								</Select.Content>
