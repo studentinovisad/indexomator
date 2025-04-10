@@ -1,6 +1,12 @@
 import { diacriticsMap } from '$lib/utils/diacritics';
 import { sql, type Column, type SQL, type AnyColumn, type SQLWrapper } from 'drizzle-orm';
 
+export function assertValidString(it: string, msg: string): void {
+	if (it === undefined || it === null || it === '') {
+		throw new Error(msg);
+	}
+}
+
 export function ascNulls(
 	column: SQLWrapper | AnyColumn,
 	nullsLast: boolean = true
