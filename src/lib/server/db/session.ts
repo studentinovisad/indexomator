@@ -177,3 +177,11 @@ export async function invalidateExcessSessions(db: Database, userId: number): Pr
 		.delete(sessionTable)
 		.where(and(eq(sessionTable.userId, userId), notInArray(sessionTable.id, newestSessions)));
 }
+
+export async function invalidateAllSessions(db: Database, userId: number): Promise<void> {
+	try {
+		await db.delete(sessionTable).where(eq(sessionTable.userId, userId));
+	} catch (err) {
+		throw new Error(`Failed to invalidate all sessions in database: ${(err as Error).message}`);
+	}
+}

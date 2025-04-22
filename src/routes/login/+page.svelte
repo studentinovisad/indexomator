@@ -31,6 +31,10 @@
 	const { form: logInFormData, enhance: logInFormEnhance } = logInForm;
 
 	const buildings = $derived(data.buildings);
+
+	const messageType = data.messageType;
+	const messageText = data.messageText;
+
 	let showPassword = $state(false);
 
 	onMount(() => {
@@ -50,6 +54,12 @@
 				}
 			}
 		});
+
+		if (messageType && messageText) {
+			history.replaceState({}, '', location.pathname);
+
+			messageType === 'success' ? toast.success(messageText) : toast.error(messageText);
+		}
 	});
 </script>
 

@@ -2,14 +2,7 @@ import type { Database } from './connect';
 import { and, desc, eq, gt } from 'drizzle-orm';
 import { ratelimitTable, userTable } from './schema/user';
 import { hashPassword, verifyPasswordStrength } from '../password';
-
-// If more files make checks like this
-// move it to util and export.
-function assertValidString(it: string, msg: string): void {
-	if (it === undefined || it === null || it === '') {
-		throw new Error(msg);
-	}
-}
+import { assertValidString } from './utils';
 
 function assertValidUserId(id: number): void {
 	if (id === undefined || id === null) {
@@ -158,5 +151,23 @@ export async function updateAllUserDisabled(db: Database, newDisabled: boolean):
 		throw new Error(
 			`Failed to update all users disabled state in database: ${(err as Error).message}`
 		);
+	}
+}
+
+export async function updateUserPassword(
+	db: Database,
+	username: string,
+	password: string
+): Promise<void> {
+	try {
+		const passwordHash = await hashPassword(password);
+		await db
+			.update(userTable)
+			.set({
+				passwordHash: passwordHash
+			})
+			.where(eq(userTable.username, username));
+	} catch (err) {
+		throw new Error(`Failed to update user's password in database: ${(err as Error).message}`);
 	}
 }

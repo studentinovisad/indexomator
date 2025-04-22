@@ -5,7 +5,9 @@
 	import AppSidebar from '$lib/components/custom/sidebar/app-sidebar.svelte';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import Input from '$lib/components/ui/input/input.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
 	import { Power } from 'lucide-svelte';
+	import { User } from 'lucide-svelte';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { logoutFormSchema } from './schema.js';
@@ -35,6 +37,8 @@
 					Statistics
 				{:else if page.url.pathname === '/instructions'}
 					Instructions
+				{:else if page.url.pathname === '/profile'}
+					User Profile
 				{:else}
 					Homepage
 				{/if}
@@ -44,7 +48,7 @@
 	</main>
 </Sidebar.Provider>
 
-<form method="POST" action="/?/logout" class="absolute right-14 top-3" use:logoutEnhance>
+<form method="POST" action="/?/logout" class="absolute right-[6.25rem] top-3" use:logoutEnhance>
 	<Form.Field class="hidden" form={logoutForm} name="sessionId">
 		<Form.Control>
 			{#snippet children({ props })}
@@ -58,3 +62,10 @@
 		<span class="sr-only">Logout</span>
 	</Form.Button>
 </form>
+
+<div class="absolute right-14 top-3">
+	<Button href="/profile" variant="outline" size="icon" class="flex-shrink-0">
+		<User class="h-[1.2rem] w-[1.2rem]" />
+		<span class="sr-only">User Profile</span>
+	</Button>
+</div>

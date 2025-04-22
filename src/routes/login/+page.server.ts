@@ -10,17 +10,22 @@ import type { PageServerLoad } from './$types';
 import { getBuildings } from '$lib/server/db/building';
 import { ratelimitMaxAttempts, ratelimitTimeout } from '$lib/server/env';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	const { database } = locals;
 
 	const logInForm = await superValidate(zod(logInFormSchema));
+
+	const messageType = url.searchParams.get('messageType');
+	const messageText = url.searchParams.get('messageText');
 
 	try {
 		const buildings = await getBuildings(database);
 
 		return {
 			logInForm,
-			buildings
+			buildings,
+			messageType,
+			messageText
 		};
 	} catch (err) {
 		return error(500, `Failed to load data: ${(err as Error).message}`);
