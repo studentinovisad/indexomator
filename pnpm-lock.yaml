@@ -70,8 +70,8 @@ importers:
         specifier: ^2.46.1
         version: 2.46.1(eslint@9.24.0(jiti@1.21.7))(svelte@5.25.3)
       formsnap:
-        specifier: 2.0.0
-        version: 2.0.0(svelte@5.25.3)(sveltekit-superforms@2.24.1(@sveltejs/kit@2.20.6(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.25.3)(vite@6.3.2(@types/node@22.14.1)(jiti@1.21.7)(tsx@4.19.3)(yaml@2.7.0)))(svelte@5.25.3)(vite@6.3.2(@types/node@22.14.1)(jiti@1.21.7)(tsx@4.19.3)(yaml@2.7.0)))(@types/json-schema@7.0.15)(svelte@5.25.3)(typescript@5.7.3))
+        specifier: 2.0.1
+        version: 2.0.1(svelte@5.25.3)(sveltekit-superforms@2.24.1(@sveltejs/kit@2.20.6(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.25.3)(vite@6.3.2(@types/node@22.14.1)(jiti@1.21.7)(tsx@4.19.3)(yaml@2.7.0)))(svelte@5.25.3)(vite@6.3.2(@types/node@22.14.1)(jiti@1.21.7)(tsx@4.19.3)(yaml@2.7.0)))(@types/json-schema@7.0.15)(svelte@5.25.3)(typescript@5.7.3))
       globals:
         specifier: ^16.0.0
         version: 16.0.0
@@ -1701,8 +1701,8 @@ packages:
     resolution: {integrity: sha512-Ld2g8rrAyMYFXBhEqMz8ZAHBi4J4uS1i/CxGMDnjyFWddMXLVcDp051DZfu+t7+ab7Wv6SMqpWmyFIj5UbfFvg==}
     engines: {node: '>=14'}
 
-  formsnap@2.0.0:
-    resolution: {integrity: sha512-W61elddvdzeBEs10nNvwxQnx/FctJFHBXPk9uluNQAckHo1nuSUvSQGIjtLjTKIbQdQnwEOoxqWrk9tuv0U7hA==}
+  formsnap@2.0.1:
+    resolution: {integrity: sha512-iJSe4YKd/W6WhLwKDVJU9FQeaJRpEFuolhju7ZXlRpUVyDdqFdMP8AUBICgnVvQPyP41IPAlBa/v0Eo35iE6wQ==}
     engines: {node: '>=18', pnpm: '>=8.7.0'}
     peerDependencies:
       svelte: ^5.0.0
@@ -3883,7 +3883,7 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  formsnap@2.0.0(svelte@5.25.3)(sveltekit-superforms@2.24.1(@sveltejs/kit@2.20.6(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.25.3)(vite@6.3.2(@types/node@22.14.1)(jiti@1.21.7)(tsx@4.19.3)(yaml@2.7.0)))(svelte@5.25.3)(vite@6.3.2(@types/node@22.14.1)(jiti@1.21.7)(tsx@4.19.3)(yaml@2.7.0)))(@types/json-schema@7.0.15)(svelte@5.25.3)(typescript@5.7.3)):
+  formsnap@2.0.1(svelte@5.25.3)(sveltekit-superforms@2.24.1(@sveltejs/kit@2.20.6(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.25.3)(vite@6.3.2(@types/node@22.14.1)(jiti@1.21.7)(tsx@4.19.3)(yaml@2.7.0)))(svelte@5.25.3)(vite@6.3.2(@types/node@22.14.1)(jiti@1.21.7)(tsx@4.19.3)(yaml@2.7.0)))(@types/json-schema@7.0.15)(svelte@5.25.3)(typescript@5.7.3)):
     dependencies:
       svelte: 5.25.3
       svelte-toolbelt: 0.5.0(svelte@5.25.3)
