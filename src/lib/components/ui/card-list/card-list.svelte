@@ -7,6 +7,7 @@
 	import AccordionContent from '../accordion/accordion-content.svelte';
 	import { StateInside, StateOutside } from '$lib/types/state';
 	import { cn } from '$lib/utils';
+	import InfiniteScroll from './infinite-scroll.svelte';
 
 	type FormSubmitFunction = (submitter?: HTMLElement | Event | EventTarget | null) => void;
 
@@ -26,13 +27,20 @@
 		showGuestsFormSubmit
 	}: CardListProps = $props();
 
+	let length = $state(10);
+	const offset = $state(10);
+	const persons = $derived(data.slice(0, length));
+
+	$effect(() => {
+		console.log(persons);
+	});
+
 	const isInside = (person: Person) => person.state == StateInside;
-	const fullName = (person: Person) => `${person.fname} ${person.lname}`;
 </script>
 
 <div class="p-4 pt-0">
 	{#if data}
-		{#each data as person}
+		{#each persons as person}
 			<Accordion type="single">
 				<AccordionItem value={person.identifier}>
 					<AccordionTrigger class="overflow-hidden">
@@ -78,5 +86,13 @@
 		{:else}
 			No data to show.
 		{/each}
+		{#if persons.length < data.length}
+			<InfiniteScroll
+				hasMore={persons.length < data.length}
+				loadMore={() => {
+					length += offset;
+				}}
+			/>
+		{/if}
 	{/if}
 </div>
