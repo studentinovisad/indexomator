@@ -5,7 +5,7 @@
 	import AccordionItem from '../accordion/accordion-item.svelte';
 	import AccordionTrigger from '../accordion/accordion-trigger.svelte';
 	import AccordionContent from '../accordion/accordion-content.svelte';
-	import { StateInside, StateOutside } from '$lib/types/state';
+	import { StateInside } from '$lib/types/state';
 	import { cn } from '$lib/utils';
 	import InfiniteScroll from './infinite-scroll.svelte';
 
@@ -35,7 +35,7 @@
 		console.log(persons);
 	});
 
-	const isInside = (person: Person) => person.state == StateInside;
+	const isInside = (person: Person) => person.state === StateInside;
 </script>
 
 <div class="p-4 pt-0">

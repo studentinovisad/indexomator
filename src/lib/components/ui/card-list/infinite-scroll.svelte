@@ -30,7 +30,7 @@
 		);
 	};
 
-	const onScroll = (e: Event) => {
+	const onScroll = () => {
 		if (isElementInViewport(component)) {
 			if (!isLoadingMore && hasMore) {
 				isLoadingMore = true;
