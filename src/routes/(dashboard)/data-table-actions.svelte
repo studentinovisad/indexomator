@@ -27,7 +27,7 @@
 	const sameBuilding = $derived(userBuilding === person.building);
 </script>
 
-<div class="flex space-x-1 sm:space-x-2">
+<div class="flex w-full min-w-0 space-x-1 sm:space-x-2">
 	{#if !person.banned}
 		{#if inside && sameBuilding}
 			{#if person.guarantorFname && person.guarantorLname && person.guarantorIdentifier}
@@ -45,11 +45,11 @@
 									}
 								});
 							}}
-							class={cn('w-full', buttonVariants({ variant: 'outline' }))}
+							class={cn('min-w-0 flex-1', buttonVariants({ variant: 'outline' }))}
 							value={'release'}
 						>
 							<LogOut />
-							<span class="hidden sm:block">Release</span>
+							<span class="hidden md:block">Release</span>
 						</Tooltip.Trigger>
 						<Tooltip.Content>
 							<span
@@ -73,11 +73,11 @@
 						});
 					}}
 					variant="outline"
-					class="w-full"
+					class="min-w-0 flex-1 sm:w-full"
 					value={'release'}
 				>
 					<LogOut />
-					<span class="hidden sm:block">Release</span>
+					<span class="hidden md:block">Release</span>
 				</Button>
 			{/if}
 		{:else if person.type !== Guest}
@@ -88,15 +88,15 @@
 					tick().then(() => toggleStateFormSubmit());
 				}}
 				variant="outline"
-				class="w-full"
+				class="min-w-0 flex-1"
 				value={inside ? 'transfer' : 'admit'}
 			>
 				{#if inside}
 					<ArrowLeftRight />
-					<span class="hidden sm:block">Transfer</span>
+					<span class="hidden md:block">Transfer</span>
 				{:else}
 					<LogIn />
-					<span class="hidden sm:block">Admit</span>
+					<span class="mb:block hidden">Admit</span>
 				{/if}
 			</Button>
 		{:else}
@@ -108,15 +108,15 @@
 				}}
 				type="button"
 				variant="outline"
-				class="w-full"
+				class="min-w-0 flex-1"
 				value={inside ? 'transfer' : 'admit'}
 			>
 				{#if inside}
 					<ArrowLeftRight />
-					<span class="hidden sm:block">Transfer</span>
+					<span class="hidden md:block">Transfer</span>
 				{:else}
 					<LogIn />
-					<span class="hidden sm:block">Admit</span>
+					<span class="hidden md:block">Admit</span>
 				{/if}
 			</Button>
 		{/if}
@@ -130,16 +130,16 @@
 				}}
 				type="button"
 				variant="outline"
-				class="w-full"
+				class="min-w-0 flex-1 sm:w-full"
 			>
 				<Handshake />
-				<span class="hidden sm:block">Show guests</span>
+				<span class="hidden md:block">Show guests</span>
 			</Button>
 		{/if}
 	{:else}
 		<Button type="button" variant="destructive" class="w-full" disabled>
 			<Ban />
-			<span class="hidden sm:block">Banned</span>
+			<span class="hidden md:block">Banned</span>
 		</Button>
 	{/if}
 </div>
