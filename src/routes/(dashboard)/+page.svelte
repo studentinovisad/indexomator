@@ -39,6 +39,8 @@
 	import successSFX from '$lib/assets/sfx/success.mp3';
 	import warningSFX from '$lib/assets/sfx/warning.mp3';
 	import errorSFX from '$lib/assets/sfx/error.mp3';
+	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
+	import CardList from '$lib/components/ui/card-list/card-list.svelte';
 
 	let { data, form: actionData } = $props();
 
@@ -165,6 +167,7 @@
 	const columnsGuests = $derived(createColumnsGuests());
 
 	const triggerId = useId();
+	const isMobile = new IsMobile();
 </script>
 
 <!-- Search for persons -->
@@ -245,7 +248,17 @@
 <!-- Data table for persons -->
 <Separator />
 <div class="m-0 sm:m-4">
-	<DataTable data={persons} {columns} />
+	{#if isMobile.current}
+		<CardList
+			data={persons}
+			userBuilding={data.userBuilding}
+			{toggleGuestStateFormSubmit}
+			{toggleStateFormSubmit}
+			{showGuestsFormSubmit}
+		/>
+	{:else}
+		<DataTable data={persons} {columns} />
+	{/if}
 </div>
 
 <!-- Dialog for searching guarantors when admiting/tranfering guests -->
