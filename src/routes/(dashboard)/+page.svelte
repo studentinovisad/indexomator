@@ -247,7 +247,7 @@
 
 <!-- Data table for persons -->
 <Separator />
-<div class="m-0">
+<div class="m-0 md:m-4">
 	{#if isMobile.current}
 		<CardList
 			data={persons}
