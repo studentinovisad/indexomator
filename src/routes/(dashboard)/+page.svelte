@@ -29,9 +29,8 @@
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
 	import { cn } from '$lib/utils';
-	import { Check, CheckCheck, ChevronsUpDown } from 'lucide-svelte';
+	import { Check, CheckCheck, ChevronsUpDown, IdCard, Table, Table2 } from 'lucide-svelte';
 	import { tick } from 'svelte';
-	import { useId } from 'bits-ui';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { toggleStateFormStore } from '$lib/stores/toggleState.svelte';
 	import type { Guest } from '$lib/types/person';
@@ -41,6 +40,7 @@
 	import errorSFX from '$lib/assets/sfx/error.mp3';
 	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
 	import CardList from '$lib/components/ui/card-list/card-list.svelte';
+	import { useId } from 'bits-ui';
 
 	let { data, form: actionData } = $props();
 
@@ -168,6 +168,7 @@
 
 	const triggerId = useId();
 	const isMobile = new IsMobile();
+	let selectedViewType = $state(isMobile.current ? 'cards' : 'table');
 </script>
 
 <!-- Search for persons -->
@@ -243,12 +244,32 @@
 			</Tooltip.Content>
 		</Tooltip.Root>
 	</Tooltip.Provider>
+	<div>
+		<Button
+			variant="outline"
+			onclick={() => {
+				selectedViewType = 'cards';
+			}}
+			disabled={selectedViewType.localeCompare('cards') === 0}
+		>
+			<IdCard />
+		</Button>
+		<Button
+			variant="outline"
+			onclick={() => {
+				selectedViewType = 'table';
+			}}
+			disabled={selectedViewType.localeCompare('table') === 0}
+		>
+			<Table2 />
+		</Button>
+	</div>
 </form>
 
 <!-- Data table for persons -->
 <Separator />
 <div class="m-0 md:m-4">
-	{#if isMobile.current}
+	{#if selectedViewType.localeCompare('cards') === 0}
 		<CardList
 			data={persons}
 			userBuilding={data.userBuilding}
