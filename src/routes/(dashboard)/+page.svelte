@@ -175,13 +175,13 @@
 <form
 	method="POST"
 	action="?/search"
-	class="flex gap-2 px-4 py-2"
+	class="flex items-center gap-2 px-4 py-2"
 	onreset={() => {
 		searchForm.submit();
 	}}
 	use:searchEnhance
 >
-	<Form.Field form={searchForm} name="searchQuery">
+	<Form.Field form={searchForm} name="searchQuery" class="space-y-0">
 		<Form.Control>
 			{#snippet children({ props })}
 				<Input
@@ -244,26 +244,36 @@
 			</Tooltip.Content>
 		</Tooltip.Root>
 	</Tooltip.Provider>
-	<div>
-		<Button
-			variant="outline"
-			onclick={() => {
-				selectedViewType = 'cards';
-			}}
-			disabled={selectedViewType.localeCompare('cards') === 0}
-		>
-			<IdCard />
-		</Button>
-		<Button
-			variant="outline"
-			onclick={() => {
-				selectedViewType = 'table';
-			}}
-			disabled={selectedViewType.localeCompare('table') === 0}
-		>
-			<Table2 />
-		</Button>
-	</div>
+	<Tooltip.Provider>
+		<Tooltip.Root>
+			<Tooltip.Trigger
+				class={cn(
+					'flex-shrink-0',
+					buttonVariants({ variant: liveSearch ? 'secondary' : 'outline', size: 'icon' })
+				)}
+				onclick={() => {
+					selectedViewType = 'cards';
+				}}
+				disabled={selectedViewType.localeCompare('cards') === 0}
+			>
+				<IdCard />
+			</Tooltip.Trigger>
+		</Tooltip.Root>
+		<Tooltip.Root>
+			<Tooltip.Trigger
+				class={cn(
+					'flex-shrink-0',
+					buttonVariants({ variant: liveSearch ? 'secondary' : 'outline', size: 'icon' })
+				)}
+				onclick={() => {
+					selectedViewType = 'table';
+				}}
+				disabled={selectedViewType.localeCompare('table') === 0}
+			>
+				<Table />
+			</Tooltip.Trigger>
+		</Tooltip.Root>
+	</Tooltip.Provider>
 </form>
 
 <!-- Data table for persons -->
