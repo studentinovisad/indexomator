@@ -9,6 +9,7 @@
 	import { cn } from '$lib/utils';
 	import InfiniteScroll from './infinite-scroll.svelte';
 	import { Building, Cuboid, University } from 'lucide-svelte';
+	import Badge from '../badge/badge.svelte';
 
 	type FormSubmitFunction = (submitter?: HTMLElement | Event | EventTarget | null) => void;
 
@@ -42,15 +43,14 @@
 				<AccordionItem value={person.identifier} class="child">
 					<AccordionTrigger class="overflow-hidden hover:no-underline">
 						<div class="xs:text-xs flex w-full items-center justify-between gap-4 overflow-x-auto">
-							<div class="flex w-3/5 min-w-0 flex-1 space-x-1 text-xs sm:text-sm">
+							<div class="flex w-3/5 min-w-0 flex-1 items-center space-x-1 text-xs sm:text-sm">
 								<span class="flex min-w-0 truncate">
 									{person.fname}
 								</span>
 								<span class="flex min-w-0 truncate">
 									{person.lname}
 								</span>
-								<span>-</span>
-								<span>{person.identifier}</span>
+								<Badge variant="secondary">{person.identifier}</Badge>
 							</div>
 							<div class="flex w-2/5 flex-shrink items-center justify-end gap-2">
 								<DataTableActions
