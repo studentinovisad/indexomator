@@ -169,6 +169,8 @@
 	const triggerId = useId();
 	const isMobile = new IsMobile();
 	let selectedViewType = $state(isMobile.current ? 'cards' : 'table');
+
+	const containerDivStyle = $derived(selectedViewType.localeCompare('table') === 0 ? 'm-4' : 'm-2');
 </script>
 
 <!-- Search for persons -->
@@ -244,41 +246,55 @@
 			</Tooltip.Content>
 		</Tooltip.Root>
 	</Tooltip.Provider>
-	<Tooltip.Provider>
-		<Tooltip.Root>
-			<Tooltip.Trigger
-				class={cn(
-					'flex-shrink-0',
-					buttonVariants({ variant: liveSearch ? 'secondary' : 'outline', size: 'icon' })
-				)}
-				onclick={() => {
-					selectedViewType = 'cards';
-				}}
-				disabled={selectedViewType.localeCompare('cards') === 0}
-			>
-				<IdCard />
-			</Tooltip.Trigger>
-		</Tooltip.Root>
-		<Tooltip.Root>
-			<Tooltip.Trigger
-				class={cn(
-					'flex-shrink-0',
-					buttonVariants({ variant: liveSearch ? 'secondary' : 'outline', size: 'icon' })
-				)}
-				onclick={() => {
-					selectedViewType = 'table';
-				}}
-				disabled={selectedViewType.localeCompare('table') === 0}
-			>
-				<Table />
-			</Tooltip.Trigger>
-		</Tooltip.Root>
-	</Tooltip.Provider>
+	<div class="ml-auto inline-flex space-x-1">
+		<Tooltip.Provider>
+			<Tooltip.Root>
+				<Tooltip.Trigger
+					class={cn(
+						'flex-shrink-0',
+						buttonVariants({ variant: liveSearch ? 'secondary' : 'outline', size: 'icon' })
+					)}
+					onclick={() => {
+						selectedViewType = 'cards';
+					}}
+					disabled={selectedViewType.localeCompare('cards') === 0}
+				>
+					<IdCard />
+				</Tooltip.Trigger>
+				{#if selectedViewType.localeCompare('table') === 0}
+					<Tooltip.Content>
+						<span>Enable Cards view</span>
+					</Tooltip.Content>
+				{/if}
+			</Tooltip.Root>
+		</Tooltip.Provider>
+		<Tooltip.Provider>
+			<Tooltip.Root>
+				<Tooltip.Trigger
+					class={cn(
+						'flex-shrink-0',
+						buttonVariants({ variant: liveSearch ? 'secondary' : 'outline', size: 'icon' })
+					)}
+					onclick={() => {
+						selectedViewType = 'table';
+					}}
+					disabled={selectedViewType.localeCompare('table') === 0}
+				>
+					<Table />
+				</Tooltip.Trigger>
+				{#if selectedViewType.localeCompare('cards') === 0}
+					<Tooltip.Content>
+						<span>Enable Table view</span>
+					</Tooltip.Content>
+				{/if}
+			</Tooltip.Root>
+		</Tooltip.Provider>
+	</div>
 </form>
 
 <!-- Data table for persons -->
 <Separator />
-<div class="m-0 md:m-4">
+<div class={containerDivStyle}>
 	{#if selectedViewType.localeCompare('cards') === 0}
 		<CardList
 			data={persons}
