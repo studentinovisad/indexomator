@@ -54,3 +54,8 @@ export const flyAndScale = (
 		easing: cubicOut
 	};
 };
+
+export enum PersonViewType {
+	Table,
+	Cards
+}

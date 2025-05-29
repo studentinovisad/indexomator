@@ -28,7 +28,7 @@
 	} from './schema';
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
-	import { cn } from '$lib/utils';
+	import { cn, PersonViewType } from '$lib/utils';
 	import { Check, CheckCheck, ChevronsUpDown, IdCard, Table, Table2 } from 'lucide-svelte';
 	import { tick } from 'svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
@@ -41,6 +41,7 @@
 	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
 	import CardList from '$lib/components/ui/card-list/card-list.svelte';
 	import { useId } from 'bits-ui';
+	import PersonViewSelector from '$lib/components/custom/person-view-selector/person-view-selector.svelte';
 
 	let { data, form: actionData } = $props();
 
@@ -167,10 +168,15 @@
 	const columnsGuests = $derived(createColumnsGuests());
 
 	const triggerId = useId();
-	const isMobile = new IsMobile();
-	let selectedViewType = $state(isMobile.current ? 'cards' : 'table');
 
-	const containerDivStyle = $derived(selectedViewType.localeCompare('table') === 0 ? 'm-4' : 'm-2');
+	const isMobile = new IsMobile();
+
+	let selectedViewType = $state(isMobile.current ? PersonViewType.Cards : PersonViewType.Table);
+	const containerDivStyle = $derived(selectedViewType === PersonViewType.Table ? 'm-4' : 'm-2');
+
+	const handleUpdateView = (viewType: PersonViewType) => {
+		selectedViewType = viewType;
+	};
 </script>
 
 <!-- Search for persons -->
@@ -246,56 +252,13 @@
 			</Tooltip.Content>
 		</Tooltip.Root>
 	</Tooltip.Provider>
-	<div class="ml-auto inline-flex space-x-1">
-		<Tooltip.Provider>
-			<Tooltip.Root>
-				<Tooltip.Trigger
-					class={cn(
-						'flex-shrink-0',
-						buttonVariants({ variant: liveSearch ? 'secondary' : 'outline', size: 'icon' })
-					)}
-					onclick={() => {
-						selectedViewType = 'cards';
-					}}
-					disabled={selectedViewType.localeCompare('cards') === 0}
-				>
-					<IdCard />
-				</Tooltip.Trigger>
-				{#if selectedViewType.localeCompare('table') === 0}
-					<Tooltip.Content>
-						<span>Enable Cards view</span>
-					</Tooltip.Content>
-				{/if}
-			</Tooltip.Root>
-		</Tooltip.Provider>
-		<Tooltip.Provider>
-			<Tooltip.Root>
-				<Tooltip.Trigger
-					class={cn(
-						'flex-shrink-0',
-						buttonVariants({ variant: liveSearch ? 'secondary' : 'outline', size: 'icon' })
-					)}
-					onclick={() => {
-						selectedViewType = 'table';
-					}}
-					disabled={selectedViewType.localeCompare('table') === 0}
-				>
-					<Table />
-				</Tooltip.Trigger>
-				{#if selectedViewType.localeCompare('cards') === 0}
-					<Tooltip.Content>
-						<span>Enable Table view</span>
-					</Tooltip.Content>
-				{/if}
-			</Tooltip.Root>
-		</Tooltip.Provider>
-	</div>
+	<PersonViewSelector {selectedViewType} onUpdateView={handleUpdateView} />
 </form>
 
 <!-- Data table for persons -->
 <Separator />
 <div class={containerDivStyle}>
-	{#if selectedViewType.localeCompare('cards') === 0}
+	{#if selectedViewType === PersonViewType.Cards}
 		<CardList
 			data={persons}
 			userBuilding={data.userBuilding}
