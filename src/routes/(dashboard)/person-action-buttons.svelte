@@ -5,9 +5,13 @@
 	import { Guest, type Person } from '$lib/types/person';
 	import { ArrowLeftRight, Ban, Handshake, LogIn, LogOut } from 'lucide-svelte';
 	import { tick } from 'svelte';
-	import { cn } from '$lib/utils';
+	import { cn, type StateFormSubmitProps } from '$lib/utils';
 	import { toggleStateFormStore } from '$lib/stores/toggleState.svelte';
 	import { showGuestsFormStore } from '$lib/stores/showGuests.svelte';
+
+	interface PersonActionButtonsProps extends StateFormSubmitProps {
+		person: Person;
+	}
 
 	let {
 		person,
@@ -15,13 +19,7 @@
 		toggleStateFormSubmit,
 		toggleGuestStateFormSubmit,
 		showGuestsFormSubmit
-	}: {
-		person: Person;
-		userBuilding: string;
-		toggleStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void;
-		toggleGuestStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void;
-		showGuestsFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void;
-	} = $props();
+	}: PersonActionButtonsProps = $props();
 
 	const inside = $derived(person.state === StateInside);
 	const sameBuilding = $derived(userBuilding === person.building);

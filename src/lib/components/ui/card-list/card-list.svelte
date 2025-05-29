@@ -1,25 +1,19 @@
 <script lang="ts">
 	import type { Person } from '$lib/types/person';
-	import DataTableActions from '../../../../routes/(dashboard)/data-table-actions.svelte';
 	import { Accordion } from '../accordion';
 	import AccordionItem from '../accordion/accordion-item.svelte';
 	import AccordionTrigger from '../accordion/accordion-trigger.svelte';
 	import AccordionContent from '../accordion/accordion-content.svelte';
 	import { StateInside } from '$lib/types/state';
-	import { cn } from '$lib/utils';
+	import { cn, type StateFormSubmitProps } from '$lib/utils';
 	import InfiniteScroll from './infinite-scroll.svelte';
 	import { Building, Cuboid, University } from 'lucide-svelte';
 	import Badge from '../badge/badge.svelte';
+	import PersonActionButtons from '../../../../routes/(dashboard)/person-action-buttons.svelte';
 
-	type FormSubmitFunction = (submitter?: HTMLElement | Event | EventTarget | null) => void;
-
-	type CardListProps = {
+	interface CardListProps extends StateFormSubmitProps {
 		data: Person[];
-		userBuilding: string;
-		toggleStateFormSubmit: FormSubmitFunction;
-		toggleGuestStateFormSubmit: FormSubmitFunction;
-		showGuestsFormSubmit: FormSubmitFunction;
-	};
+	}
 
 	let {
 		data,
@@ -53,7 +47,7 @@
 								<Badge variant="secondary">{person.identifier}</Badge>
 							</div>
 							<div class="flex w-2/5 flex-shrink items-center justify-end gap-2">
-								<DataTableActions
+								<PersonActionButtons
 									{person}
 									{userBuilding}
 									{toggleGuestStateFormSubmit}
