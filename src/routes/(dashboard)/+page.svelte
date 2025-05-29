@@ -29,7 +29,7 @@
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
 	import { cn, PersonViewType } from '$lib/utils';
-	import { Check, CheckCheck, ChevronsUpDown, IdCard, Table, Table2 } from 'lucide-svelte';
+	import { Check, CheckCheck, ChevronsUpDown } from 'lucide-svelte';
 	import { tick } from 'svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { toggleStateFormStore } from '$lib/stores/toggleState.svelte';
