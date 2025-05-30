@@ -39,7 +39,7 @@
 	import warningSFX from '$lib/assets/sfx/warning.mp3';
 	import errorSFX from '$lib/assets/sfx/error.mp3';
 	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
-	import CardList from '$lib/components/ui/card-list/card-list.svelte';
+	import CardList from '$lib/components/custom/card-list/card-list.svelte';
 	import { useId } from 'bits-ui';
 	import PersonViewSelector from '$lib/components/custom/person-view-selector/person-view-selector.svelte';
 
