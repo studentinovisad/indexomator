@@ -28,7 +28,7 @@
 	} from './schema';
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
-	import { cn, PersonViewType } from '$lib/utils';
+	import { cn, PersonViewType, type StateFormSubmitProps } from '$lib/utils';
 	import { Check, CheckCheck, ChevronsUpDown } from 'lucide-svelte';
 	import { tick } from 'svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
@@ -94,8 +94,13 @@
 	let selectedGuarantorId: number | undefined = $state(undefined);
 	const selectedGuarantor = $derived(guarantors.find((g) => g.id === selectedGuarantorId));
 
+	let isFormLoading = $state(false);
+
 	const toggleStateForm = superForm(data.toggleStateForm, {
 		validators: zodClient(toggleStateFormSchema),
+		onSubmit: () => {
+			isFormLoading = true;
+		},
 		onUpdated: ({ form: f }) => {
 			const msg = actionData?.message;
 			if (f.valid && page.status === 200) {
@@ -113,12 +118,17 @@
 				if (msg) toast.error(msg);
 				new Audio(errorSFX).play();
 			}
+
+			isFormLoading = false;
 		}
 	});
 	const { enhance: toggleStateEnhance, submit: toggleStateFormSubmit } = toggleStateForm;
 
 	const toggleGuestStateForm = superForm(data.toggleGuestStateForm, {
 		validators: zodClient(toggleGuestStateFormSchema),
+		onSubmit: () => {
+			isFormLoading = true;
+		},
 		onUpdated: ({ form: f }) => {
 			const msg = actionData?.message;
 			if (f.valid && page.status === 200) {
@@ -129,6 +139,8 @@
 				if (msg) toast.error(msg);
 				new Audio(errorSFX).play();
 			}
+
+			isFormLoading = false;
 		}
 	});
 	const { enhance: toggleGuestStateEnhance, submit: toggleGuestStateFormSubmit } =
@@ -162,14 +174,23 @@
 			data.userBuilding,
 			toggleStateFormSubmit,
 			toggleGuestStateFormSubmit,
-			showGuestsFormSubmit
+			showGuestsFormSubmit,
+			isFormLoading
 		)
 	);
+
 	const columnsGuests = $derived(createColumnsGuests());
 
 	const triggerId = useId();
 
 	const isMobile = new IsMobile();
+
+	const stateFormSubmitProps: StateFormSubmitProps = {
+		userBuilding: data.userBuilding,
+		toggleStateFormSubmit,
+		toggleGuestStateFormSubmit,
+		showGuestsFormSubmit
+	};
 
 	let selectedViewType = $state(isMobile.current ? PersonViewType.Cards : PersonViewType.Table);
 	const containerDivStyle = $derived(selectedViewType === PersonViewType.Table ? 'm-4' : 'm-2');
@@ -259,13 +280,7 @@
 <Separator />
 <div class={containerDivStyle}>
 	{#if selectedViewType === PersonViewType.Cards}
-		<CardList
-			data={persons}
-			userBuilding={data.userBuilding}
-			{toggleGuestStateFormSubmit}
-			{toggleStateFormSubmit}
-			{showGuestsFormSubmit}
-		/>
+		<CardList data={persons} {stateFormSubmitProps} {isFormLoading} />
 	{:else}
 		<DataTable data={persons} {columns} />
 	{/if}
