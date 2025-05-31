@@ -1,21 +1,17 @@
 <script lang="ts">
-	import PersonCard from './PersonCard.svelte';
+	import PersonCard from './person-card.svelte';
 
 	import type { Person } from '$lib/types/person';
 	import { type StateFormSubmitProps } from '$lib/utils';
 	import InfiniteScroll from './infinite-scroll.svelte';
 
-	interface CardListProps extends StateFormSubmitProps {
+	interface CardListProps {
 		data: Person[];
+		stateFormSubmitProps: StateFormSubmitProps;
+		isFormLoading: boolean;
 	}
 
-	let {
-		data,
-		userBuilding,
-		toggleStateFormSubmit,
-		toggleGuestStateFormSubmit,
-		showGuestsFormSubmit
-	}: CardListProps = $props();
+	let { data, stateFormSubmitProps, isFormLoading }: CardListProps = $props();
 
 	let length = $state(10);
 	const offset = $state(10);
@@ -25,13 +21,7 @@
 <div class="p-4 pt-0">
 	{#if data}
 		{#each persons as person}
-			<PersonCard
-				{person}
-				{toggleGuestStateFormSubmit}
-				{toggleStateFormSubmit}
-				{showGuestsFormSubmit}
-				{userBuilding}
-			></PersonCard>
+			<PersonCard {person} {stateFormSubmitProps} {isFormLoading}></PersonCard>
 		{:else}
 			No data to show.
 		{/each}

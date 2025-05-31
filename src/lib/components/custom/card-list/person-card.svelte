@@ -5,24 +5,27 @@
 	import AccordionTrigger from '../../ui/accordion/accordion-trigger.svelte';
 	import AccordionContent from '../../ui/accordion/accordion-content.svelte';
 	import { StateInside } from '$lib/types/state';
-	import { cn, type StateFormSubmitProps } from '$lib/utils';
+	import { type StateFormSubmitProps } from '$lib/utils';
 	import { Building, Cuboid, University } from 'lucide-svelte';
 	import Badge from '../../ui/badge/badge.svelte';
 	import PersonActionButtons from '../../../../routes/(dashboard)/person-action-buttons.svelte';
+	import StatusIndicator from './status-indicator.svelte';
 
-	interface PersonActionButtonsProps extends StateFormSubmitProps {
+	interface PersonCardProps {
 		person: Person;
+		stateFormSubmitProps: StateFormSubmitProps;
+		isFormLoading: boolean;
 	}
 
-	let {
-		person,
-		userBuilding,
-		toggleStateFormSubmit,
-		toggleGuestStateFormSubmit,
-		showGuestsFormSubmit
-	}: PersonActionButtonsProps = $props();
+	let { person, stateFormSubmitProps, isFormLoading }: PersonCardProps = $props();
+	let { userBuilding, toggleStateFormSubmit, toggleGuestStateFormSubmit, showGuestsFormSubmit } =
+		stateFormSubmitProps;
 
-	const isInside = (person: Person) => person.state === StateInside;
+	const personContentContainerStyle = 'align-items-center flex flex-row gap-x-2';
+	const iconSize = 18;
+	const personNameContainerStyle = 'flex min-w-0 truncate';
+
+	const isInside = $derived(person.state === StateInside);
 </script>
 
 <Accordion type="multiple" class="[&:last-child>.child]:border-none">
@@ -30,10 +33,10 @@
 		<AccordionTrigger class="overflow-hidden hover:no-underline">
 			<div class="xs:text-xs flex w-full items-center justify-between gap-4 overflow-x-auto">
 				<div class="flex w-3/5 min-w-0 flex-1 items-center space-x-1 text-xs sm:text-sm">
-					<span class="flex min-w-0 truncate">
+					<span class={personNameContainerStyle}>
 						{person.fname}
 					</span>
-					<span class="flex min-w-0 truncate">
+					<span class={personNameContainerStyle}>
 						{person.lname}
 					</span>
 					<Badge variant="secondary">{person.identifier}</Badge>
@@ -42,36 +45,28 @@
 					<PersonActionButtons
 						{person}
 						{userBuilding}
-						{toggleGuestStateFormSubmit}
 						{toggleStateFormSubmit}
+						{toggleGuestStateFormSubmit}
 						{showGuestsFormSubmit}
+						{isFormLoading}
 					/>
-					<div class="p-3">
-						<span
-							class={cn(
-								'inline-block',
-								'h-2 w-2',
-								'rounded-full',
-								'mb-0.5',
-								isInside(person) ? 'bg-green-600' : 'bg-red-600'
-							)}
-						></span>
-					</div>
+					<StatusIndicator {isInside} />
 				</div>
 			</div>
 		</AccordionTrigger>
 		<AccordionContent>
 			<div class="align-items-center flex flex-col gap-2">
-				<span class="align-items-center flex flex-row gap-x-2"
-					><Cuboid size={18} /> Department: {person.department}</span
-				>
-				<div class="align-items-center flex flex-row gap-x-2">
-					<University size={18} />
-					<span>University: {person.university ? person.university : 'Not provided.'}</span>
+				<div class={personContentContainerStyle}>
+					<Cuboid size={iconSize} />
+					<span>Department: {person.department}</span>
 				</div>
-				<div class="align-items-center flex flex-row gap-x-2">
-					<Building size={18} />Building:
-					<span>{person.building ? person.building : 'Not inside.'}</span>
+				<div class={personContentContainerStyle}>
+					<University size={iconSize} />
+					<span>University: {person.university ?? 'Not provided.'}</span>
+				</div>
+				<div class={personContentContainerStyle}>
+					<Building size={iconSize} />
+					<span>Building: {person.building ?? 'Not inside.'}</span>
 				</div>
 			</div>
 		</AccordionContent>
