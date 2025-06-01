@@ -3,7 +3,7 @@
 	import Button, { buttonVariants } from '$lib/components/ui/button/button.svelte';
 	import { StateInside } from '$lib/types/state';
 	import { Guest, type Person } from '$lib/types/person';
-	import { ArrowLeftRight, Ban, Handshake, LogIn, LogOut } from 'lucide-svelte';
+	import { ArrowLeftRight, Ban, Handshake, LogIn, LogOut, Mouse } from 'lucide-svelte';
 	import { tick } from 'svelte';
 	import { cn, type StateFormSubmitProps } from '$lib/utils';
 	import { toggleStateFormStore } from '$lib/stores/toggleState.svelte';
@@ -12,7 +12,6 @@
 
 	interface PersonActionButtonsProps extends StateFormSubmitProps {
 		person: Person;
-		isFormLoading: boolean;
 	}
 
 	let {
@@ -20,28 +19,22 @@
 		userBuilding,
 		toggleStateFormSubmit,
 		toggleGuestStateFormSubmit,
-		showGuestsFormSubmit,
-		isFormLoading
+		showGuestsFormSubmit
 	}: PersonActionButtonsProps = $props();
 
 	const isSameBuilding = $derived(userBuilding === person.building);
 	const isInside = $derived(person.state === StateInside);
 
-	let hasButtonBeenSubmitted = $state(false);
-	const shouldShowLoadingSpinner = $derived(isFormLoading && hasButtonBeenSubmitted);
+	const shouldShowLoadingSpinner = $derived(
+		toggleStateFormStore.isLoadingForm && toggleStateFormStore.personId === person.id
+	);
 
-	$effect(() => {
-		console.log(isFormLoading);
-	});
+	const baseButtonClass = cn('min-w-0 flex-1', buttonVariants({ variant: 'outline' }));
+	const baseSpanClass = 'hidden md:block';
 
-	$effect(() => {
-		console.log(hasButtonBeenSubmitted);
-	});
-
-	const handleSubmitButtonClick = (onButtonClickFunction: () => void) => {
-		hasButtonBeenSubmitted = true;
+	const handleSubmitButtonClick = (event: Event, onButtonClickFunction: () => void) => {
+		event.stopPropagation();
 		onButtonClickFunction();
-		hasButtonBeenSubmitted = false;
 	};
 
 	const handleReleaseWithGuarantor = () => {
@@ -94,15 +87,16 @@
 				<Tooltip.Provider>
 					<Tooltip.Root>
 						<Tooltip.Trigger
-							onclick={() => handleSubmitButtonClick(handleReleaseWithGuarantor)}
-							class={cn('min-w-0 flex-1', buttonVariants({ variant: 'outline' }))}
+							onclick={(event) => handleSubmitButtonClick(event, handleReleaseWithGuarantor)}
+							class={baseButtonClass}
 							value={'release'}
+							disabled={shouldShowLoadingSpinner}
 						>
 							{#if shouldShowLoadingSpinner}
 								<Spinner size={'medium'} />
 							{:else}
 								<LogOut />
-								<span class="hidden md:block">Release</span>
+								<span class={baseSpanClass}>Release</span>
 							{/if}
 						</Tooltip.Trigger>
 						<Tooltip.Content>
@@ -115,71 +109,69 @@
 				</Tooltip.Provider>
 			{:else}
 				<Button
-					onclick={() => handleSubmitButtonClick(handleReleaseWithoutGuarantor)}
+					onclick={(event) => handleSubmitButtonClick(event, handleReleaseWithoutGuarantor)}
 					variant="outline"
-					class="min-w-0 flex-1 sm:w-full"
+					class={baseButtonClass}
 					value={'release'}
+					disabled={shouldShowLoadingSpinner}
 				>
 					{#if shouldShowLoadingSpinner}
 						<Spinner size="medium" />
 					{:else}
 						<LogOut />
-						<span class="hidden md:block">Release</span>
+						<span class={baseSpanClass}>Release</span>
 					{/if}
 				</Button>
 			{/if}
 		{:else if person.type !== Guest}
 			<Button
-				onclick={() => handleSubmitButtonClick(handleAdmitOrTransfer)}
+				onclick={(event) => handleSubmitButtonClick(event, handleAdmitOrTransfer)}
 				variant="outline"
-				class="min-w-0 flex-1"
+				class={baseButtonClass}
 				value={isInside ? 'transfer' : 'admit'}
+				disabled={shouldShowLoadingSpinner}
 			>
 				{#if shouldShowLoadingSpinner}
 					<Spinner size="medium" />
 				{:else if isInside}
 					<ArrowLeftRight />
-					<span class="hidden md:block">Transfer</span>
+					<span class={baseSpanClass}>Transfer</span>
 				{:else}
 					<LogIn />
-					<span class="hidden md:block">Admit</span>
+					<span class={baseSpanClass}>Admit</span>
 				{/if}
 			</Button>
 		{:else}
 			<Button
-				onclick={() => handleSubmitButtonClick(handleAdmitOrTransferGuest)}
+				onclick={(event) => handleSubmitButtonClick(event, handleAdmitOrTransferGuest)}
 				type="button"
 				variant="outline"
-				class="min-w-0 flex-1"
+				class={baseButtonClass}
 				value={isInside ? 'transfer' : 'admit'}
+				disabled={shouldShowLoadingSpinner}
 			>
 				{#if shouldShowLoadingSpinner}
 					<Spinner size="medium" />
 				{:else if isInside}
 					<ArrowLeftRight />
-					<span class="hidden md:block">Transfer</span>
+					<span class={baseSpanClass}>Transfer</span>
 				{:else}
 					<LogIn />
-					<span class="hidden md:block">Admit</span>
+					<span class={baseSpanClass}>Admit</span>
 				{/if}
 			</Button>
 		{/if}
 
 		{#if person.type !== Guest}
-			<Button
-				onclick={handleShowGuests}
-				type="button"
-				variant="outline"
-				class="min-w-0 flex-1 sm:w-full"
-			>
+			<Button onclick={handleShowGuests} type="button" variant="outline" class={baseButtonClass}>
 				<Handshake />
-				<span class="hidden md:block">Show guests</span>
+				<span class={baseSpanClass}>Show guests</span>
 			</Button>
 		{/if}
 	{:else}
 		<Button type="button" variant="destructive" class="w-full" disabled>
 			<Ban />
-			<span class="hidden md:block">Banned</span>
+			<span class={baseSpanClass}>Banned</span>
 		</Button>
 	{/if}
 </div>

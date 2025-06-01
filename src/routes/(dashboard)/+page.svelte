@@ -68,8 +68,8 @@
 	let searchInput = $state('');
 	let searchInputFocus = $state(false);
 	let liveSearch = $state(browser);
-
 	let guarantors = $state(data.guarantors);
+
 	const guarantorSearchForm = superForm(data.guarantorSearchForm, {
 		invalidateAll: false,
 		resetForm: false,
@@ -94,12 +94,10 @@
 	let selectedGuarantorId: number | undefined = $state(undefined);
 	const selectedGuarantor = $derived(guarantors.find((g) => g.id === selectedGuarantorId));
 
-	let isFormLoading = $state(false);
-
 	const toggleStateForm = superForm(data.toggleStateForm, {
 		validators: zodClient(toggleStateFormSchema),
 		onSubmit: () => {
-			isFormLoading = true;
+			toggleStateFormStore.isLoadingForm = true;
 		},
 		onUpdated: ({ form: f }) => {
 			const msg = actionData?.message;
@@ -119,7 +117,7 @@
 				new Audio(errorSFX).play();
 			}
 
-			isFormLoading = false;
+			toggleStateFormStore.isLoadingForm = false;
 		}
 	});
 	const { enhance: toggleStateEnhance, submit: toggleStateFormSubmit } = toggleStateForm;
@@ -127,7 +125,7 @@
 	const toggleGuestStateForm = superForm(data.toggleGuestStateForm, {
 		validators: zodClient(toggleGuestStateFormSchema),
 		onSubmit: () => {
-			isFormLoading = true;
+			toggleStateFormStore.isLoadingForm = true;
 		},
 		onUpdated: ({ form: f }) => {
 			const msg = actionData?.message;
@@ -140,7 +138,7 @@
 				new Audio(errorSFX).play();
 			}
 
-			isFormLoading = false;
+			toggleStateFormStore.isLoadingForm = false;
 		}
 	});
 	const { enhance: toggleGuestStateEnhance, submit: toggleGuestStateFormSubmit } =
@@ -174,8 +172,7 @@
 			data.userBuilding,
 			toggleStateFormSubmit,
 			toggleGuestStateFormSubmit,
-			showGuestsFormSubmit,
-			isFormLoading
+			showGuestsFormSubmit
 		)
 	);
 
@@ -280,7 +277,7 @@
 <Separator />
 <div class={containerDivStyle}>
 	{#if selectedViewType === PersonViewType.Cards}
-		<CardList data={persons} {stateFormSubmitProps} {isFormLoading} />
+		<CardList data={persons} {stateFormSubmitProps} />
 	{:else}
 		<DataTable data={persons} {columns} />
 	{/if}

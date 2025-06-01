@@ -8,10 +8,9 @@
 	interface CardListProps {
 		data: Person[];
 		stateFormSubmitProps: StateFormSubmitProps;
-		isFormLoading: boolean;
 	}
 
-	let { data, stateFormSubmitProps, isFormLoading }: CardListProps = $props();
+	let { data, stateFormSubmitProps }: CardListProps = $props();
 
 	let length = $state(10);
 	const offset = $state(10);
@@ -20,8 +19,8 @@
 
 <div class="p-4 pt-0">
 	{#if data}
-		{#each persons as person}
-			<PersonCard {person} {stateFormSubmitProps} {isFormLoading}></PersonCard>
+		{#each persons as person (person.id)}
+			<PersonCard {person} {stateFormSubmitProps}></PersonCard>
 		{:else}
 			No data to show.
 		{/each}

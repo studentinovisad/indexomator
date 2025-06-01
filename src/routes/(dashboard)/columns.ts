@@ -8,8 +8,7 @@ export function createColumns(
 	userBuilding: string,
 	toggleStateFormSubmit: FormSubmitFunction,
 	toggleGuestStateFormSubmit: FormSubmitFunction,
-	showGuestsFormSubmit: FormSubmitFunction,
-	isFormLoading: boolean
+	showGuestsFormSubmit: FormSubmitFunction
 ): ColumnDef<Person>[] {
 	return [
 		{
@@ -53,8 +52,7 @@ export function createColumns(
 					userBuilding,
 					toggleStateFormSubmit,
 					toggleGuestStateFormSubmit,
-					showGuestsFormSubmit,
-					isFormLoading
+					showGuestsFormSubmit
 				});
 			},
 			enableSorting: false,
