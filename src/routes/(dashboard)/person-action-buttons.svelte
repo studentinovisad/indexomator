@@ -3,7 +3,7 @@
 	import Button, { buttonVariants } from '$lib/components/ui/button/button.svelte';
 	import { StateInside } from '$lib/types/state';
 	import { Guest, type Person } from '$lib/types/person';
-	import { ArrowLeftRight, Ban, Handshake, LogIn, LogOut, Mouse } from 'lucide-svelte';
+	import { ArrowLeftRight, Ban, Handshake, LogIn, LogOut } from 'lucide-svelte';
 	import { tick } from 'svelte';
 	import { cn, type StateFormSubmitProps } from '$lib/utils';
 	import { toggleStateFormStore } from '$lib/stores/toggleState.svelte';
