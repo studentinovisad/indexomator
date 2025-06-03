@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PersonCard from './person-card.svelte';
+	import PersonCard from '../person-card/person-card.svelte';
 
 	import type { Person } from '$lib/types/person';
 	import { type StateFormSubmitProps } from '$lib/utils';
