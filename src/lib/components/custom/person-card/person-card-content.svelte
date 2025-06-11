@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Guest, type Person } from '$lib/types/person';
 	import AccordionContent from '../../ui/accordion/accordion-content.svelte';
-	import { Building, Cuboid, HeartHandshake, PersonStanding, University } from 'lucide-svelte';
+	import { Building, Cuboid, HeartHandshake, University } from 'lucide-svelte';
 
 	let { person }: { person: Person } = $props();
 
