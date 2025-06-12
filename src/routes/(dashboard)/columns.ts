@@ -1,13 +1,14 @@
 import { renderComponent } from '$lib/components/ui/data-table';
 import type { Guest, Person } from '$lib/types/person';
 import type { ColumnDef } from '@tanstack/table-core';
-import DataTableActions from './data-table-actions.svelte';
+import type { FormSubmitFunction } from '$lib/utils';
+import PersonActionButtons from './person-action-buttons.svelte';
 
 export function createColumns(
 	userBuilding: string,
-	toggleStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void,
-	toggleGuestStateFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void,
-	showGuestsFormSubmit: (submitter?: HTMLElement | Event | EventTarget | null) => void
+	toggleStateFormSubmit: FormSubmitFunction,
+	toggleGuestStateFormSubmit: FormSubmitFunction,
+	showGuestsFormSubmit: FormSubmitFunction
 ): ColumnDef<Person>[] {
 	return [
 		{
@@ -46,7 +47,7 @@ export function createColumns(
 			id: 'actions',
 			header: 'Actions',
 			cell: ({ row: { original: person } }) => {
-				return renderComponent(DataTableActions, {
+				return renderComponent(PersonActionButtons, {
 					person,
 					userBuilding,
 					toggleStateFormSubmit,

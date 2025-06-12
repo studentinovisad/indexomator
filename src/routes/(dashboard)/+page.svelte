@@ -28,10 +28,9 @@
 	} from './schema';
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
-	import { cn } from '$lib/utils';
+	import { cn, PersonViewType, type StateFormSubmitProps } from '$lib/utils';
 	import { Check, CheckCheck, ChevronsUpDown } from 'lucide-svelte';
 	import { tick } from 'svelte';
-	import { useId } from 'bits-ui';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { toggleStateFormStore } from '$lib/stores/toggleState.svelte';
 	import type { Guest } from '$lib/types/person';
@@ -39,6 +38,10 @@
 	import successSFX from '$lib/assets/sfx/success.mp3';
 	import warningSFX from '$lib/assets/sfx/warning.mp3';
 	import errorSFX from '$lib/assets/sfx/error.mp3';
+	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
+	import CardList from '$lib/components/custom/card-list/card-list.svelte';
+	import { useId } from 'bits-ui';
+	import PersonViewSelector from '$lib/components/custom/person-view-selector/person-view-selector.svelte';
 
 	let { data, form: actionData } = $props();
 
@@ -65,8 +68,8 @@
 	let searchInput = $state('');
 	let searchInputFocus = $state(false);
 	let liveSearch = $state(browser);
-
 	let guarantors = $state(data.guarantors);
+
 	const guarantorSearchForm = superForm(data.guarantorSearchForm, {
 		invalidateAll: false,
 		resetForm: false,
@@ -93,6 +96,9 @@
 
 	const toggleStateForm = superForm(data.toggleStateForm, {
 		validators: zodClient(toggleStateFormSchema),
+		onSubmit: () => {
+			toggleStateFormStore.isLoadingForm = true;
+		},
 		onUpdated: ({ form: f }) => {
 			const msg = actionData?.message;
 			if (f.valid && page.status === 200) {
@@ -110,12 +116,17 @@
 				if (msg) toast.error(msg);
 				new Audio(errorSFX).play();
 			}
+
+			toggleStateFormStore.isLoadingForm = false;
 		}
 	});
 	const { enhance: toggleStateEnhance, submit: toggleStateFormSubmit } = toggleStateForm;
 
 	const toggleGuestStateForm = superForm(data.toggleGuestStateForm, {
 		validators: zodClient(toggleGuestStateFormSchema),
+		onSubmit: () => {
+			toggleStateFormStore.isLoadingForm = true;
+		},
 		onUpdated: ({ form: f }) => {
 			const msg = actionData?.message;
 			if (f.valid && page.status === 200) {
@@ -126,6 +137,8 @@
 				if (msg) toast.error(msg);
 				new Audio(errorSFX).play();
 			}
+
+			toggleStateFormStore.isLoadingForm = false;
 		}
 	});
 	const { enhance: toggleGuestStateEnhance, submit: toggleGuestStateFormSubmit } =
@@ -162,22 +175,39 @@
 			showGuestsFormSubmit
 		)
 	);
+
 	const columnsGuests = $derived(createColumnsGuests());
 
 	const triggerId = useId();
+
+	const isMobile = new IsMobile();
+
+	const stateFormSubmitProps: StateFormSubmitProps = {
+		userBuilding: data.userBuilding,
+		toggleStateFormSubmit,
+		toggleGuestStateFormSubmit,
+		showGuestsFormSubmit
+	};
+
+	let selectedViewType = $state(isMobile.current ? PersonViewType.Cards : PersonViewType.Table);
+	const containerDivStyle = $derived(selectedViewType === PersonViewType.Table ? 'm-4' : 'm-2');
+
+	const handleUpdateView = (viewType: PersonViewType) => {
+		selectedViewType = viewType;
+	};
 </script>
 
 <!-- Search for persons -->
 <form
 	method="POST"
 	action="?/search"
-	class="flex gap-2 px-4 py-2"
+	class="flex items-center gap-2 px-4 py-2"
 	onreset={() => {
 		searchForm.submit();
 	}}
 	use:searchEnhance
 >
-	<Form.Field form={searchForm} name="searchQuery">
+	<Form.Field form={searchForm} name="searchQuery" class="space-y-0">
 		<Form.Control>
 			{#snippet children({ props })}
 				<Input
@@ -240,12 +270,17 @@
 			</Tooltip.Content>
 		</Tooltip.Root>
 	</Tooltip.Provider>
+	<PersonViewSelector {selectedViewType} onUpdateView={handleUpdateView} />
 </form>
 
 <!-- Data table for persons -->
 <Separator />
-<div class="m-0 sm:m-4">
-	<DataTable data={persons} {columns} />
+<div class={containerDivStyle}>
+	{#if selectedViewType === PersonViewType.Cards}
+		<CardList data={persons} {stateFormSubmitProps} />
+	{:else}
+		<DataTable data={persons} {columns} />
+	{/if}
 </div>
 
 <!-- Dialog for searching guarantors when admiting/tranfering guests -->

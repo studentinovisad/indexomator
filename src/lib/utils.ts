@@ -54,3 +54,20 @@ export const flyAndScale = (
 		easing: cubicOut
 	};
 };
+
+// Defines view types for displaying persons.
+export enum PersonViewType {
+	Table,
+	Cards
+}
+
+// Defines the function signature for form submittion for entering persons.
+export type FormSubmitFunction = (submitter?: HTMLElement | Event | EventTarget | null) => void;
+
+// Defines the props passed for form submittion.
+export interface StateFormSubmitProps {
+	userBuilding: string;
+	toggleStateFormSubmit: FormSubmitFunction;
+	toggleGuestStateFormSubmit: FormSubmitFunction;
+	showGuestsFormSubmit: FormSubmitFunction;
+}
