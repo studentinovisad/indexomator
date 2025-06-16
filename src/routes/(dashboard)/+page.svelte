@@ -30,7 +30,7 @@
 	import { browser } from '$app/environment';
 	import { cn, PersonViewType, type StateFormSubmitProps } from '$lib/utils';
 	import { Check, CheckCheck, ChevronsUpDown } from 'lucide-svelte';
-	import { tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { toggleStateFormStore } from '$lib/stores/toggleState.svelte';
 	import type { Guest } from '$lib/types/person';
@@ -189,7 +189,11 @@
 		showGuestsFormSubmit
 	};
 
-	let selectedViewType = $state(isMobile.current ? PersonViewType.Cards : PersonViewType.Table);
+	let selectedViewType = $state(PersonViewType.Table);
+	onMount(() => {
+		selectedViewType = isMobile.current ? PersonViewType.Cards : PersonViewType.Table;
+	});
+
 	const containerDivStyle = $derived(selectedViewType === PersonViewType.Table ? 'm-4' : 'm-2');
 
 	const handleUpdateView = (viewType: PersonViewType) => {

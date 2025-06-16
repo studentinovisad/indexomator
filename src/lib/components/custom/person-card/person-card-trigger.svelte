@@ -24,7 +24,7 @@
 <AccordionTrigger class="overflow-hidden hover:no-underline">
 	<div class="xs:text-xs flex w-full items-center justify-between gap-4 overflow-x-auto">
 		<div
-			class="max-w-3/5 flex flex-1 items-center space-x-1 overflow-x-scroll text-xs sm:text-sm xl:w-4/6"
+			class="max-w-3/5 flex flex-1 items-center space-x-1 overflow-hidden text-xs sm:text-sm xl:w-4/6"
 		>
 			<span class={personNameContainerStyle}>
 				{person.fname}
