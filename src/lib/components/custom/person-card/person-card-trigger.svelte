@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Employee, type Person } from '$lib/types/person';
 	import AccordionTrigger from '../../ui/accordion/accordion-trigger.svelte';
-	import { StateInside } from '$lib/types/state';
 	import { type StateFormSubmitProps } from '$lib/utils';
 	import Badge from '../../ui/badge/badge.svelte';
 	import PersonActionButtons from '../../../../routes/(dashboard)/person-action-buttons.svelte';
@@ -17,8 +16,6 @@
 		stateFormSubmitProps;
 
 	const personNameContainerStyle = 'flex xs:hidden min-w-0 truncate';
-
-	const isInside = $derived(person.state === StateInside);
 </script>
 
 <AccordionTrigger class="overflow-hidden hover:no-underline">
@@ -42,7 +39,7 @@
 				{toggleGuestStateFormSubmit}
 				{showGuestsFormSubmit}
 			/>
-			<StatusIndicator {isInside} />
+			<StatusIndicator {person} />
 		</div>
 	</div>
 </AccordionTrigger>
