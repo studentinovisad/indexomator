@@ -1,7 +1,10 @@
 <script lang="ts">
+	import type { Person } from '$lib/types/person';
+	import { StateInside } from '$lib/types/state';
 	import { cn } from '$lib/utils';
 
-	const isInside: boolean = $props();
+	let { person }: { person: Person } = $props();
+	const isInside = $derived(person.state === StateInside);
 </script>
 
 <div class="p-3">

@@ -31,9 +31,6 @@
 			>
 				<IdCard />
 			</Tooltip.Trigger>
-			<Tooltip.Content>
-				<span>{isTableView ? 'Enable Cards View' : 'Cards View Active'}</span>
-			</Tooltip.Content>
 		</Tooltip.Root>
 		<Tooltip.Root>
 			<Tooltip.Trigger
@@ -45,9 +42,6 @@
 			>
 				<Table />
 			</Tooltip.Trigger>
-			<Tooltip.Content>
-				<span>{isCardView ? 'Enable Table View' : 'Table View Active'}</span>
-			</Tooltip.Content>
 		</Tooltip.Root>
 	</Tooltip.Provider>
 </div>
