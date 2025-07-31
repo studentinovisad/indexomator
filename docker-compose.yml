@@ -103,8 +103,10 @@ services:
     build:
       context: .
       dockerfile: docker/postgres.Dockerfile
-    ports:
-      - 5432:5432
+    # Don't uncomment if unsure, only needed for manual DB interactions
+    # ports:
+    #   - 127.0.0.1:5432:5432 # Uncomment this so you can access postgres via ssh port tunnelling
+    #   - 5432:5432           # Uncomment this so you can access postgres via public IP or LAN (depending on your firewall)
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
