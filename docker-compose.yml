@@ -1,4 +1,104 @@
 services:
+  # Reverse proxy
+  crowdsec:
+    image: docker.io/crowdsecurity/crowdsec:v1.6.11
+    environment:
+      COLLECTIONS: crowdsecurity/traefik crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules
+      CUSTOM_HOSTNAME: crowdsec
+      BOUNCER_KEY_TRAEFIK: ${BOUNCER_KEY_TRAEFIK}
+    volumes:
+      - type: volume
+        source: traefik-logs-vol
+        target: /var/log/traefik
+        volume:
+          nocopy: false
+      - type: volume
+        source: crowdsec-db-vol
+        target: /var/lib/crowdsec/data
+        volume:
+          nocopy: false
+      - type: volume
+        source: crowdsec-conf-vol
+        target: /etc/crowdsec
+        volume:
+          nocopy: false
+      - type: bind
+        source: ./acquis.yaml
+        target: /etc/crowdsec/acquis.yaml
+        read_only: true
+    networks:
+      - cs
+    restart: unless-stopped
+
+  traefik:
+    depends_on:
+      - crowdsec
+    image: docker.io/library/traefik:v3.4.4
+    command:
+      - '--accesslog'
+      - '--accesslog.filepath=/var/log/traefik/access.log'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.web.http.redirections.entrypoint.to=websecure'
+      - '--entrypoints.web.http.redirections.entrypoint.scheme=https'
+      - '--entrypoints.websecure.address=:443'
+      - '--entrypoints.websecure.http3'
+      - '--certificatesresolvers.letsencrypt.acme.email=cert@${DOMAIN}'
+      - '--certificatesresolvers.letsencrypt.acme.storage=acme/acme.json'
+      - '--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web'
+      - '--experimental.plugins.bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin'
+      - '--experimental.plugins.bouncer.version=v1.4.4'
+    ports:
+      - "80:80/tcp"
+      - "443:443/tcp"
+      - "443:443/udp"
+    volumes:
+      - type: volume
+        source: traefik-logs-vol
+        target: /var/log/traefik
+        volume:
+          nocopy: false
+      - type: volume
+        source: traefik-acme-vol
+        target: /acme
+        volume:
+          nocopy: false
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+    networks:
+      - web
+      - cs
+    restart: unless-stopped
+
+  # Indexomator
+  app:
+    depends_on:
+      - postgres
+    build:
+      context: .
+      dockerfile: docker/node.Dockerfile
+    env_file:
+      - .env
+    networks:
+      - web
+      - db
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.app.rule=Host(`${DOMAIN}`)'
+      - 'traefik.http.routers.app.middlewares=crowdsec@docker'
+      - 'traefik.http.middlewares.crowdsec.plugin.bouncer.enabled=true'
+      - 'traefik.http.middlewares.crowdsec.plugin.bouncer.crowdsecmode=stream'
+      - 'traefik.http.middlewares.crowdsec.plugin.bouncer.crowdseclapikey=${BOUNCER_KEY_TRAEFIK}'
+      - 'traefik.http.middlewares.crowdsec.plugin.bouncer.crowdsecappsecenabled=true'
+      - 'traefik.http.routers.app.entrypoints=websecure'
+      - 'traefik.http.routers.app.tls=true'
+      - 'traefik.http.routers.app.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.app.loadbalancer.server.port=3000'
+    restart: unless-stopped
+
   postgres:
     build:
       context: .
@@ -10,7 +110,20 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - 'postgres-data-vol:/var/lib/postgresql/data:Z'
-    restart: on-failure
+      - type: bind
+        source: ./database
+        target: /var/lib/postgresql/data
+    networks:
+      - db
+    restart: unless-stopped
+
+networks:
+  web:
+  cs:
+  db:
+
 volumes:
-  postgres-data-vol:
+  crowdsec-db-vol:
+  crowdsec-conf-vol:
+  traefik-logs-vol:
+  traefik-acme-vol:
