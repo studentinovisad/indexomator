@@ -28,3 +28,17 @@ export const ratelimitTable = pgTable(
 		pk: primaryKey({ columns: [table.userId, table.timestamp] })
 	})
 );
+
+export const shiftTable = pgTable(
+	'shift',
+	{
+		userId: integer('user_id')
+			.notNull()
+			.references(() => userTable.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+		start: timestamp('start').notNull(),
+		end: timestamp('end').notNull()
+	},
+	(table) => ({
+		pk: primaryKey({ columns: [table.userId, table.start, table.end] })
+	})
+);
