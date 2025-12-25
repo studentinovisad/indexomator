@@ -24,7 +24,7 @@ jobs:
 
       - uses: docker/setup-qemu-action@v3
         with:
-          platforms: arm64,arm
+          platforms: arm64
 
       - uses: docker/setup-buildx-action@v3
 
@@ -52,7 +52,6 @@ jobs:
           platforms: |-
             linux/amd64
             linux/arm64
-            linux/arm/v7
 
       - uses: docker/metadata-action@v5
         id: meta_postgres
@@ -71,4 +70,3 @@ jobs:
           platforms: |-
             linux/amd64
             linux/arm64
-            linux/arm/v7
