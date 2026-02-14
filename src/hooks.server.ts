@@ -1,4 +1,5 @@
 import { connectDatabase } from '$lib/server/db/connect';
+import { isUserScheduled } from '$lib/server/db/schedule';
 import { validateAdminSessionToken, validateSessionToken } from '$lib/server/db/session';
 import {
 	setSessionTokenCookie,
@@ -71,7 +72,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 		// Validate session token
 		const { session, user } = await validateSessionToken(database, token);
-		if (session !== null && !user.disabled) {
+		if (session !== null && !user.disabled && await isUserScheduled(database, user.id)) {
 			// If session is valid, ensure the token is up-to-date
 			setSessionTokenCookie(event, token, session.timestamp);
 
