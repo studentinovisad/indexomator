@@ -35,7 +35,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/metadata-action@v5
+      - uses: docker/metadata-action@v6
         id: meta
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
@@ -53,7 +53,7 @@ jobs:
             linux/amd64
             linux/arm64
 
-      - uses: docker/metadata-action@v5
+      - uses: docker/metadata-action@v6
         id: meta_postgres
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_POSTGRES }}
